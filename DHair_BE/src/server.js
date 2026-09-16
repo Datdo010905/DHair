@@ -6,5 +6,5 @@ const PORT = process.env.PORT || 5000;
 
 //run app
 app.listen(PORT, () => {
-    console.log(`Server QuanLyLichHen đang chạy ở cổng ${PORT}`);
+    console.log(`DHair Barber đang chạy ở cổng ${PORT}!`);
 });
