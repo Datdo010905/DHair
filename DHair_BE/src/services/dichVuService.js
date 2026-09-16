@@ -3,27 +3,45 @@ const prisma = new PrismaClient();
 
 
 const getTatCaDichVuCungCap = async () => {
-    const danhSachDV = await prisma.$queryRaw`SELECT * FROM DICHVU WHERE TRANGTHAI = N'Đang cung cấp'`;
-    return danhSachDV;
+    return await prisma.dICHVU.findMany({
+        where: {
+            TRANGTHAI: 'Đang cung cấp'
+        }
+    });
 };
 
 const getAllDichVuToc = async () => {
-    //const danhSach = await prisma.DICHVU.findMany();
-    const danhSachDV = await prisma.$queryRaw`SELECT * FROM DICHVU WHERE LOAI = 'CT' AND TRANGTHAI = N'Đang cung cấp'`;
-    return danhSachDV;
+    return await prisma.dICHVU.findMany({
+        where: {
+            LOAI: 'CT',
+            TRANGTHAI: 'Đang cung cấp'
+        }
+    });
 };
 
 const getAllDichVuCSD = async () => {
-    const danhSachDV = await prisma.$queryRaw`SELECT * FROM DICHVU WHERE LOAI = 'CSD' AND TRANGTHAI = N'Đang cung cấp'`;
-    return danhSachDV;
+    return await prisma.dICHVU.findMany({
+        where: {
+            LOAI: 'CSD',
+            TRANGTHAI: 'Đang cung cấp'
+        }
+    });
 };
+
 const getAllDichVu = async () => {
-    const danhSachDV = await prisma.$queryRaw`SELECT * FROM DICHVU WHERE LOAI = 'CT'`;
-    return danhSachDV;
+    return await prisma.dICHVU.findMany({
+        where: {
+            LOAI: 'CT'
+        }
+    });
 };
+
 const getAllDichVuChamSocDA = async () => {
-    const danhSachDV = await prisma.$queryRaw`SELECT * FROM DICHVU WHERE LOAI = 'CSD'`;
-    return danhSachDV;
+    return await prisma.dICHVU.findMany({
+        where: {
+            LOAI: 'CSD'
+        }
+    });
 };
 const getDVByID = async (ma) => {
     return await prisma.dICHVU.findUnique({
