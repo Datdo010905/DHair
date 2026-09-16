@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model CHINHANH {
+  MACHINHANH  String     @id(map: "PK__CHINHANH__6782D54CD5425C84") @db.Char(20)
+  TENCHINHANH String?    @db.NVarChar(100)
+  DIACHI      String?    @db.NVarChar(200)
+  SDT         String     @unique(map: "UQ__CHINHANH__CA1930A5DC5CC1AD") @db.Char(10)
+  LICHHEN     LICHHEN[]
+  NHANVIEN    NHANVIEN[]
+}
+
+model CHITIETHOADON {
+  MAHD      String @db.Char(20)
+  MADV      String @db.Char(20)
+  SOLUONG   Int?   @default(1, map: "DF__CHITIETHO__SOLUO__43A1090D")
+  DONGIA    Int
+  THANHTIEN Int
+  DICHVU    DICHVU @relation(fields: [MADV], references: [MADV], onUpdate: NoAction, map: "FK__CHITIETHOA__MADV__4589517F")
+  HOADON    HOADON @relation(fields: [MAHD], references: [MAHD], onUpdate: NoAction, map: "FK__CHITIETHOA__MAHD__44952D46")
+
+  @@id([MAHD, MADV], map: "PK__CHITIETH__263CD0CB89AFAC0F")
+}
+
+model CHITIETLICHHEN {
+  MALICH     String    @db.Char(20)
+  MADV       String    @db.Char(20)
+  SOLUONG    Int?      @default(1, map: "DF__CHITIETLI__SOLUO__2BC97F7C")
+  GHICHU     String?   @db.NVarChar(200)
+  MANV       String?   @db.Char(20)
+  GIA_DUKIEN Int?
+  LICHHEN    LICHHEN   @relation(fields: [MALICH], references: [MALICH], onUpdate: NoAction, map: "FK__CHITIETLI__MALIC__2CBDA3B5")
+  DICHVU     DICHVU    @relation(fields: [MADV], references: [MADV], onUpdate: NoAction, map: "FK__CHITIETLIC__MADV__2DB1C7EE")
+  NHANVIEN   NHANVIEN? @relation(fields: [MANV], references: [MANV], onDelete: NoAction, onUpdate: NoAction, map: "FK_CT_LICHHEN_NHANVIEN")
+
+  @@id([MALICH, MADV], map: "PK__CHITIETL__73F1BF0BF2ED7393")
+}
+
+model DICHVU {
+  MADV           String           @id(map: "PK__DICHVU__603F0055058C032C") @db.Char(20)
+  LOAI           String           @db.Char(10)
+  TENDV          String           @db.NVarChar(100)
+  MOTA           String?          @db.NVarChar(255)
+  THOIGIAN       Int
+  GIADV          Float
+  TRANGTHAI      String?          @db.NVarChar(50)
+  HINH           String?          @db.NVarChar(255)
+  QUYTRINH       String?          @db.NVarChar(255)
+  CHITIETHOADON  CHITIETHOADON[]
+  CHITIETLICHHEN CHITIETLICHHEN[]
+}
+
+model HOADON {
+  MAHD              String          @id(map: "PK__HOADON__603F20CEAEA68678") @db.Char(20)
+  MAKM              String?         @db.Char(20)
+  TONGTIEN          Int
+  HINHTHUCTHANHTOAN String?         @db.NVarChar(50)
+  MANV              String?         @db.Char(20)
+  MALICH            String?         @db.Char(20)
+  TRANGTHAI         String?         @db.NVarChar(50)
+  MAKH              String?         @db.Char(20)
+  NGAYTHANHTOAN     DateTime?       @db.DateTime
+  CHITIETHOADON     CHITIETHOADON[]
+  KHUYENMAI         KHUYENMAI?      @relation(fields: [MAKM], references: [MAKM], onDelete: NoAction, onUpdate: NoAction, map: "FK__HOADON__MAKM__308E3499")
+  LICHHEN           LICHHEN?        @relation(fields: [MALICH], references: [MALICH], onDelete: NoAction, onUpdate: NoAction, map: "FK__HOADON__MALICH__32767D0B")
+  NHANVIEN          NHANVIEN?       @relation(fields: [MANV], references: [MANV], onDelete: NoAction, onUpdate: NoAction, map: "FK__HOADON__MANV__318258D2")
+  KHACHHANG         KHACHHANG?      @relation(fields: [MAKH], references: [MAKH], onDelete: NoAction, onUpdate: NoAction, map: "FK_HOADON_KHACHHANG")
+}
+
+model KHACHHANG {
+  MAKH     String    @id(map: "PK__KHACHHAN__603F592C2D0D769B") @db.Char(20)
+  HOTEN    String    @db.NVarChar(100)
+  SDT      String    @unique(map: "UQ__KHACHHAN__CA1930A504BBA962") @db.Char(10)
+  MATK     String?   @unique(map: "UQ__KHACHHAN__60237217F7EA2E0D") @db.Char(20)
+  EMAIL    String?   @db.NVarChar(100)
+  HOADON   HOADON[]
+  TAIKHOAN TAIKHOAN? @relation(fields: [MATK], references: [MATK], onDelete: NoAction, onUpdate: NoAction, map: "FK__KHACHHANG__MATK__0880433F")
+  LICHHEN  LICHHEN[]
+}
+
+model KHUYENMAI {
+  MAKM      String    @id(map: "PK__KHUYENMA__603F592B4FB6EABE") @db.Char(20)
+  TENKM     String    @db.NVarChar(100)
+  MOTA      String?   @db.NVarChar(255)
+  NGAYBD    DateTime? @db.DateTime
+  NGAYKT    DateTime? @db.DateTime
+  GIATRI    Float?
+  TRANGTHAI String?   @db.NVarChar(50)
+  HOADON    HOADON[]
+}
+
+model LICHHEN {
+  MALICH         String           @id(map: "PK__LICHHEN__35F24F0E43696FAA") @db.Char(20)
+  NGAYHEN        DateTime         @db.Date
+  GIOHEN         DateTime         @db.Time
+  TRANGTHAI      String?          @db.NVarChar(50)
+  MACHINHANH     String?          @db.Char(20)
+  MAKH           String?          @db.Char(20)
+  CHITIETLICHHEN CHITIETLICHHEN[]
+  HOADON         HOADON[]
+  CHINHANH       CHINHANH?        @relation(fields: [MACHINHANH], references: [MACHINHANH], onDelete: NoAction, onUpdate: NoAction, map: "FK__LICHHEN__MACHINH__27F8EE98")
+  KHACHHANG      KHACHHANG?       @relation(fields: [MAKH], references: [MAKH], onDelete: NoAction, onUpdate: NoAction, map: "FK__LICHHEN__MAKH__28ED12D1")
+}
+
+model NHANVIEN {
+  MANV           String           @id(map: "PK__NHANVIEN__603F51145ECDBB10") @db.Char(20)
+  HOTEN          String           @db.NVarChar(100)
+  CHUCVU         String?          @db.NVarChar(50)
+  SDT            String?          @unique(map: "UQ__NHANVIEN__CA1930A5EE521D5A") @db.Char(10)
+  DIACHI         String?          @db.NVarChar(200)
+  MACHINHANH     String?          @db.Char(20)
+  NGAYSINH       DateTime?        @db.DateTime
+  MATK           String?          @unique(map: "UQ__NHANVIEN__60237217B625F620") @db.Char(20)
+  CHITIETLICHHEN CHITIETLICHHEN[]
+  HOADON         HOADON[]
+  CHINHANH       CHINHANH?        @relation(fields: [MACHINHANH], references: [MACHINHANH], onDelete: NoAction, onUpdate: NoAction, map: "FK__NHANVIEN__MACHIN__0D44F85C")
+  TAIKHOAN       TAIKHOAN?        @relation(fields: [MATK], references: [MATK], onDelete: NoAction, onUpdate: NoAction, map: "FK__NHANVIEN__MATK__0E391C95")
+}
+
+model sysdiagrams {
+  name         String @db.NVarChar(128)
+  principal_id Int
+  diagram_id   Int    @id(map: "PK__sysdiagr__C2B05B61142C9DA4") @default(autoincrement())
+  version      Int?
+  definition   Bytes?
+
+  @@unique([principal_id, name], map: "UK_principal_name")
+}
+
+model TAIKHOAN {
+  MATK      String     @id(map: "PK__TAIKHOAN__60237216A800ABC4") @db.Char(20)
+  PASS      String     @db.Char(50)
+  PHANQUYEN Int
+  TRANGTHAI String     @db.NVarChar(50)
+  KHACHHANG KHACHHANG?
+  NHANVIEN  NHANVIEN?
+}
