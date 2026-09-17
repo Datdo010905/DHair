@@ -1,28 +1,16 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
-import { useColorScheme } from "react-native";
+// src/app/_layout.tsx
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import '../../global.css';
+
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider
-      value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-    >
+    <>
+      <StatusBar style="dark" />
       <Stack>
-        <Stack.Screen
-          name="(auth)"
-          options={{ headerShown: false }}
-        />
-
-        <Stack.Screen
-          name="index"
-          options={{ headerShown: false }}
-        />
-
-        <Stack.Screen
-          name="explore"
-          options={{ headerShown: false }}
-        />
+        {/* Chỉ định (tabs) là luồng chính, ẩn header mặc định */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
-    </ThemeProvider>
+    </>
   );
 }
