@@ -1,24 +1,12 @@
 import HomeHeader from '@/features/home/components/HomeHeader';
 import ServiceSection from '@/features/home/components/ServiceSection';
+import { useServices } from '@/features/services/useServices';
 import { Ionicons } from '@expo/vector-icons';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-// Dữ liệu giả lập (Mock data)
-const HAIR_SERVICES = [
-  { id: '1', title: 'Cắt gội combo 1', image: require('../../../assets/img/product/cat-goi-combo-1-1.jpg') },
-  { id: '2', title: 'Uốn Tiêu Chuẩn 1', image: require('../../../assets/img/product/uon-tieu-chuan.jpg') },
-  { id: '3', title: 'Uốn Tiêu Chuẩn 2', image: require('../../../assets/img/product/cat-goi-combo-1-3.jpg') },
-  { id: '4', title: 'Cắt xả tạo kiểu', image: require('../../../assets/img/product/cat-goi-combo-3.png') },
-];
-
-const SKIN_CARE_SERVICES = [
-  { id: '1', title: 'Massage body tinh dầu', image: require('../../../assets/img/product/goi-thu-gian-3.png') },
-  { id: '2', title: 'Gội đầu dưỡng sinh 1', image: require('../../../assets/img/product/goi-thu-gian-2.png') },
-  { id: '3', title: 'Gội đầu dưỡng sinh 2', image: require('../../../assets/img/product/goi-thu-gian.png') },
-  { id: '4', title: 'Lấy ráy tai', image: require('../../../assets/img/product/lay-ray-tai-1-1.jpg') },
-];
-
 export default function HomeScreen() {
+  const hairServices = useServices('hair');
+  const skinCareServices = useServices('skinCare');
   return (
     <View className="flex-1 bg-gray-50">
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -76,13 +64,55 @@ export default function HomeScreen() {
                 style={{ width: '100%', height: '100%' }}
               />
            </View>
+           <View style={{ width: 400, height: 140, marginRight: 16, backgroundColor: '#93c5fd', borderRadius: 12, overflow: 'hidden' }}>
+              <Image
+                source={require('../../../assets/img/SLIDE/slideshow_4.jpg')}
+                resizeMode="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
+           </View>
+           <View style={{ width: 400, height: 140, marginRight: 16, backgroundColor: '#93c5fd', borderRadius: 12, overflow: 'hidden' }}>
+              <Image
+                source={require('../../../assets/img/SLIDE/slideshow_5.jpg')}
+                resizeMode="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
+           </View>
+           <View style={{ width: 400, height: 140, marginRight: 16, backgroundColor: '#93c5fd', borderRadius: 12, overflow: 'hidden' }}>
+              <Image
+                source={require('../../../assets/img/SLIDE/slideshow_6.jpg')}
+                resizeMode="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
+           </View>
+           <View style={{ width: 400, height: 140, marginRight: 16, backgroundColor: '#93c5fd', borderRadius: 12, overflow: 'hidden' }}>
+              <Image
+                source={require('../../../assets/img/SLIDE/slideshow_7.jpg')}
+                resizeMode="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
+           </View>
+           <View style={{ width: 400, height: 140, marginRight: 16, backgroundColor: '#93c5fd', borderRadius: 12, overflow: 'hidden' }}>
+              <Image
+                source={require('../../../assets/img/SLIDE/slideshow_8.jpg')}
+                resizeMode="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
+           </View>
+           <View style={{ width: 400, height: 140, marginRight: 16, backgroundColor: '#93c5fd', borderRadius: 12, overflow: 'hidden' }}>
+              <Image
+                source={require('../../../assets/img/SLIDE/slideshow_9.jpg')}
+                resizeMode="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
+           </View>
         </ScrollView>
 
         {/* 5. Dịch Vụ Tóc */}
-        <ServiceSection title="Dịch vụ tóc" data={HAIR_SERVICES} />
+        <ServiceSection title="Dịch vụ tóc" {...hairServices} onRetry={hairServices.retry} />
 
         {/* 6. Chăm sóc da */}
-        <ServiceSection title="Chăm sóc da" data={SKIN_CARE_SERVICES} />
+        <ServiceSection title="Chăm sóc da" {...skinCareServices} onRetry={skinCareServices.retry} />
 
         {/* Căn lề dưới cùng để không bị lấp bởi Bottom Tab */}
         <View className="h-24" />
