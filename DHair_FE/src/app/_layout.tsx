@@ -10,6 +10,7 @@ export default function RootLayout() {
       <Stack>
         {/* Chỉ định (tabs) là luồng chính, ẩn header mặc định */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       </Stack>
     </>
   );

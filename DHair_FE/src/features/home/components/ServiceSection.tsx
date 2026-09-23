@@ -51,7 +51,7 @@ export default function ServiceSection({ title, data, loading, error, onRetry }:
             key={item.MADV}
             style={{
               marginRight: 16,
-              width: 144,
+              width: 154,
               backgroundColor: '#fff',
               borderRadius: 12,
               overflow: 'hidden',

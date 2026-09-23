@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'; // Icon có sẵn trong Expo
 import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { router } from 'expo-router';
 
 export default function HomeHeader() {
   return (
@@ -24,9 +25,9 @@ export default function HomeHeader() {
         </View>
       </View>
 
-      {/* Nút hòm thư/thông báo */}
-      <TouchableOpacity>
-        <Ionicons name="mail-outline" size={28} color="white"/>
+      {/* nút đăng nhập */}
+      <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+        <Ionicons name="log-in-outline" size={28} color="white"/>
       </TouchableOpacity>
     </View>
   );
