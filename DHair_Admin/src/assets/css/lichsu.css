@@ -1,0 +1,85 @@
+#lichsu-container {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0;
+}
+
+.lichsu-box {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 1100px;
+  padding: 25px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.lichsu-box h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #111;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.lichsu-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 15px;
+}
+
+.lichsu-table th {
+  background-color: #41559f;
+  color: white;
+  padding: 12px;
+}
+
+.lichsu-table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.lichsu-table tr:hover {
+  background-color: #f6f7fb;
+}
+
+.status {
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.status.đã-đặt {
+  color: #1059ac;
+}
+
+.status.đang-chờ {
+  color: #c6ba0f;
+}
+
+.status.đang-thực-hiện {
+  color: #856404;
+}
+.status.hoàn-thành {
+  color: #148a30;
+}
+
+.status.đã-huỷ {
+  color: #fb0019;
+}
+
+
+.btn.small:hover {
+  background: #dcdcdc;
+}
+
+.btn.small.view {
+  color: #46b837;
+}
+
+.btn.small.delete {
+  color: red;
+}

@@ -3,7 +3,9 @@ import { Platform } from 'react-native';
 // On a physical device, set this to the backend computer's LAN address.
 export const API_BASE_URL = (
   process.env.EXPO_PUBLIC_API_URL ||
-  (Platform.OS === 'android' ? 'http://10.0.2.2:5000' : 'http://localhost:5000')
+  (Platform.OS === 'android' 
+    ? 'http://192.168.43.241:5000' 
+    : 'http://localhost:5000')
 ).replace(/\/+$/, '');
 
 interface ApiResponse<T> {
@@ -39,8 +41,10 @@ export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> 
     }
     return body.data;
   } catch (error) {
-    if (timedOut) throw new Error('Máy chủ phản hồi quá lâu. Vui lòng thử lại.');
-    if (signal?.aborted) throw error;
+    if (timedOut) 
+      throw new Error('Máy chủ phản hồi quá lâu. Vui lòng thử lại.');
+    if (signal?.aborted) 
+      throw error;
     if (error instanceof TypeError) {
       throw new Error('Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.');
     }
@@ -53,7 +57,9 @@ export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> 
 
 export function getImageUrl(path: string | null): string | null {
   const value = path?.trim().replace(/\\/g, '/');
-  if (!value) return null;
-  if (/^https?:\/\//i.test(value)) return value;
+  if (!value) 
+    return null;
+  if (/^https?:\/\//i.test(value)) 
+    return value;
   return `${API_BASE_URL}/${value.replace(/^\/+/, '')}`;
 }

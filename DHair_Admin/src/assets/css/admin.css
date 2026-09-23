@@ -1,0 +1,565 @@
+/* Reset cơ bản */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* content+padding+border */
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Bố cục tổng thể */
+.admin-layout {
+  display: flex;
+  height: 100vh;
+  background-color: #f4f6f9;
+  overflow: hidden;
+}
+
+/* ========== SIDEBAR ========== */
+.sidebar {
+  width: 240px;
+  background: linear-gradient(to right, #3a498a, #173691);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 40px;
+  background: linear-gradient(to right, #3a498a, #173691);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.sidebar .brand img {
+  width: 150px;
+  height: 100px;
+}
+
+/* Danh sách chức năng */
+.sidebar nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.sidebar nav a {
+  padding: 12px 20px;
+  color: #cbd5e1;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sidebar nav a:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.sidebar nav a.active {
+  background: #3b82f6;
+  color: #fff;
+}
+
+/* Nút đăng xuất */
+.sidebar-footer {
+  padding: 15px;
+  border-top: 1px solid #334155;
+}
+
+.sidebar-footer button {
+  width: 100%;
+  padding: 10px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.sidebar-footer button:hover {
+  background: #dc2626;
+}
+
+/* Khi mở */
+.sidebar.open {
+  transform: translateX(0);
+}
+
+/* ========== MAIN CONTENT ========== */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Thanh trên cùng */
+.topbar {
+  height: 60px;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #1e293b;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-right input {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  transition: 0.2s;
+}
+
+.topbar-right input:focus {
+  border-color: #3b82f6;
+}
+
+/* ========== CONTENT ========== */
+.content {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Phân vùng nội dung */
+.section {
+  animation: fadeIn 0.3s ease;
+}
+
+.section.active-section {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== DASHBOARD CARDS ========== */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+  color: #356ebe;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.card p {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+/* ========== PANEL & TABLE ========== */
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.panel::-webkit-scrollbar {
+  height: 10px;
+}
+
+.panel::-webkit-scrollbar-thumb::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+}
+
+.panel::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6b8cff, #3558d6);
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 3px 8px rgba(53, 88, 214, 0.22);
+}
+
+.panel::-webkit-scrollbar-thumb:hover {
+  box-shadow: 0 6px 14px rgba(53, 88, 214, 0.32);
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  white-space: nowrap;
+}
+
+.table th,
+.table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.table th {
+  background: #59659e;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.table tr:hover td {
+  background: #f1f5f9;
+  cursor: pointer;
+}
+
+/* ========== BUTTONS ========== */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #e2e8f0;
+  color: #1e293b;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  background: #cbd5e1;
+}
+
+.btn.primary {
+  background: #0caa01b6;
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background: #014b13c0;
+}
+
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -240px;
+    top: 0;
+    bottom: 0;
+    z-index: 999;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .main {
+    flex: 1;
+  }
+
+  #toggleSidebar {
+    display: inline-block;
+  }
+  
+}
+
+.accounts {
+  border-radius: 11px;
+  background-color: #0950ea9e;
+  padding: 10px;
+  width: 90%;
+  margin-left: 12px;
+}
+
+.table .actions {
+  white-space: nowrap;
+}
+
+.btn.small {
+  background: #f8f8f8;
+  border: none;
+  padding: 4px 6px;
+  margin: 0 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn.small:hover {
+  background: #dcdcdc;
+}
+
+.btn.small.edit {
+  color: #0164f9;
+}
+
+.btn.small.addDetail {
+  color: #f95801;
+}
+
+.btn.small.delete {
+  color: red;
+}
+
+/* Nền modal */
+.modal {
+  display: none;
+  /* ẩn mặc định */
+  position: fixed;
+  z-index: 9000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* nền mờ */
+}
+
+/* Nội dung modal */
+.modal-content {
+  background-color: #fff;
+  margin: 80px auto;
+  /* căn giữa theo chiều dọc */
+  padding: 0;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Header modal */
+.modal-header {
+  padding: 16px 24px;
+  background-color: #007bff;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.close-btn {
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Body modal */
+.modal-body {
+  padding: 20px 24px;
+}
+
+/* Form nhóm */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+/* Hành động button */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+}
+
+.btn.primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn.primary:hover {
+  background-color: #0056b3;
+
+}
+
+.btn.secondary {
+  background-color: #6dca61;
+  color: #ffffff;
+}
+
+.btn.secondary:hover {
+  background-color: #46b837;
+}
+
+/* Animation */
+@keyframes slideDown {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95%;
+    margin: 50px auto;
+  }
+}
+@media (min-width: 769px) {
+  .sidebar {
+    transform: translateX(0); /* desktop luôn hiện */
+  }
+}
+textarea {
+  resize: none;
+  /* Không cho kéo */
+  width: 100%;
+  padding: 10px;
+}
+
+/* Layout cho phần báo cáo */
+.report-filter {
+  display: flex;
+  gap: 50px;
+}
+
+.report-filter select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+/* .status.đang-xử-lý {
+  color: #c6ba0f;
+}
+
+.status.đã-thanh-toán {
+  color: #148a30;
+}
+
+.status.đã-huỷ {
+  color: #fb0019;
+}
+
+.status.đang-áp-dụng {
+  color: #148a30;
+}
+
+.status.hết-hạn {
+  color: #fb0019;
+}
+
+.status.chưa-áp-dụng {
+  color: #c6ba0f;
+} */
+
+.previewImg {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 6px;
+  background: #f2f2f2;
+}
+
+.reportDate-form {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+}
+.reportDate-form {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+}
+.reportDate {
+  margin-bottom: 0;
+  width: auto;
+}
+
+.reportDate label {
+  font-weight: bold;
+}
+
+.reportDate input {
+  padding: 8px
+}

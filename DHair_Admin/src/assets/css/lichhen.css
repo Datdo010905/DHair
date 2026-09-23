@@ -1,0 +1,74 @@
+/* ======= FORM ĐẶT LỊCH ======= */
+.datlich-page {
+    display: flex;
+    justify-content: center;
+    margin: 40px 0;
+}
+
+.datlich-form {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 600px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.datlich-form h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #111;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0 14px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+}
+
+#btn-datlichpage {
+    width: 100%;
+    background-color: #ffc107;
+    color: #111;
+    border: none;
+    padding: 12px;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#btn-datlichpage:hover {
+    background-color: #ffb300;
+}
+
+.datlich-page select .input-field {
+  width: 100%;
+  height: 50px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+  cursor: pointer;
+  transition: linear 0.2s;
+}
+
+.input-field:focus {
+  border-color: #41559f;
+}
+
+/* Style cho option */
+select.input-field option {
+  padding: 8px;
+  font-size: 18px;
+  background-color: #fff;
+  color: #333;
+}
+/* Style cho option */
+select.input-field option :hover{
+  background-color: #0a69d5;
+}

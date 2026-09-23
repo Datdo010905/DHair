@@ -1,12 +1,14 @@
 const nodemailer = require('nodemailer');
 
+const mailUser = process.env.MAIL_USER?.trim();
+const mailPass = process.env.MAIL_PASS?.replace(/\s+/g, '');
 
 // CẤU HÌNH NGƯỜI GỬI EMAIL (SMTP)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
+        user: mailUser,
+        pass: mailPass
     }
 });
 
