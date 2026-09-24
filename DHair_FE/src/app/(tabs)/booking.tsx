@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useServices } from '@/features/services/useServices';
 import type { Service } from '@/features/services/types';
+import RequireAuth from '@/features/auth/components/RequireAuth';
 
 type BookingField = 'salon' | 'stylist' | 'service' | 'date' | 'time';
 type BookingOption = {
@@ -123,6 +124,15 @@ function createServiceOptions(services: Service[]): BookingOption[] {
 }
 
 export default function BookingScreen() {
+  return (
+    <RequireAuth>
+      <BookingContent />
+    </RequireAuth>
+  );
+}
+
+// Chỉ khởi tạo form và tải dịch vụ sau khi đã đăng nhập.
+function BookingContent() {
   const hairServices = useServices('hair');
   const skinCareServices = useServices('skinCare');
   const [bookingValues, setBookingValues] = useState<Partial<Record<BookingField, BookingOption>>>({

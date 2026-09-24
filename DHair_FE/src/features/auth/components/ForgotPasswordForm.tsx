@@ -65,7 +65,8 @@ export default function ForgotPasswordForm() {
             Alert.alert(
                 'Thông báo',
                 'Yêu cầu khôi phục mật khẩu đã được tiếp nhận. Vui lòng kiểm tra email để nhận mật khẩu mới.',
-                [{ text: 'OK', onPress: () => router.replace('/(auth)/login') }],
+                // Quay về Login có sẵn trong lịch sử để tránh tạo màn trùng.
+                [{ text: 'OK', onPress: () => router.dismissTo('/(auth)/login') }],
             );
         } catch (error) {
             let errorMessage = 'Không thể khôi phục mật khẩu. Vui lòng thử lại.';
@@ -174,7 +175,7 @@ export default function ForgotPasswordForm() {
                     <Text className="text-white font-bold text-lg">{submitButtonText}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    onPress={() => router.replace('/(auth)/login')}
+                    onPress={() => router.dismissTo('/(auth)/login')}
                     accessibilityRole="link"
                     className="self-center py-2 mt-4"
                 >

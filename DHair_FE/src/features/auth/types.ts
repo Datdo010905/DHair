@@ -7,11 +7,21 @@ export interface LoginInput {
 export interface AuthResponse {
     success: boolean;
     message?: string;
+    data?: {
+        MATK: string;
+        HOTEN?: string | null;
+    };
+}
+
+export interface AuthUser {
+    accountId: string;
+    fullName: string;
 }
 
 export interface RegisterInput {
     fullName: string;
     phone: string;
+    email: string;
     password: string;
 }
 

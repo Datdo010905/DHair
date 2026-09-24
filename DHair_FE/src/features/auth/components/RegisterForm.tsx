@@ -17,6 +17,7 @@ import { registerAccount } from '../api';
 export default function RegisterForm() {
     const [fullName, setFullName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -39,6 +40,14 @@ export default function RegisterForm() {
         }
         if (!/^\d{10}$/.test(phoneNumber)) {
             Alert.alert('Thông báo', 'Số điện thoại phải có đúng 10 chữ số!');
+            return false;
+        }
+        if (!email.trim()) {
+            Alert.alert('Thông báo', 'Vui lòng nhập email!');
+            return false;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+            Alert.alert('Thông báo', 'Email không hợp lệ!');
             return false;
         }
         if (password.length < 6) {
@@ -70,9 +79,10 @@ export default function RegisterForm() {
 
         setIsSubmitting(true);
         try {
-            await registerAccount({ fullName, phone: phoneNumber, password });
+            await registerAccount({ fullName, phone: phoneNumber, email, password });
             Alert.alert('Thành công', 'Đăng ký tài khoản thành công!', [
-                { text: 'OK', onPress: () => router.replace('/(auth)/login') },
+                // Quay về Login có sẵn trong lịch sử để tránh tạo màn trùng.
+                { text: 'OK', onPress: () => router.dismissTo('/(auth)/login') },
             ]);
         } catch (error) {
             let errorMessage = 'Không thể đăng ký tài khoản. Vui lòng thử lại.';
@@ -160,6 +170,33 @@ export default function RegisterForm() {
                             keyboardType="phone-pad"
                             maxLength={10}
                             autoComplete="tel"
+                            className="flex-1 min-w-0 text-gray-800"
+                        />
+                    </View>
+                </View>
+
+                {/* Lưu email để người dùng có thể khôi phục mật khẩu sau này. */}
+                <View className="mb-4">
+                    <Text className="text-gray-700 font-semibold mb-2">Email</Text>
+                    <View className="flex-row items-center border border-gray-300 rounded-xl px-4 py-3 bg-gray-50">
+                        <Ionicons
+                            name="mail-outline"
+                            size={20}
+                            color="#6b7280"
+                            style={styles.inputIcon}
+                        />
+                        <TextInput
+                            placeholder="Nhập email"
+                            placeholderTextColor="#9ca3af"
+                            accessibilityLabel="Email"
+                            editable={!isSubmitting}
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoComplete="email"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            maxLength={100}
                             className="flex-1 min-w-0 text-gray-800"
                         />
                     </View>
@@ -256,7 +293,7 @@ export default function RegisterForm() {
                 <View className="flex-row flex-wrap items-center justify-center mt-4">
                     <Text className="text-gray-500">Đã có tài khoản? </Text>
                     <TouchableOpacity
-                        onPress={() => router.replace('/(auth)/login')}
+                        onPress={() => router.dismissTo('/(auth)/login')}
                         accessibilityRole="link"
                         className="py-2"
                     >

@@ -1,13 +1,13 @@
 import { API_BASE_URL } from '@/services/apiClient';
 import { endpoints } from '@/services/endpoints';
-import type { AuthResponse, ForgotPasswordInput, LoginInput, RegisterInput } from './types';
+import type { AuthResponse, AuthUser, ForgotPasswordInput, LoginInput, RegisterInput } from './types';
 
 // Ba API đều gửi JSON và trả về success/message, nên dùng chung phần gửi yêu cầu.
 async function sendAuthRequest(
     endpoint: string,
     requestBody: object,
     fallbackMessage: string,
-): Promise<void> {
+): Promise<AuthResponse> {
     const abortController = new AbortController();
 
     // Dừng chờ sau 15 giây để nút gửi không bị khóa mãi khi mạng có vấn đề.
@@ -37,6 +37,7 @@ async function sendAuthRequest(
             const errorMessage = responseBody?.message || fallbackMessage;
             throw new Error(errorMessage);
         }
+        return responseBody;
     } catch (error) {
         if (abortController.signal.aborted) {
             throw new Error(
@@ -55,18 +56,28 @@ async function sendAuthRequest(
     }
 }
 
-export async function loginAccount(input: LoginInput): Promise<void> {
+export async function loginAccount(input: LoginInput): Promise<AuthUser> {
     // Backend dùng số điện thoại làm username. Giữ nguyên mật khẩu đã nhập.
     const requestBody = {
         username: input.phone.trim(),
         pass: input.password,
     };
 
-    await sendAuthRequest(
+    const response = await sendAuthRequest(
         endpoints.auth.login,
         requestBody,
         'Đăng nhập thất bại. Vui lòng thử lại.',
     );
+
+    const account = response.data;
+    if (!account || typeof account.MATK !== 'string' || !account.MATK.trim()) {
+        throw new Error('Máy chủ chưa trả về thông tin tài khoản. Vui lòng thử lại.');
+    }
+
+    // Chỉ giữ thông tin hiển thị; không lưu mật khẩu Backend trả về.
+    const accountId = account.MATK.trim();
+    const fullName = typeof account.HOTEN === 'string' ? account.HOTEN.trim() : '';
+    return { accountId, fullName: fullName || accountId };
 }
 
 export async function registerAccount(input: RegisterInput): Promise<void> {
@@ -76,7 +87,7 @@ export async function registerAccount(input: RegisterInput): Promise<void> {
         PASS: input.password,
         PHANQUYEN: 0, // Quyền khách hàng theo Backend.
         TRANGTHAI: 'Hoạt động',
-        EMAIL: '', // Form chưa có email, nhưng Backend vẫn gọi EMAIL.trim().
+        EMAIL: input.email.trim(),
     };
 
     await sendAuthRequest(
