@@ -1,4 +1,4 @@
-// Field names match the DICHVU records returned by the backend.
+// Giữ tên trường giống dữ liệu DICHVU từ backend để dễ đối chiếu.
 export interface Service {
   MADV: string;
   LOAI: string;

@@ -1,25 +1,29 @@
-// src/app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View } from 'react-native';
+import { PlatformPressable } from 'expo-router/react-navigation';
 
 export default function TabLayout() {
   return (
+
     <Tabs
+      initialRouteName="home"
       screenOptions={{
-        headerShown: false, // Ẩn header của từng tab để tự code header riêng
+        headerShown: false,
         tabBarActiveTintColor: '#1a3673', // Màu icon khi được chọn
         tabBarInactiveTintColor: '#8e8e93', // Màu icon khi không chọn
-        tabBarStyle: {
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
+        tabBarButton: (props) => (
+          <PlatformPressable
+            {...props}
+            pressOpacity={1}
+            pressColor="transparent"
+            android_ripple={{ color: 'transparent' }}
+            hoverEffect={{ ...props.hoverEffect, activeOpacity: 0 }}
+          />
+        ),
       }}
     >
-      {/* 1. Tab Home */}
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
@@ -28,7 +32,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 2. Tab Tìm kiếm */}
       <Tabs.Screen
         name="search"
         options={{
@@ -39,20 +42,16 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 3. Tab Đặt lịch (Nút to ở giữa) */}
       <Tabs.Screen
         name="booking"
         options={{
-          title: '', // Ẩn chữ đi để nút nổi bật
-          tabBarIcon: ({ focused }) => (
-            <View className="w-14 h-14 bg-[#1a3673] rounded-full items-center justify-center border-4 border-white shadow-md" style={{ marginTop: -20 }}>
-              <Ionicons name="calendar" size={24} color="white" />
-            </View>
+          title: 'Đặt lịch',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={color} />
           ),
         }}
       />
 
-      {/* 4. Tab Lịch sử (Đồng hồ) */}
       <Tabs.Screen
         name="history"
         options={{
@@ -63,13 +62,16 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 5. Tab Thông tin */}
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Thông tin',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} size={24} color={color} />
+            <Ionicons
+              name={focused ? 'information-circle' : 'information-circle-outline'}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />

@@ -3,30 +3,49 @@ import { getServices } from './api';
 import type { Service, ServiceCategory } from './types';
 
 export function useServices(category: ServiceCategory) {
-  const [data, setData] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(0);
-  const retry = useCallback(() => setAttempt(value => value + 1), []);
+  const [reloadCount, setReloadCount] = useState(0);
+
+  // Thay đổi bộ đếm để useEffect gọi lại API của nhóm dịch vụ hiện tại.
+  const reload = useCallback(() => {
+    setReloadCount((count) => count + 1);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    getServices(category, controller.signal)
-      .then(services => {
-        if (!controller.signal.aborted) setData(services);
-      })
-      .catch(reason => {
-        if (!controller.signal.aborted) {
-          setError(reason instanceof Error ? reason.message : 'Không thể tải dịch vụ.');
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, [category, attempt]);
 
-  return { data, loading, error, retry };
+    async function loadServices() {
+      setIsLoading(true);
+      setError(null);
+      setServices([]);
+
+      try {
+        const serviceList = await getServices(category, controller.signal);
+
+        if (!controller.signal.aborted) {
+          setServices(serviceList);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          const message = error instanceof Error ? error.message : 'Không thể tải dịch vụ.';
+          setError(message);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadServices();
+
+    // Hủy yêu cầu cũ khi đổi nhóm, tải lại hoặc khi component bị gỡ khỏi màn hình.
+    return () => {
+      controller.abort();
+    };
+  }, [category, reloadCount]);
+
+  return { services, isLoading, error, reload };
 }

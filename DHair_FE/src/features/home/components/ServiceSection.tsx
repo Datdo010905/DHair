@@ -1,14 +1,22 @@
 import { useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import type { Service } from '@/features/services/types';
 import { getImageUrl } from '@/services/apiClient';
 
-interface Props {
+interface ServiceSectionProps {
   title: string;
-  data: Service[];
-  loading: boolean;
+  services: Service[];
+  isLoading: boolean;
   error: string | null;
-  onRetry: () => void;
+  onReload: () => void;
 }
 
 function ServiceImage({ path }: { path: string | null }) {
@@ -16,63 +24,100 @@ function ServiceImage({ path }: { path: string | null }) {
   const [failedUri, setFailedUri] = useState<string | null>(null);
   if (!uri || uri === failedUri) {
     return (
-      <View style={{ height: 128 }} className="bg-gray-100 items-center justify-center">
+      <View style={styles.image} className="bg-gray-100 items-center justify-center">
         <Text className="text-gray-500 text-xs">Chưa có ảnh</Text>
       </View>
     );
   }
-  return <Image source={{ uri }} onError={() => setFailedUri(uri)} resizeMode="cover" style={{ width: '100%', height: 128 }} />;
+  return (
+    <Image
+      source={{ uri }}
+      onError={() => setFailedUri(uri)}
+      resizeMode="cover"
+      style={styles.image}
+    />
+  );
 }
 
-export default function ServiceSection({ title, data, loading, error, onRetry }: Props) {
-  return (
-    <View className="mt-6 pl-4">
-      <Text className="text-[#1a3673] font-bold text-lg mb-3 uppercase">
-        {title}
-      </Text>
-      
-      {loading ? (
+export default function ServiceSection({
+  title,
+  services,
+  isLoading,
+  error,
+  onReload,
+}: ServiceSectionProps) {
+  // Xử lý lần lượt từng trạng thái để tránh nhiều toán tử điều kiện lồng nhau.
+  function renderContent() {
+    if (isLoading) {
+      return (
         <View className="py-6 items-center pr-4">
           <ActivityIndicator color="#1a3673" />
           <Text className="mt-2 text-gray-500">Đang tải dịch vụ...</Text>
         </View>
-      ) : error ? (
+      );
+    }
+
+    if (error) {
+      return (
         <View className="pr-4 py-3">
-          <Text accessibilityRole="alert" className="text-red-600">{error}</Text>
-          <TouchableOpacity accessibilityRole="button" onPress={onRetry} className="mt-3 self-start rounded-lg bg-[#1a3673] px-4 py-2">
+          <Text accessibilityRole="alert" className="text-red-600">
+            {error}
+          </Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            onPress={onReload}
+            className="mt-3 self-start rounded-lg bg-[#1a3673] px-4 py-2"
+          >
             <Text className="text-white font-semibold">Thử lại</Text>
           </TouchableOpacity>
         </View>
-      ) : data.length === 0 ? (
-        <Text className="text-gray-500 py-4">Chưa có dịch vụ đang cung cấp.</Text>
-      ) : <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pr-4">
-        {data.map((item) => (
+      );
+    }
+
+    if (services.length === 0) {
+      return <Text className="text-gray-500 py-4">Chưa có dịch vụ đang cung cấp.</Text>;
+    }
+
+    return (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pr-4">
+        {services.map((service) => (
           <View
-            key={item.MADV}
-            style={{
-              marginRight: 16,
-              width: 154,
-              backgroundColor: '#fff',
-              borderRadius: 12,
-              overflow: 'hidden',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.08,
-              shadowRadius: 4,
-              elevation: 2,
-            }}
+            key={service.MADV}
+            className="mr-4 overflow-hidden rounded-xl bg-white"
+            style={styles.card}
           >
-            <ServiceImage path={item.HINH} />
+            <ServiceImage path={service.HINH} />
             <View className="p-2 items-center">
               <Text className="text-center font-semibold text-[#1a3673] text-sm" numberOfLines={2}>
-                {item.TENDV}
+                {service.TENDV}
               </Text>
-              <Text className="mt-1 text-[#1a3673] font-bold text-sm">{item.GIADV.toLocaleString('vi-VN')} đ</Text>
-              <Text className="mt-1 text-gray-500 text-xs">{item.THOIGIAN} phút</Text>
+              <Text className="mt-1 text-[#1a3673] font-bold text-sm">
+                {service.GIADV.toLocaleString('vi-VN')} đ
+              </Text>
+              <Text className="mt-1 text-gray-500 text-xs">{service.THOIGIAN} phút</Text>
             </View>
           </View>
         ))}
-      </ScrollView>}
+      </ScrollView>
+    );
+  }
+
+  return (
+    <View className="mt-6 pl-4">
+      <Text className="text-[#1a3673] font-bold text-lg mb-3 uppercase">{title}</Text>
+      {renderContent()}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  image: { width: '100%', height: 128 },
+  card: {
+    width: 154,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+});
