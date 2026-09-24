@@ -6,7 +6,7 @@ import '../../global.css';
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <StatusBar style="dark" />
+      <StatusBar style="auto" hidden={false} />
       <Stack screenOptions={{ headerShown: false }}>
         {/* Trang index là trang chào mừng khi mở app từ đầu. */}
         <Stack.Screen name="index" />

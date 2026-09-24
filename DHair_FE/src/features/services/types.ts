@@ -11,4 +11,4 @@ export interface Service {
   QUYTRINH: string | null;
 }
 
-export type ServiceCategory = 'hair' | 'skinCare';
+export type ServiceCategory = 'all' | 'hair' | 'skinCare';

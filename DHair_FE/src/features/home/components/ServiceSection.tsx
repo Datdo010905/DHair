@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { router } from 'expo-router';
 import {
   ActivityIndicator,
   Image,
@@ -81,8 +82,12 @@ export default function ServiceSection({
     return (
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pr-4">
         {services.map((service) => (
-          <View
+          <TouchableOpacity
             key={service.MADV}
+            accessibilityRole="button"
+            accessibilityLabel={`Xem chi tiết ${service.TENDV}`}
+            activeOpacity={0.75}
+            onPress={() => router.push({ pathname: '/services/[id]', params: { id: service.MADV } })}
             className="mr-4 overflow-hidden rounded-xl bg-white"
             style={styles.card}
           >
@@ -94,9 +99,9 @@ export default function ServiceSection({
               <Text className="mt-1 text-[#1a3673] font-bold text-sm">
                 {service.GIADV.toLocaleString('vi-VN')} đ
               </Text>
-              <Text className="mt-1 text-gray-500 text-xs">{service.THOIGIAN} phút</Text>
+              <Text className="mt-1 text-gray-500 text-md font-semibold">{service.THOIGIAN} phút</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     );
@@ -111,13 +116,15 @@ export default function ServiceSection({
 }
 
 const styles = StyleSheet.create({
-  image: { width: '100%', height: 128 },
+  image: { width: '100%', height: 150 },
   card: {
-    width: 154,
+    width: 160,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 0,
+    borderWidth: 0.5,
+    borderColor: '#497fed',
   },
 });

@@ -2,11 +2,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Image, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { loginAccount } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/AuthContext';
 
 export default function LoginForm() {
+    const { next } = useLocalSearchParams<{ next?: string }>();
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,6 +38,11 @@ export default function LoginForm() {
             // Chỉ báo thành công sau khi Backend kiểm tra tài khoản và mật khẩu.
             const loggedInUser = await loginAccount({ phone, password });
             setUser(loggedInUser);
+            // Tiếp tục luồng đặt lịch; dịch vụ đã được lưu local trước khi đăng nhập.
+            if (next === 'booking') {
+                router.dismissTo('/(tabs)/booking');
+                return;
+            }
             Alert.alert('Thành công', 'Đăng nhập thành công!', [
                 // Đóng các màn xác thực phía trên và quay về trang chủ.
                 { text: 'OK', onPress: () => router.dismissTo('/(tabs)/home') },

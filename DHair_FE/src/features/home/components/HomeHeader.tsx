@@ -20,8 +20,7 @@ export default function HomeHeader() {
   };
 
   return (
-    // bg-[#1a3673] là mã màu xanh tương tự ảnh
-    <View className="bg-[#1a3673] pt-12 pb-6 px-4 rounded-b-[30px] flex-row items-center justify-between">
+    <View className="bg-[#1a3673] pt-1 pb-1 px-4 rounded-b-[15px] flex-row items-center justify-between">
       {/* Cụm Avatar + Thông tin */}
       <View className="flex-1 flex-row items-center gap-3 mr-3">
         <Image
@@ -31,8 +30,8 @@ export default function HomeHeader() {
             width: 50,
             height: 50,
             borderRadius: 25,
-            borderWidth: 1,
-            borderColor: 'white',
+            borderWidth: 2,
+            borderColor: 'green',
           }}
         />
         <View className="flex-1">
