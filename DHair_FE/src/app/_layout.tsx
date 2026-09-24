@@ -1,4 +1,3 @@
-// src/app/_layout.tsx
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import '../../global.css';
@@ -7,10 +6,12 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="dark" />
-      <Stack>
-        {/* Chỉ định (tabs) là luồng chính, ẩn header mặc định */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* Trang index là trang chào mừng khi mở app từ đầu. */}
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="+not-found" />
       </Stack>
     </>
   );

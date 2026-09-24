@@ -28,11 +28,14 @@ export default function HomeScreen() {
 
         {/* 3. Rating Card */}
         <View className="mx-4 mt-6 bg-[#f0f5ff] p-4 rounded-2xl flex-row items-center gap-4">
-          <View className="w-12 h-12 bg-[#1a3673] rounded-full items-center justify-center">
-            <Text className="text-white font-bold text-xs text-center">DHair</Text>
+          <View className="h-14 w-14 items-center justify-center gap-1 rounded-2xl bg-[#1a3673]">
+            <Ionicons name="cut-outline" size={22} color="white" />
+            <Text className="text-xs font-bold tracking-wide text-white">
+              DHair
+            </Text>
           </View>
           <View className="flex-1">
-            <Text className="text-[#1a3673] font-bold text-sm mb-1">MỜI ANH ĐÁNH GIÁ CHẤT LƯỢNG PHỤC VỤ</Text>
+            <Text className="text-[#1a3673] font-bold text-sm mb-1">CHẤT LƯỢNG PHỤC VỤ TẬN TÌNH</Text>
             <View className="flex-row">
               {[1,2,3,4,5].map(star => (
                 <Ionicons key={star} name="star" size={20} color="#ffb800" />
@@ -109,10 +112,22 @@ export default function HomeScreen() {
         </ScrollView>
 
         {/* 5. Dịch Vụ Tóc */}
-        <ServiceSection title="Dịch vụ tóc" {...hairServices} onRetry={hairServices.retry} />
+        <ServiceSection
+          title="Dịch vụ tóc"
+          services={hairServices.services}
+          isLoading={hairServices.isLoading}
+          error={hairServices.error}
+          onReload={hairServices.reload}
+        />
 
         {/* 6. Chăm sóc da */}
-        <ServiceSection title="Chăm sóc da" {...skinCareServices} onRetry={skinCareServices.retry} />
+        <ServiceSection
+          title="Chăm sóc da"
+          services={skinCareServices.services}
+          isLoading={skinCareServices.isLoading}
+          error={skinCareServices.error}
+          onReload={skinCareServices.reload}
+        />
 
         {/* Căn lề dưới cùng để không bị lấp bởi Bottom Tab */}
         <View className="h-24" />

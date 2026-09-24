@@ -16,7 +16,7 @@ export default function LoginForm() {
 
         // Tạm thời hiển thị thông báo và chuyển về trang chủ (tabs) khi bấm đăng nhập thành công
         Alert.alert('Thành công', 'Đăng nhập thành công!', [
-            { text: 'OK', onPress: () => router.replace('/(tabs)') }
+            { text: 'OK', onPress: () => router.replace('/(tabs)/home') }
         ]);
     };
 
