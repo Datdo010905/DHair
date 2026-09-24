@@ -182,3 +182,152 @@ SELECT * FROM KHUYENMAI;
 SELECT * FROM LICHHEN;
 SELECT * FROM NHANVIEN;
 SELECT * FROM TAIKHOAN;
+
+
+-- ============================================================
+-- TRIGGERS
+-- SQL Server trigger on CHITIETHOADON handled 3 events at once.
+-- MySQL requires one trigger per event, so it is split into 3.
+-- ============================================================
+
+DROP TRIGGER IF EXISTS `TRG_TuDongTaoHoaDonTuLichHenDaHoanThanh`;
+DELIMITER $$
+CREATE TRIGGER `TRG_TuDongTaoHoaDonTuLichHenDaHoanThanh`
+AFTER UPDATE ON `LICHHEN`
+FOR EACH ROW
+BEGIN
+    DECLARE v_MAHD CHAR(20);
+    DECLARE v_TONGTIEN INT DEFAULT 0;
+
+    IF NEW.TRANGTHAI = 'Hoàn thành'
+       AND NOT (OLD.TRANGTHAI <=> 'Hoàn thành') THEN
+
+        SET v_MAHD = CONCAT(
+            'HD', DATE_FORMAT(NOW(), '%y%m%d'),
+            UPPER(SUBSTRING(REPLACE(UUID(), '-', ''), 1, 4))
+        );
+
+        SELECT COALESCE(SUM(COALESCE(SOLUONG, 0) * COALESCE(GIA_DUKIEN, 0)), 0)
+          INTO v_TONGTIEN
+          FROM CHITIETLICHHEN
+         WHERE MALICH = NEW.MALICH;
+
+        INSERT INTO HOADON
+            (MAHD, MAKH, MALICH, MAKM, MANV, TRANGTHAI,
+             TONGTIEN, HINHTHUCTHANHTOAN, NGAYTHANHTOAN)
+        VALUES
+            (v_MAHD, NEW.MAKH, NEW.MALICH, NULL, NULL, 'Chưa thanh toán',
+             v_TONGTIEN, NULL, NOW());
+
+        INSERT INTO CHITIETHOADON (MAHD, MADV, SOLUONG, DONGIA, THANHTIEN)
+        SELECT v_MAHD, MADV, SOLUONG, GIA_DUKIEN,
+               COALESCE(SOLUONG, 0) * COALESCE(GIA_DUKIEN, 0)
+          FROM CHITIETLICHHEN
+         WHERE MALICH = NEW.MALICH;
+    END IF;
+END$$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS `TRG_CapNhatTongTien_CTHD_AI`;
+DELIMITER $$
+CREATE TRIGGER `TRG_CapNhatTongTien_CTHD_AI`
+AFTER INSERT ON `CHITIETHOADON`
+FOR EACH ROW
+BEGIN
+    UPDATE HOADON H
+    LEFT JOIN KHUYENMAI KM ON H.MAKM = KM.MAKM
+    SET H.TONGTIEN = CAST(
+        COALESCE((SELECT SUM(C.THANHTIEN)
+                    FROM CHITIETHOADON C
+                   WHERE C.MAHD = NEW.MAHD), 0)
+        * (1 - COALESCE(KM.GIATRI, 0) / 100.0)
+        AS SIGNED)
+    WHERE H.MAHD = NEW.MAHD
+      AND H.TRANGTHAI = 'Chưa thanh toán';
+END$$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS `TRG_CapNhatTongTien_CTHD_AU`;
+DELIMITER $$
+CREATE TRIGGER `TRG_CapNhatTongTien_CTHD_AU`
+AFTER UPDATE ON `CHITIETHOADON`
+FOR EACH ROW
+BEGIN
+    UPDATE HOADON H
+    LEFT JOIN KHUYENMAI KM ON H.MAKM = KM.MAKM
+    SET H.TONGTIEN = CAST(
+        COALESCE((SELECT SUM(C.THANHTIEN)
+                    FROM CHITIETHOADON C
+                   WHERE C.MAHD = NEW.MAHD), 0)
+        * (1 - COALESCE(KM.GIATRI, 0) / 100.0)
+        AS SIGNED)
+    WHERE H.MAHD = NEW.MAHD
+      AND H.TRANGTHAI = 'Chưa thanh toán';
+
+    IF NOT (OLD.MAHD <=> NEW.MAHD) THEN
+        UPDATE HOADON H
+        LEFT JOIN KHUYENMAI KM ON H.MAKM = KM.MAKM
+        SET H.TONGTIEN = CAST(
+            COALESCE((SELECT SUM(C.THANHTIEN)
+                        FROM CHITIETHOADON C
+                       WHERE C.MAHD = OLD.MAHD), 0)
+            * (1 - COALESCE(KM.GIATRI, 0) / 100.0)
+            AS SIGNED)
+        WHERE H.MAHD = OLD.MAHD
+          AND H.TRANGTHAI = 'Chưa thanh toán';
+    END IF;
+END$$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS `TRG_CapNhatTongTien_CTHD_AD`;
+DELIMITER $$
+CREATE TRIGGER `TRG_CapNhatTongTien_CTHD_AD`
+AFTER DELETE ON `CHITIETHOADON`
+FOR EACH ROW
+BEGIN
+    UPDATE HOADON H
+    LEFT JOIN KHUYENMAI KM ON H.MAKM = KM.MAKM
+    SET H.TONGTIEN = CAST(
+        COALESCE((SELECT SUM(C.THANHTIEN)
+                    FROM CHITIETHOADON C
+                   WHERE C.MAHD = OLD.MAHD), 0)
+        * (1 - COALESCE(KM.GIATRI, 0) / 100.0)
+        AS SIGNED)
+    WHERE H.MAHD = OLD.MAHD
+      AND H.TRANGTHAI = 'Chưa thanh toán';
+END$$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS `TRG_CapNhatTongTien_HoaDon_KM`;
+DELIMITER $$
+CREATE TRIGGER `TRG_CapNhatTongTien_HoaDon_KM`
+BEFORE UPDATE ON `HOADON`
+FOR EACH ROW
+BEGIN
+    DECLARE v_TongThanhTien DECIMAL(20,2) DEFAULT 0;
+    DECLARE v_GiaTriKM DOUBLE DEFAULT 0;
+
+    IF NOT (OLD.MAKM <=> NEW.MAKM)
+       AND NEW.TRANGTHAI IN ('Chưa thanh toán', 'Đã thanh toán', 'Đã huỷ') THEN
+
+        SELECT COALESCE(SUM(THANHTIEN), 0)
+          INTO v_TongThanhTien
+          FROM CHITIETHOADON
+         WHERE MAHD = NEW.MAHD;
+
+        IF NEW.MAKM IS NOT NULL THEN
+            SELECT COALESCE(MAX(GIATRI), 0)
+              INTO v_GiaTriKM
+              FROM KHUYENMAI
+             WHERE MAKM = NEW.MAKM;
+        ELSE
+            SET v_GiaTriKM = 0;
+        END IF;
+
+        SET NEW.TONGTIEN = CAST(
+            v_TongThanhTien * (1 - v_GiaTriKM / 100.0)
+            AS SIGNED
+        );
+    END IF;
+END$$
+DELIMITER ;

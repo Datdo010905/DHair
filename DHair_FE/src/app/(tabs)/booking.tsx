@@ -1,5 +1,6 @@
 ﻿import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -16,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useServices } from '@/features/services/useServices';
 import type { Service } from '@/features/services/types';
 import RequireAuth from '@/features/auth/components/RequireAuth';
+import { getBookingService, saveBookingService } from '@/features/services/bookingServiceStorage';
 
 type BookingField = 'salon' | 'stylist' | 'service' | 'date' | 'time';
 type BookingOption = {
@@ -24,7 +26,7 @@ type BookingOption = {
   detail?: string;
 };
 
-const NAVY = '#173c75';
+const NAVY = '#1a3673';
 
 // Dữ liệu mẫu cho giao diện, sẽ thay bằng API salon và stylist.
 const salons: BookingOption[] = [
@@ -142,6 +144,35 @@ function BookingContent() {
   const [note, setNote] = useState('');
   const [validationError, setValidationError] = useState('');
   const [isReviewVisible, setIsReviewVisible] = useState(false);
+  const selectionVersion = useRef(0);
+
+  useFocusEffect(useCallback(() => {
+    let isActive = true;
+    const version = selectionVersion.current;
+
+    async function restoreService() {
+      try {
+        const savedService = await getBookingService();
+        // Không ghi đè nếu người dùng vừa chọn thủ công trong lúc đọc local.
+        if (!isActive || !savedService || version !== selectionVersion.current) return;
+        const selectedService: BookingOption = {
+          value: savedService.MADV,
+          label: savedService.TENDV,
+          detail: `${savedService.GIADV.toLocaleString('vi-VN')} đ • ${savedService.THOIGIAN} phút`,
+        };
+        setBookingValues((previous) => {
+          if (previous.service?.value === selectedService.value) return previous;
+          return { ...previous, service: selectedService, time: undefined };
+        });
+        setValidationError('');
+      } catch {
+        if (isActive) setValidationError('Không thể đọc dịch vụ đã lưu. Bạn có thể chọn dịch vụ bên dưới.');
+      }
+    }
+
+    restoreService();
+    return () => { isActive = false; };
+  }, []));
 
   // Chuẩn bị danh sách lựa chọn cho từng bước của form.
   const now = new Date();
@@ -176,6 +207,17 @@ function BookingContent() {
 
   function handleSelectOption(option: BookingOption) {
     if (!activeField) return;
+    if (activeField === 'service') {
+      selectionVersion.current += 1;
+      const service = [...hairServices.services, ...skinCareServices.services]
+        .find((item) => item.MADV === option.value);
+      // Ghi nhớ lựa chọn thủ công để lần mở tab sau không quay về dịch vụ cũ.
+      if (service) {
+        saveBookingService(service).catch(() => {
+          setValidationError('Đã chọn dịch vụ nhưng chưa lưu được trên thiết bị.');
+        });
+      }
+    }
     setBookingValues((previous) => {
       const nextSelection = { ...previous, [activeField]: option };
 
@@ -225,6 +267,22 @@ function BookingContent() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          <View className="mb-7">
+            <Text className="text-[11px] font-bold uppercase tracking-[3px] text-[#6780a3]">
+              ĐẶT LỊCH DHAIR
+            </Text>
+            <View className="mt-2 flex-row items-center justify-between gap-3">
+              <Text accessibilityRole="header" className="flex-1 text-[28px] font-bold text-[#172b4d]">
+                Đặt lịch hẹn
+              </Text>
+              <View className="h-12 w-12 items-center justify-center rounded-2xl bg-[#e8eef9]">
+                <Ionicons name="calendar-outline" size={24} color={NAVY} />
+              </View>
+            </View>
+            <Text className="mt-1 text-sm leading-5 text-[#64748b]">
+              Chọn thời gian, để DHair chăm sóc bạn.
+            </Text>
+          </View>
           <View>
             {fields.map((field, index) => {
               const isDisabled = field === 'time' && !bookingValues.date;
@@ -235,7 +293,7 @@ function BookingContent() {
                     <View className="mt-[3px] h-4 w-4 rounded-full border border-[#f7f9fc] bg-[#397fdb]" />
                   </View>
                   <View className="flex-1 pb-[18px] pl-1">
-                    <Text className="mb-[9px] text-[14px] font-semibold text-[#30343a]">
+                    <Text className="mb-[9px] text-[14px] font-semibold text-[#172b4d]">
                       {index + 1}. {labels[field]}
                     </Text>
                     <Pressable
@@ -244,7 +302,7 @@ function BookingContent() {
                       accessibilityState={{ disabled: isDisabled }}
                       disabled={isDisabled}
                       onPress={() => setActiveField(field)}
-                      className="min-h-12 flex-row items-center gap-2 rounded-lg border border-[#dce0e6] bg-white px-3"
+                      className="min-h-14 flex-row items-center gap-2 rounded-2xl border border-[#dfe6f0] bg-white px-4 py-3"
                       style={({ pressed }) => [
                         isDisabled && styles.disabled,
                         pressed && styles.pressed,
@@ -252,14 +310,14 @@ function BookingContent() {
                     >
                       <Text
                         numberOfLines={1}
-                        className={`grow shrink text-[15px] leading-[22px] ${bookingValues[field] ? 'text-[#40444a]' : 'text-[#858b93]'}`}
+                        className={`grow shrink text-[15px] leading-[22px] ${bookingValues[field] ? 'text-[#172b4d]' : 'text-[#8794a7]'}`}
                       >
                         {bookingValues[field]?.label || placeholders[field]}
                       </Text>
                       <Ionicons
                         name={field === 'date' ? 'calendar-outline' : 'chevron-down'}
                         size={17}
-                        color="#939ba7"
+                        color="#6780a3"
                       />
                     </Pressable>
                   </View>
@@ -268,7 +326,7 @@ function BookingContent() {
             })}
           </View>
           <View className="mt-2">
-            <Text className="mb-[9px] text-[14px] font-semibold text-[#30343a]">
+            <Text className="mb-[9px] text-[14px] font-semibold text-[#172b4d]">
               Ghi chú (Không bắt buộc)
             </Text>
             <TextInput
@@ -276,11 +334,11 @@ function BookingContent() {
               value={note}
               onChangeText={setNote}
               placeholder="VD: Cắt tóc kiểu Ivy League..."
-              placeholderTextColor="#9ba8b5"
+              placeholderTextColor="#94a3b8"
               multiline
               maxLength={500}
               textAlignVertical="top"
-              className="min-h-[90px] rounded-[3px] bg-[#e7f1fc] p-[13px] text-[14px] leading-[22px] text-[#30343a]"
+              className="min-h-[104px] rounded-2xl border border-[#dfe6f0] bg-white p-4 text-sm leading-6 text-[#172b4d]"
             />
           </View>
           {!!validationError && (
@@ -292,16 +350,17 @@ function BookingContent() {
             </Text>
           )}
           <View className="mt-auto pt-8">
-            <Text className="mb-[18px] text-center text-[12px] text-[#777e87]">
+            <Text className="mb-[18px] text-center text-xs text-[#64748b]">
               Cắt xong ưng thì trả - Huỷ lịch không sao
             </Text>
             <Pressable
               accessibilityRole="button"
               onPress={handleReviewBooking}
-              className="min-h-[50px] items-center justify-center rounded-[30px] bg-[#173c75] px-4"
+              className="min-h-14 flex-row items-center justify-center gap-2 rounded-2xl bg-[#1a3673] px-4 py-4"
               style={({ pressed }) => pressed && styles.pressed}
             >
-              <Text className="text-[16px] font-bold text-white">ĐẶT LỊCH NGAY</Text>
+              <Ionicons name="calendar-outline" size={21} color="white" />
+              <Text className="text-base font-bold text-white">Đặt lịch ngay</Text>
             </Pressable>
           </View>
         </ScrollView>
@@ -436,16 +495,16 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f7f9fc' },
   content: {
     flexGrow: 1,
-    paddingHorizontal: 18,
-    paddingTop: 22,
-    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
     width: '100%',
-    maxWidth: 600,
+    maxWidth: 640,
     alignSelf: 'center',
   },
   line: { position: 'absolute', top: 17, bottom: -3, width: 2, backgroundColor: '#75a4e5' },
   disabled: { opacity: 0.55 },
   pressed: { opacity: 0.75 },
-  sheet: { maxHeight: '78%', width: '100%', maxWidth: 600, alignSelf: 'center' },
+  sheet: { maxHeight: '78%', width: '100%', maxWidth: 640, alignSelf: 'center' },
   options: { padding: 18, gap: 10, paddingBottom: 28 },
 });

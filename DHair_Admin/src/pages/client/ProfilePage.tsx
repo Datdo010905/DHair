@@ -3,10 +3,13 @@ import { Navigate } from 'react-router-dom';
 import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 import CustomerApi from "../../api/customerApi";
+import useCooldown from "../../hooks/useCooldown";
 
 const ProfilePage = () => {
 	const [showPwd, setShowPwd] = useState(false);
 	const [name, setName] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const { remainingSeconds, startCooldown } = useCooldown();
 	// Lấy thông tin đăng nhập
 	const user = localStorage.getItem("username");
 
@@ -91,6 +94,7 @@ const ProfilePage = () => {
 	};
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (isLoading || remainingSeconds > 0) return;
 
 		const finalName = formDataKH.cusName.trim();
 		if (!finalName) {
@@ -102,9 +106,11 @@ const ProfilePage = () => {
 				customerData: submitDataKH,
 				accountData: submitDataTK
 			};
+			setIsLoading(true);
 			const response = await CustomerApi.updateProfileFull(user.trim(), payload);
 
 			if (response.data.success) {
+				startCooldown();
 				toast.success(response.data.message || "Thay đổi thông tin cá nhân thành công!");
 				fetchData();
 				// Cập nhật xong thì xóa rỗng ô mật khẩu
@@ -119,6 +125,8 @@ const ProfilePage = () => {
 			} else {
 				toast.error("Cập nhật thất bại, vui lòng kiểm tra lại!");
 			}
+		} finally {
+			setIsLoading(false);
 		}
 	}
 
@@ -177,8 +185,8 @@ const ProfilePage = () => {
 								></i>
 							</div>
 
-							<button type="submit">
-								CẬP NHẬT
+							<button type="submit" disabled={isLoading || remainingSeconds > 0}>
+								{isLoading ? "ĐANG CẬP NHẬT..." : remainingSeconds > 0 ? `CẬP NHẬT LẠI SAU ${remainingSeconds}s` : "CẬP NHẬT"}
 							</button>
 						</form>
 					</div>

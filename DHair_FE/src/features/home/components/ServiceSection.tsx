@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { router } from 'expo-router';
 import {
   ActivityIndicator,
   Image,
@@ -81,8 +82,12 @@ export default function ServiceSection({
     return (
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pr-4">
         {services.map((service) => (
-          <View
+          <TouchableOpacity
             key={service.MADV}
+            accessibilityRole="button"
+            accessibilityLabel={`Xem chi tiết ${service.TENDV}`}
+            activeOpacity={0.75}
+            onPress={() => router.push({ pathname: '/services/[id]', params: { id: service.MADV } })}
             className="mr-4 overflow-hidden rounded-xl bg-white"
             style={styles.card}
           >
@@ -96,7 +101,7 @@ export default function ServiceSection({
               </Text>
               <Text className="mt-1 text-gray-500 text-md font-semibold">{service.THOIGIAN} phút</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     );
