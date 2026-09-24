@@ -3,32 +3,70 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Image, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { loginAccount } from '@/features/auth/api';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export default function LoginForm() {
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { setUser } = useAuth();
 
-    const handleLogin = () => {
+    const handlePhoneChange = (text: string) => {
+        const digitsOnly = text.replace(/\D/g, '');
+        setPhone(digitsOnly.slice(0, 10));
+    };
+
+    const handleLogin = async () => {
+        if (isSubmitting) {
+            return;
+        }
+
         if (!phone || !password) {
             Alert.alert('Thông báo', 'Vui lòng nhập đầy đủ số điện thoại và mật khẩu!');
             return;
         }
 
-        // Tạm thời hiển thị thông báo và chuyển về trang chủ (tabs) khi bấm đăng nhập thành công
-        Alert.alert('Thành công', 'Đăng nhập thành công!', [
-            { text: 'OK', onPress: () => router.replace('/(tabs)/home') }
-        ]);
+        if (!/^\d{10}$/.test(phone)) {
+            Alert.alert('Thông báo', 'Số điện thoại phải có đúng 10 chữ số!');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            // Chỉ báo thành công sau khi Backend kiểm tra tài khoản và mật khẩu.
+            const loggedInUser = await loginAccount({ phone, password });
+            setUser(loggedInUser);
+            Alert.alert('Thành công', 'Đăng nhập thành công!', [
+                // Đóng các màn xác thực phía trên và quay về trang chủ.
+                { text: 'OK', onPress: () => router.dismissTo('/(tabs)/home') },
+            ]);
+        } catch (error) {
+            let errorMessage = 'Đăng nhập thất bại. Vui lòng thử lại.';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            Alert.alert('Thông báo', errorMessage);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
+    const loginButtonText = isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập';
+
     return (
-        <ScrollView className="flex-1 bg-white" contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollView
+            className="flex-1 bg-white"
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+        >
             <View className="bg-[#1a3673] pt-9 pb-9 px-6 items-center shadow-sm mb-6">
-                <Image 
+                <Image
                     source={require('../../../../assets/img/logoTo.png')}
-                    style={{ 
+                    style={{
                         width: 200,
-                        height: 80,  
-                        marginBottom: 8 
+                        height: 80,
+                        marginBottom: 8
                     }}
                     resizeMode="contain"
                 />
@@ -54,8 +92,10 @@ export default function LoginForm() {
                             placeholder="Nhập số điện thoại của bạn"
                             placeholderTextColor="#9ca3af"
                             keyboardType="phone-pad"
+                            maxLength={10}
+                            editable={!isSubmitting}
                             value={phone}
-                            onChangeText={setPhone}
+                            onChangeText={handlePhoneChange}
                             className="flex-1 text-gray-800"
                         />
                     </View>
@@ -70,6 +110,9 @@ export default function LoginForm() {
                             placeholder="Nhập mật khẩu"
                             placeholderTextColor="#9ca3af"
                             secureTextEntry
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            editable={!isSubmitting}
                             value={password}
                             onChangeText={setPassword}
                             className="flex-1 text-gray-800"
@@ -80,15 +123,34 @@ export default function LoginForm() {
                 {/* Nút Đăng nhập */}
                 <TouchableOpacity
                     onPress={handleLogin}
+                    disabled={isSubmitting}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }}
                     className="bg-[#1a3673] py-4 rounded-xl items-center shadow-md mb-4"
                 >
-                    <Text className="text-white font-bold text-lg">Đăng nhập</Text>
+                    <Text className="text-white font-bold text-lg">{loginButtonText}</Text>
                 </TouchableOpacity>
 
+                {/* Quên mật khẩu */}
+                <TouchableOpacity
+                    onPress={() => router.push('/(auth)/forgot')}
+                    className="items-center mt-2"
+                >
+                    <Text className="text-[#1a3673] font-semibold">
+                        Quên mật khẩu?
+                    </Text>
+                </TouchableOpacity>
+
+                {/* Chuyển sang đăng ký */}
                 <View className="flex-row justify-center mt-4">
-                    <Text className="text-gray-500">Quên mật khẩu? </Text>
-                    <TouchableOpacity>
-                        <Text className="text-[#1a3673] font-bold">Đăng ký ngay</Text>
+                    <Text className="text-gray-500">Chưa có tài khoản? </Text>
+
+                    <TouchableOpacity
+                        onPress={() => router.push('/(auth)/register')}
+                    >
+                        <Text className="text-[#1a3673] font-bold">
+                            Đăng ký ngay
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>

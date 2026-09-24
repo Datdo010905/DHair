@@ -1,12 +1,26 @@
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { PlatformPressable } from 'expo-router/react-navigation';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export default function TabLayout() {
+  const { user } = useAuth();
+
   return (
 
     <Tabs
       initialRouteName="home"
+      screenListeners={({ route }) => ({
+        tabPress: (event) => {
+          const requiresLogin = ['booking', 'history', 'profile'].includes(route.name);
+
+          if (!user && requiresLogin) {
+            // Giữ tab hiện tại trong lịch sử để nút Back từ Login quay về đúng chỗ.
+            event.preventDefault();
+            router.push('/(auth)/login');
+          }
+        },
+      })}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#1a3673', // Màu icon khi được chọn
