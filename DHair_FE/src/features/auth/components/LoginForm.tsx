@@ -23,12 +23,12 @@ export default function LoginForm() {
     return (
         <ScrollView className="flex-1 bg-white" contentContainerStyle={{ flexGrow: 1 }}>
             <View className="bg-[#1a3673] pt-9 pb-9 px-6 items-center shadow-sm mb-6">
-                <Image 
+                <Image
                     source={require('../../../../assets/img/logoTo.png')}
-                    style={{ 
+                    style={{
                         width: 200,
-                        height: 80,  
-                        marginBottom: 8 
+                        height: 80,
+                        marginBottom: 8
                     }}
                     resizeMode="contain"
                 />
@@ -85,10 +85,26 @@ export default function LoginForm() {
                     <Text className="text-white font-bold text-lg">Đăng nhập</Text>
                 </TouchableOpacity>
 
+                {/* Quên mật khẩu */}
+                <TouchableOpacity
+                    onPress={() => router.push('/(auth)/forgot')}
+                    className="items-center mt-2"
+                >
+                    <Text className="text-[#1a3673] font-semibold">
+                        Quên mật khẩu?
+                    </Text>
+                </TouchableOpacity>
+
+                {/* Chuyển sang đăng ký */}
                 <View className="flex-row justify-center mt-4">
-                    <Text className="text-gray-500">Quên mật khẩu? </Text>
-                    <TouchableOpacity>
-                        <Text className="text-[#1a3673] font-bold">Đăng ký ngay</Text>
+                    <Text className="text-gray-500">Chưa có tài khoản? </Text>
+
+                    <TouchableOpacity
+                        onPress={() => router.push('/(auth)/register')}
+                    >
+                        <Text className="text-[#1a3673] font-bold">
+                            Đăng ký ngay
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
