@@ -1,8 +1,9 @@
 ﻿import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -18,6 +19,9 @@ import { useServices } from '@/features/services/useServices';
 import type { Service } from '@/features/services/types';
 import RequireAuth from '@/features/auth/components/RequireAuth';
 import { getBookingService, saveBookingService } from '@/features/services/bookingServiceStorage';
+import { useAuth } from '@/features/auth/AuthContext';
+import { createBooking, getAvailability, getBookingOptions } from '@/features/booking/api';
+import type { Availability, BookingOptions } from '@/features/booking/api';
 
 type BookingField = 'salon' | 'stylist' | 'service' | 'date' | 'time';
 type BookingOption = {
@@ -28,25 +32,13 @@ type BookingOption = {
 
 const NAVY = '#1a3673';
 
-// Dữ liệu mẫu cho giao diện, sẽ thay bằng API salon và stylist.
-const salons: BookingOption[] = [
-  { value: 'CN001', label: '30Shine - Nguyễn Trãi' },
-  { value: 'CN002', label: '30Shine - Cầu Giấy' },
-  { value: 'CN003', label: '30Shine - Tân Bình' },
-  { value: 'CN004', label: '30Shine - Đà Nẵng' },
-];
-const stylists: BookingOption[] = [
-  { value: 'any', label: 'Salon chọn stylist phù hợp' },
-  { value: 'demo-1', label: 'Minh Anh', detail: 'Stylist • Dữ liệu mẫu' },
-  { value: 'demo-2', label: 'Hoàng Nam', detail: 'Stylist • Dữ liệu mẫu' },
-];
 const fields: BookingField[] = ['salon', 'stylist', 'service', 'date', 'time'];
 const labels: Record<BookingField, string> = {
-  salon: 'Chọn salon',
-  stylist: 'Chọn stylist',
-  service: 'Chọn dịch vụ',
-  date: 'Chọn ngày hẹn',
-  time: 'Chọn giờ hẹn',
+  salon: 'Chọn Salon',
+  stylist: 'Chọn Stylist',
+  service: 'Chọn Dịch vụ',
+  date: 'Chọn Ngày hẹn',
+  time: 'Chọn Giờ hẹn',
 };
 const placeholders: Record<BookingField, string> = {
   salon: '-- Chọn salon --',
@@ -56,53 +48,18 @@ const placeholders: Record<BookingField, string> = {
   time: '-- Chọn giờ hẹn --',
 };
 
-function padNumber(value: number) {
-  return String(value).padStart(2, '0');
-}
-
-// Dùng ngày trên thiết bị để tránh lệch ngày khi chuyển sang múi giờ UTC.
-function formatDateValue(date: Date) {
-  const year = date.getFullYear();
-  const month = padNumber(date.getMonth() + 1);
-  const day = padNumber(date.getDate());
-  return `${year}-${month}-${day}`;
-}
-
-function createDateOptions(today: Date): BookingOption[] {
-  const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-  const dateOptions: BookingOption[] = [];
-
-  // Cho phép chọn trong 14 ngày, tính từ hôm nay.
-  for (let offset = 0; offset < 14; offset++) {
-    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
-    let dayName = dayNames[date.getDay()];
-
-    if (offset === 0) dayName = 'Hôm nay';
-    if (offset === 1) dayName = 'Ngày mai';
-
-    const displayDate = `${padNumber(date.getDate())}/${padNumber(date.getMonth() + 1)}/${date.getFullYear()}`;
-    dateOptions.push({ value: formatDateValue(date), label: `${dayName} • ${displayDate}` });
+// Giới hạn ngày từ server, thống nhất theo múi giờ Việt Nam.
+function createDateOptions(today: string, lastDay: string): BookingOption[] {
+  if (!today || !lastDay) return [];
+  const options: BookingOption[] = [];
+  const day = new Date(`${today}T00:00:00Z`);
+  while (day.toISOString().slice(0, 10) <= lastDay) {
+    const value = day.toISOString().slice(0, 10);
+    const displayDate = value.split('-').reverse().join('/');
+    options.push({ value, label: value === today ? `Hôm nay • ${displayDate}` : displayDate });
+    day.setUTCDate(day.getUTCDate() + 1);
   }
-
-  return dateOptions;
-}
-
-function createTimeOptions(selectedDate: string | undefined, now: Date): BookingOption[] {
-  const timeOptions: BookingOption[] = [];
-  const isToday = selectedDate === formatDateValue(now);
-  const currentTime = `${padNumber(now.getHours())}:${padNumber(now.getMinutes())}`;
-
-  // Khung giờ mẫu: từ 08:00 đến 20:00, cách nhau 30 phút.
-  for (let totalMinutes = 8 * 60; totalMinutes <= 20 * 60; totalMinutes += 30) {
-    const hour = padNumber(Math.floor(totalMinutes / 60));
-    const minute = padNumber(totalMinutes % 60);
-    const time = `${hour}:${minute}`;
-
-    if (isToday && time <= currentTime) continue;
-    timeOptions.push({ value: time, label: time });
-  }
-
-  return timeOptions;
+  return options;
 }
 
 function createServiceOptions(services: Service[]): BookingOption[] {
@@ -110,13 +67,14 @@ function createServiceOptions(services: Service[]): BookingOption[] {
   const seenIds = new Set<string>();
 
   for (const service of services) {
+    const serviceId = service.MADV.trim();
     // Một dịch vụ có thể xuất hiện ở cả hai nhóm; chỉ hiển thị một lần.
-    if (seenIds.has(service.MADV)) continue;
-    seenIds.add(service.MADV);
+    if (seenIds.has(serviceId)) continue;
+    seenIds.add(serviceId);
 
     const price = Number(service.GIADV).toLocaleString('vi-VN');
     serviceOptions.push({
-      value: service.MADV,
+      value: serviceId,
       label: service.TENDV,
       detail: `${price} đ • ${service.THOIGIAN} phút`,
     });
@@ -135,16 +93,95 @@ export default function BookingScreen() {
 
 // Chỉ khởi tạo form và tải dịch vụ sau khi đã đăng nhập.
 function BookingContent() {
+  const { user } = useAuth();
   const hairServices = useServices('hair');
   const skinCareServices = useServices('skinCare');
-  const [bookingValues, setBookingValues] = useState<Partial<Record<BookingField, BookingOption>>>({
-    salon: salons[0],
-  });
+  const [bookingValues, setBookingValues] = useState<Partial<Record<BookingField, BookingOption>>>({});
   const [activeField, setActiveField] = useState<BookingField | null>(null);
   const [note, setNote] = useState('');
   const [validationError, setValidationError] = useState('');
   const [isReviewVisible, setIsReviewVisible] = useState(false);
   const selectionVersion = useRef(0);
+  const [catalog, setCatalog] = useState<BookingOptions | null>(null);
+  const [catalogBranch, setCatalogBranch] = useState<string | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState('');
+  const [availability, setAvailability] = useState<Availability | null>(null);
+  const [loadedKey, setLoadedKey] = useState('');
+  const [timesLoading, setTimesLoading] = useState(false);
+  const [timesError, setTimesError] = useState('');
+  const [reloadVersion, setReloadVersion] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const submitLock = useRef(false);
+  const branchId = bookingValues.salon?.value || '';
+  const staffId = bookingValues.stylist?.value || '';
+  const serviceId = bookingValues.service?.value || '';
+  const date = bookingValues.date?.value || '';
+  const canLoadTimes = !!(branchId && staffId && serviceId && date);
+  const queryKey = JSON.stringify([branchId, staffId, serviceId, date, reloadVersion]);
+
+  useFocusEffect(useCallback(() => {
+    // Tải lại khi quay về tab và khi người dùng để màn hình mở lâu.
+    setReloadVersion(value => value + 1);
+    const timer = setInterval(() => setReloadVersion(value => value + 1), 60000);
+    return () => clearInterval(timer);
+  }, []));
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setCatalogLoading(true);
+    setCatalogError('');
+    getBookingOptions(branchId, controller.signal).then(result => {
+      if (controller.signal.aborted) return;
+      setCatalog(result);
+      setCatalogBranch(branchId);
+      setBookingValues(previous => {
+        const next = { ...previous };
+        if (next.salon && !result.branches.some(item => item.MACHINHANH.trim() === next.salon?.value)) {
+          next.salon = undefined;
+          next.stylist = undefined;
+          next.time = undefined;
+        }
+        if (next.stylist && !result.stylists.some(item => item.MANV.trim() === next.stylist?.value)) {
+          next.stylist = undefined;
+          next.time = undefined;
+        }
+        if (next.date && (next.date.value < result.today || next.date.value > result.lastDay)) {
+          next.date = undefined;
+          next.time = undefined;
+        }
+        return next;
+      });
+    }).catch(error => {
+      if (!controller.signal.aborted) setCatalogError(error.message);
+    }).finally(() => {
+      if (!controller.signal.aborted) setCatalogLoading(false);
+    });
+    return () => controller.abort();
+  }, [branchId, reloadVersion]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setAvailability(null);
+    setLoadedKey('');
+    setTimesError('');
+    setTimesLoading(canLoadTimes);
+    if (!canLoadTimes) return () => controller.abort();
+    getAvailability({ branchId, staffId, serviceId, date }, controller.signal).then(result => {
+      if (controller.signal.aborted) return;
+      setAvailability(result);
+      setLoadedKey(queryKey);
+      setBookingValues(previous => {
+        if (!previous.time || result.slots.some(slot => slot.time === previous.time?.value)) return previous;
+        return { ...previous, time: undefined };
+      });
+    }).catch(error => {
+      if (!controller.signal.aborted) setTimesError(error.message);
+    }).finally(() => {
+      if (!controller.signal.aborted) setTimesLoading(false);
+    });
+    return () => controller.abort();
+  }, [branchId, staffId, serviceId, date, canLoadTimes, queryKey]);
 
   useFocusEffect(useCallback(() => {
     let isActive = true;
@@ -156,7 +193,7 @@ function BookingContent() {
         // Không ghi đè nếu người dùng vừa chọn thủ công trong lúc đọc local.
         if (!isActive || !savedService || version !== selectionVersion.current) return;
         const selectedService: BookingOption = {
-          value: savedService.MADV,
+          value: savedService.MADV.trim(),
           label: savedService.TENDV,
           detail: `${savedService.GIADV.toLocaleString('vi-VN')} đ • ${savedService.THOIGIAN} phút`,
         };
@@ -175,9 +212,17 @@ function BookingContent() {
   }, []));
 
   // Chuẩn bị danh sách lựa chọn cho từng bước của form.
-  const now = new Date();
-  const dateOptions = createDateOptions(now);
-  const timeOptions = createTimeOptions(bookingValues.date?.value, now);
+  const dateOptions = createDateOptions(catalog?.today || '', catalog?.lastDay || '');
+  const salons = (catalog?.branches || []).map(item => ({
+    value: item.MACHINHANH.trim(), label: item.TENCHINHANH?.trim() || item.MACHINHANH.trim(),
+    detail: item.DIACHI?.trim() || undefined,
+  }));
+  const stylists = catalogBranch === branchId ? (catalog?.stylists || []).map(item => ({
+    value: item.MANV.trim(), label: item.HOTEN.trim(),
+  })) : [];
+  const timeOptions = loadedKey === queryKey ? (availability?.slots || []).map(slot => ({
+    value: slot.time, label: `${slot.time} – ${slot.endTime}`, detail: `${availability?.duration} phút`,
+  })) : [];
   // Trang đặt lịch gộp kết quả từ hai API tóc và chăm sóc da.
   const serviceOptions = createServiceOptions([
     ...hairServices.services,
@@ -196,11 +241,13 @@ function BookingContent() {
     activeField === 'service' && (hairServices.error || skinCareServices.error);
 
   function closeModal() {
+    if (submitLock.current) return;
     setActiveField(null);
     setIsReviewVisible(false);
   }
 
   function reloadServices() {
+    setReloadVersion(value => value + 1);
     hairServices.reload();
     skinCareServices.reload();
   }
@@ -210,7 +257,7 @@ function BookingContent() {
     if (activeField === 'service') {
       selectionVersion.current += 1;
       const service = [...hairServices.services, ...skinCareServices.services]
-        .find((item) => item.MADV === option.value);
+        .find((item) => item.MADV.trim() === option.value);
       // Ghi nhớ lựa chọn thủ công để lần mở tab sau không quay về dịch vụ cũ.
       if (service) {
         saveBookingService(service).catch(() => {
@@ -242,15 +289,56 @@ function BookingContent() {
     const selectedTime = bookingValues.time;
     if (!selectedDate || !selectedTime) return;
 
-    const appointmentDate = new Date(`${selectedDate.value}T${selectedTime.value}:00`);
+    const appointmentDate = new Date(`${selectedDate.value}T${selectedTime.value}:00+07:00`);
     if (appointmentDate <= new Date()) {
       setValidationError('Giờ hẹn đã qua. Vui lòng chọn lại ngày và giờ hẹn.');
       setBookingValues((previous) => ({ ...previous, time: undefined }));
       return;
     }
     setValidationError('');
+    if (!dateOptions.some(option => option.value === selectedDate.value) ||
+        timesLoading || loadedKey !== queryKey ||
+        !timeOptions.some(option => option.value === selectedTime.value)) {
+      setValidationError('Vui lòng tải và chọn lại giờ trống.');
+      setBookingValues(previous => ({ ...previous, time: undefined }));
+      setReloadVersion(value => value + 1);
+      return;
+    }
     setIsReviewVisible(true);
   }
+
+  async function submitBooking() {
+    if (submitLock.current || !user || !bookingValues.time) return;
+    submitLock.current = true;
+    setSubmitting(true);
+    try {
+      const result = await createBooking({
+        branchId, staffId, serviceId, date,
+        time: bookingValues.time.value, note, accountId: user.accountId,
+      });
+      setIsReviewVisible(false);
+      setBookingValues(previous => ({ ...previous, date: undefined, time: undefined }));
+      setNote('');
+      setValidationError('');
+      Alert.alert('Đặt lịch thành công', `Mã lịch hẹn: ${result.MALICH.trim()}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không thể đặt lịch. Vui lòng thử lại.';
+      setIsReviewVisible(false);
+      setValidationError(message);
+      setBookingValues(previous => ({ ...previous, time: undefined }));
+      Alert.alert('Chưa xác nhận được lịch hẹn', message);
+    } finally {
+      submitLock.current = false;
+      setSubmitting(false);
+      setReloadVersion(value => value + 1);
+    }
+  }
+
+  const isCatalogField = activeField === 'salon' || activeField === 'stylist' || activeField === 'date';
+  const loading = isServiceLoading || (isCatalogField && catalogLoading) ||
+    (activeField === 'time' && (timesLoading || (canLoadTimes && loadedKey !== queryKey && !timesError)));
+  const loadError = serviceLoadError || (isCatalogField && catalogError) ||
+    (activeField === 'time' && timesError);
 
   let modalTitle = '';
   if (activeField) modalTitle = labels[activeField];
@@ -280,12 +368,12 @@ function BookingContent() {
               </View>
             </View>
             <Text className="mt-1 text-sm leading-5 text-[#64748b]">
-              Chọn thời gian, để DHair chăm sóc bạn.
+              Đặt từ hôm nay đến 4 ngày tới. Salon phục vụ 08:00–22:00.
             </Text>
           </View>
           <View>
             {fields.map((field, index) => {
-              const isDisabled = field === 'time' && !bookingValues.date;
+              const isDisabled = (field === 'stylist' && !branchId) || (field === 'time' && !canLoadTimes);
               return (
                 <View key={field} className="min-h-[94px] flex-row">
                   <View className="w-7 items-center">
@@ -336,7 +424,7 @@ function BookingContent() {
               placeholder="VD: Cắt tóc kiểu Ivy League..."
               placeholderTextColor="#94a3b8"
               multiline
-              maxLength={500}
+              maxLength={200}
               textAlignVertical="top"
               className="min-h-[104px] rounded-2xl border border-[#dfe6f0] bg-white p-4 text-sm leading-6 text-[#172b4d]"
             />
@@ -413,38 +501,44 @@ function BookingContent() {
                     </Text>
                   )}
                   <Text className="my-[10px] rounded-lg bg-[#e7f1fc] p-[14px] leading-[22px] text-[#173c75]">
-                    Đây là bản xem trước giao diện. Lịch hẹn chưa được gửi tới salon.
+                    Thời gian: {availability?.duration ?? '…'} phút. Giá dự kiến: {availability?.price.toLocaleString('vi-VN') ?? '…'} đ.
                   </Text>
+                  {timesLoading && <ActivityIndicator color={NAVY} />}
+                  {!!timesError && (
+                    <Pressable accessibilityRole="button" onPress={reloadServices}>
+                      <Text className="py-3 text-sm text-[#b42318]">{timesError} Nhấn để thử lại.</Text>
+                    </Pressable>
+                  )}
+                  {!bookingValues.time && (
+                    <Text className="py-3 text-sm text-[#b42318]">Giờ đã chọn không còn trống. Đóng bảng này để chọn lại.</Text>
+                  )}
                   <Pressable
                     accessibilityRole="button"
                     className="min-h-[50px] items-center justify-center rounded-[30px] bg-[#173c75] px-4"
-                    onPress={closeModal}
+                    onPress={submitBooking}
+                    disabled={submitting || !bookingValues.time || timesLoading || loadedKey !== queryKey}
+                    style={(submitting || !bookingValues.time || timesLoading || loadedKey !== queryKey) && styles.disabled}
                   >
-                    <Text className="text-[16px] font-bold text-white">QUAY LẠI CHỈNH SỬA</Text>
+                    <Text className="text-[16px] font-bold text-white">{submitting ? 'ĐANG ĐẶT LỊCH...' : 'XÁC NHẬN ĐẶT LỊCH'}</Text>
                   </Pressable>
                 </>
               ) : (
                 activeField && (
                   <>
-                    {['salon', 'stylist', 'time'].includes(activeField) && (
-                      <Text className="mt-1 text-[12px] leading-[18px] text-[#777e87]">
-                        Dữ liệu mẫu để xem trước giao diện.
-                      </Text>
-                    )}
-                    {isServiceLoading && (
+                    {loading && (
                       <ActivityIndicator color={NAVY} className="items-center p-4" />
                     )}
-                    {!!serviceLoadError && (
+                    {!!loadError && (
                       <View className="items-center p-4">
                         <Text className="mt-[10px] text-[13px] leading-5 text-[#b42318]">
-                          {serviceLoadError}
+                          {loadError}
                         </Text>
                         <Pressable accessibilityRole="button" onPress={reloadServices}>
                           <Text className="p-3 font-semibold text-[#173c75]">Thử lại</Text>
                         </Pressable>
                       </View>
                     )}
-                    {!isServiceLoading &&
+                    {!loading && !loadError &&
                       options[activeField].map((option) => (
                         <Pressable
                           key={option.value}
@@ -470,12 +564,12 @@ function BookingContent() {
                           )}
                         </Pressable>
                       ))}
-                    {!isServiceLoading &&
-                      !serviceLoadError &&
+                    {!loading &&
+                      !loadError &&
                       options[activeField].length === 0 && (
                         <Text className="py-5 leading-[22px] text-[#777e87]">
                           {activeField === 'time'
-                            ? 'Hôm nay đã hết khung giờ. Vui lòng chọn ngày khác.'
+                            ? 'Không còn khoảng trống đủ thời lượng. Vui lòng chọn ngày hoặc stylist khác.'
                             : 'Chưa có lựa chọn khả dụng.'}
                         </Text>
                       )}

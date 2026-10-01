@@ -5,6 +5,7 @@ export interface LoginInput {
 
 // Phần phản hồi được dùng để kiểm tra kết quả của cả ba API.
 export interface AuthResponse {
+    token?: string;
     success: boolean;
     message?: string;
     data?: {
@@ -14,6 +15,7 @@ export interface AuthResponse {
 }
 
 export interface AuthUser {
+    token: string;
     accountId: string;
     fullName: string;
 }

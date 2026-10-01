@@ -3,7 +3,7 @@ import type { AuthUser } from './types';
 
 interface AuthContextValue {
     user: AuthUser | null;
-    setUser: (user: AuthUser | null) => void;
+    setUser: React.Dispatch<React.SetStateAction<AuthUser | null>>;
     signOut: () => void;
 }
 

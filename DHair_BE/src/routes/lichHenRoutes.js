@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const lichHenController = require('../controllers/lichHenController');
+const bookingController = require('../controllers/bookingController');
+router.get('/history', bookingController.requireCustomerSession, bookingController.history);
+router.post('/:id/cancel', bookingController.requireCustomerSession, bookingController.cancel);
+
+router.get('/booking-options', bookingController.options);
+router.get('/availability', bookingController.availability);
+router.post('/book', bookingController.create);
 
 // Route lich hẹn
 router.get('/get-all-lichhen', lichHenController.getAll);
@@ -19,6 +26,6 @@ router.put('/update-CTlichhen/:id', lichHenController.updateCT);
 router.delete('/delete-CTlichhen/:id', lichHenController.removeCT);
 
 
-router.post('/create-full', lichHenController.createBookingTransaction);
+router.post('/create-full', bookingController.createFull);
 router.delete('/delete-full/:id', lichHenController.deleteFullBookingTransaction);
 module.exports = router;

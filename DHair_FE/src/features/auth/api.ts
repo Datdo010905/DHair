@@ -74,10 +74,13 @@ export async function loginAccount(input: LoginInput): Promise<AuthUser> {
         throw new Error('Máy chủ chưa trả về thông tin tài khoản. Vui lòng thử lại.');
     }
 
-    // Chỉ giữ thông tin hiển thị; không lưu mật khẩu Backend trả về.
+    if (typeof response.token !== 'string' || !response.token) {
+        throw new Error('Máy chủ chưa trả phiên đăng nhập. Vui lòng thử lại.');
+    }
+    // Giữ token trong phiên hiện tại; không lưu mật khẩu Backend trả về.
     const accountId = account.MATK.trim();
     const fullName = typeof account.HOTEN === 'string' ? account.HOTEN.trim() : '';
-    return { accountId, fullName: fullName || accountId };
+    return { accountId, fullName: fullName || accountId, token: response.token };
 }
 
 export async function registerAccount(input: RegisterInput): Promise<void> {

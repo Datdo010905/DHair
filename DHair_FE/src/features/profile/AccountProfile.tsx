@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/features/auth/AuthContext';
 import ProfileForm from './ProfileForm';
+import { getProfile, updateProfile } from './api';
+import type { CustomerProfile } from './api';
 
 type ProfilePanel = 'edit' | 'password' | 'logout';
 const panelTitles: Record<ProfilePanel, string> = {
@@ -48,8 +50,58 @@ function MenuRow({ title, description, icon, onPress }: {
 }
 
 export default function AccountProfile() {
-  const { user, signOut } = useAuth();
+  const { user, setUser, signOut } = useAuth();
   const [panel, setPanel] = useState<ProfilePanel | null>(null);
+  const [profile, setProfile] = useState<CustomerProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const request = useRef<AbortController | null>(null);
+  const saving = useRef(false);
+  const token = user?.token || '';
+
+  const loadProfile = useCallback(async () => {
+    if (saving.current) return;
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setLoading(true);
+    setError('');
+    try {
+      const result = await getProfile(token, controller.signal);
+      if (controller.signal.aborted) return;
+      setProfile(result);
+      // Chỉ cập nhật tên của đúng phiên đang mở, giữ lại token và mã đăng nhập.
+      setUser(previous => previous?.token === token ? { ...previous, fullName: result.fullName } : previous);
+    } catch (err) {
+      if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Không thể tải thông tin.');
+    } finally {
+      if (!controller.signal.aborted) setLoading(false);
+    }
+  }, [token, setUser]);
+
+  useFocusEffect(useCallback(() => {
+    setProfile(null);
+    void loadProfile();
+    return () => request.current?.abort();
+  }, [loadProfile]));
+
+  async function saveProfile(fullName: string, email: string) {
+    if (saving.current) return;
+    saving.current = true;
+    request.current?.abort();
+    setLoading(false);
+    try {
+      const result = await updateProfile(token, fullName, email);
+      setProfile(result);
+      setUser(previous => previous?.token === token ? { ...previous, fullName: result.fullName } : previous);
+      setError('');
+      setPanel(null);
+      Alert.alert('Thành công', 'Đã lưu thông tin cá nhân.');
+    } finally {
+      saving.current = false;
+    }
+  }
+
   if (!user) return null;
 
   const nameParts = user.fullName.trim().split(/\s+/);
@@ -57,6 +109,7 @@ export default function AccountProfile() {
   if (!initials || user.fullName === user.accountId) initials = 'KH';
 
   function closePanel() {
+    if (saving.current) return;
     setPanel(null);
   }
 
@@ -68,7 +121,8 @@ export default function AccountProfile() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => void loadProfile()} />}>
         <Text className="text-[11px] font-bold uppercase tracking-[3px] text-[#6780a3]">DHAIR & BẠN</Text>
         <Text className="mt-2 text-[28px] font-bold text-[#172b4d]">Tài khoản</Text>
         <Text className="mt-1 text-sm leading-5 text-[#64748b]">Thông tin của bạn, trong tầm tay.</Text>
@@ -84,19 +138,28 @@ export default function AccountProfile() {
               <Text className="mt-1 text-sm text-[#d1ddf0]">{user.accountId}</Text>
             </View>
           </View>
-          <Pressable accessibilityRole="button" onPress={() => setPanel('edit')} className="mt-5 min-h-11 flex-row items-center justify-center gap-2 rounded-xl bg-[#31528a] px-4 py-3">
+          <Pressable accessibilityRole="button" disabled={!profile || loading} accessibilityState={{ disabled: !profile || loading }} onPress={() => setPanel('edit')} style={{ opacity: !profile || loading ? 0.5 : 1 }} className="mt-5 min-h-11 flex-row items-center justify-center gap-2 rounded-xl bg-[#31528a] px-4 py-3">
             <Ionicons name="create-outline" size={18} color="white" />
             <Text className="text-sm font-semibold text-white">Chỉnh sửa thông tin</Text>
           </Pressable>
         </View>
 
         <Text className="mb-3 mt-6 text-base font-bold text-[#172b4d]">Thông tin cá nhân</Text>
+        {loading && <ActivityIndicator color="#1a3673" className="mb-3" />}
+        {!!error && (
+          <View className="mb-3 rounded-xl bg-[#fff0f0] p-3">
+            <Text accessibilityRole="alert" className="text-sm text-[#b42318]">{error}</Text>
+            <Pressable accessibilityRole="button" onPress={() => void loadProfile()} className="min-h-11 justify-center">
+              <Text className="font-semibold text-[#1a3673]">Thử lại</Text>
+            </Pressable>
+          </View>
+        )}
         <View className="rounded-3xl border border-[#e3e9f2] bg-white px-4 py-1">
-          <InfoRow icon="person-outline" label="Họ và tên" value={user.fullName} />
+          <InfoRow icon="person-outline" label="Họ và tên" value={profile?.fullName || user.fullName} />
           <View className="h-px bg-[#f0f3f8]" />
-          <InfoRow icon="call-outline" label="Số điện thoại" value={user.accountId} />
+          <InfoRow icon="call-outline" label="Số điện thoại" value={profile?.phone || 'Chưa tải được thông tin'} />
           <View className="h-px bg-[#f0f3f8]" />
-          <InfoRow icon="mail-outline" label="Email" value="Chưa có thông tin hiển thị" />
+          <InfoRow icon="mail-outline" label="Email" value={profile ? profile.email || 'Chưa có email' : 'Chưa tải được thông tin'} />
         </View>
 
         <Text className="mb-3 mt-6 text-base font-bold text-[#172b4d]">Quản lý tài khoản</Text>
@@ -140,7 +203,7 @@ export default function AccountProfile() {
                 </View>
               )}
               {(panel === 'edit' || panel === 'password') && (
-                <ProfileForm key={panel} mode={panel} fullName={user.fullName} phone={user.accountId} />
+                <ProfileForm key={panel} mode={panel} fullName={profile?.fullName || user.fullName} phone={profile?.phone || user.accountId} initialEmail={profile?.email || ''} onSave={saveProfile} />
               )}
             </ScrollView>
           </SafeAreaView>
