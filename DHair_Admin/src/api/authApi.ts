@@ -17,7 +17,6 @@ export interface LoginResponse {
   token: string;
   data: {
     MATK: string;
-    PASS: string;
     PHANQUYEN: number;
     TRANGTHAI: string;
   };

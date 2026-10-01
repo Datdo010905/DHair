@@ -1,50 +1,55 @@
 import axiosClient from './axiosClient';
 
-//định nghĩa theo api trả về
 export interface TaiKhoan {
+    MATK: string;
+    PHANQUYEN: number;
+    TRANGTHAI: string;
+}
+
+export interface CreateTaiKhoanPayload {
     MATK: string;
     PASS: string;
     PHANQUYEN: number;
     TRANGTHAI: string;
-};
+}
+
+export interface UpdateTaiKhoanPayload {
+    PHANQUYEN: number;
+    TRANGTHAI: string;
+}
 
 const TaiKhoanApi = {
-    // Lấy tất cả
     getAll() {
-        const url = '/api/taikhoan/get-all-taikhoan';
-        return axiosClient.get(url);
+        return axiosClient.get('/api/taikhoan/get-all-taikhoan');
     },
 
-    // Lấy theo ID
     getById(id: string) {
-        const url = `/api/taikhoan/get-byId-taikhoan/${id}`;
-        return axiosClient.get(url);
+        return axiosClient.get(`/api/taikhoan/get-byId-taikhoan/${id}`);
     },
 
-    // Thêm mới (Gửi JSON)
-    create(data: TaiKhoan) {
-        const url = '/api/taikhoan/insert-taikhoan';
-        return axiosClient.post(url, data);
+    create(data: CreateTaiKhoanPayload) {
+        return axiosClient.post('/api/taikhoan/insert-taikhoan', data);
     },
 
-    // Cập nhật (Gửi JSON + ID trên URL)
-    update(id: string, data: TaiKhoan) {
-        const url = `/api/taikhoan/update-taikhoan/${id}`;
-        return axiosClient.put(url, data);
+    update(id: string, data: UpdateTaiKhoanPayload) {
+        return axiosClient.put(
+            `/api/taikhoan/update-taikhoan/${id}`,
+            data
+        );
     },
 
-    // Xóa
     delete(id: string) {
-        const url = `/api/taikhoan/delete-taikhoan/${id}`;
-        return axiosClient.delete(url);
+        return axiosClient.delete(
+            `/api/taikhoan/delete-taikhoan/${id}`
+        );
     },
 
-    //quên mật khẩu
     forgotPassword(data: { sdt: string; email: string }) {
-        const url = '/api/taikhoan/forgot-password';
-        return axiosClient.post(url, data);
+        return axiosClient.post(
+            '/api/taikhoan/forgot-password',
+            data
+        );
     }
-
 };
 
 export default TaiKhoanApi;

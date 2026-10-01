@@ -5,7 +5,7 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressa
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/features/auth/AuthContext';
 import ProfileForm from './ProfileForm';
-import { getProfile, updateProfile } from './api';
+import { getProfile, updateProfile, changePassword } from './api';
 import type { CustomerProfile } from './api';
 
 type ProfilePanel = 'edit' | 'password' | 'logout';
@@ -102,6 +102,31 @@ export default function AccountProfile() {
     }
   }
 
+  async function savePassword(
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    if (saving.current) return;
+
+    saving.current = true;
+
+    try {
+      await changePassword(
+        token,
+        currentPassword,
+        newPassword,
+      );
+
+      setPanel(null);
+
+      Alert.alert(
+        'Thành công',
+        'Đổi mật khẩu thành công.',
+      );
+    } finally {
+      saving.current = false;
+    }
+  }
   if (!user) return null;
 
   const nameParts = user.fullName.trim().split(/\s+/);
@@ -203,7 +228,7 @@ export default function AccountProfile() {
                 </View>
               )}
               {(panel === 'edit' || panel === 'password') && (
-                <ProfileForm key={panel} mode={panel} fullName={profile?.fullName || user.fullName} phone={profile?.phone || user.accountId} initialEmail={profile?.email || ''} onSave={saveProfile} />
+                <ProfileForm key={panel} mode={panel} fullName={profile?.fullName || user.fullName} phone={profile?.phone || user.accountId} initialEmail={profile?.email || ''} onSave={saveProfile} onChangePassword={savePassword}/>
               )}
             </ScrollView>
           </SafeAreaView>

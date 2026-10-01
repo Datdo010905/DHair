@@ -10,6 +10,7 @@ export const endpoints = {
   auth: {
     login: '/api/login/login-taikhoan',
     register: '/api/khachhang/insert-khachhangVoiTaiKhoan',
+    changePassword: '/api/taikhoan/change-password',
     forgotPassword: '/api/taikhoan/forgot-password',
   },
   services: {

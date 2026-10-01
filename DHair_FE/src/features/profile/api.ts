@@ -49,3 +49,65 @@ export function getProfile(token: string, signal?: AbortSignal) {
 export function updateProfile(token: string, fullName: string, email: string) {
   return profileRequest(token, undefined, { fullName, email });
 }
+
+export async function changePassword(
+  token: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
+  if (!token) {
+    throw new Error('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.');
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}${endpoints.auth.changePassword}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+        signal: controller.signal,
+      },
+    );
+
+    let result;
+
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error('Máy chủ trả về dữ liệu không hợp lệ.');
+    }
+
+    if (!response.ok || result?.success !== true) {
+      throw new Error(
+        result?.message || 'Không thể đổi mật khẩu.',
+      );
+    }
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error(
+        'Máy chủ phản hồi quá lâu. Vui lòng thử lại.',
+      );
+    }
+
+    if (error instanceof TypeError) {
+      throw new Error(
+        'Không thể kết nối máy chủ. Vui lòng kiểm tra mạng.',
+      );
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}

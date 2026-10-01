@@ -64,7 +64,6 @@ const dangNhap = async (req, res) => {
             data: {
                 MATK: user.MATK.trim(),
                 HOTEN: khachHang?.HOTEN?.trim() || null,
-                PASS: user.PASS.trim(),
                 PHANQUYEN: user.PHANQUYEN,
                 TRANGTHAI: user.TRANGTHAI.trim()
             }

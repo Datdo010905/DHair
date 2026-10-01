@@ -1,5 +1,6 @@
 const khachHangService = require('../services/khachHangService');
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 const getAll = async (req, res) => {
     try {
@@ -45,15 +46,21 @@ const createCustomerWithAccount = async (req, res) => {
         }
 
         //TRANSACTION: dùng cả 2 service trong 1 transaction để đảm bảo tính nhất quán dữ liệu
+        const hashedPassword = await bcrypt.hash(PASS, 10);
         const result = await prisma.$transaction(async (tx) => {
 
             //Tạo Tài khoản
             const newTaiKhoan = await tx.tAIKHOAN.create({
                 data: {
                     MATK: SDT.trim(),
-                    PASS: PASS.trim(),
+                    PASS: hashedPassword,
                     PHANQUYEN: Number(PHANQUYEN),
                     TRANGTHAI: TRANGTHAI.trim()
+                },
+                select: {
+                    MATK: true,
+                    PHANQUYEN: true,
+                    TRANGTHAI: true
                 }
             });
 
@@ -155,22 +162,22 @@ const deleteFullCustomerTransaction = async (req, res) => {
 const updateProfileFull = async (req, res) => {
     try {
         // Lấy ID (SĐT) từ URL
-        const id = req.params.id; 
-        
+        const id = req.params.id;
+
         // Frontend sẽ gửi lên 2 cục data: Thông tin khách hàng và Thông tin tài khoản (nếu có đổi pass)
         const { customerData, accountData } = req.body;
 
         // Cấm chạm tới Khóa chính để tránh lỗi Khóa ngoại
         if (customerData) {
-            delete customerData.MAKH; 
-            delete customerData.SDT; 
+            delete customerData.MAKH;
+            delete customerData.SDT;
         }
-        
+
         if (accountData) {
-            delete accountData.MATK; 
+            delete accountData.MATK;
         }
         const result = await prisma.$transaction(async (tx) => {
-            
+
             //Cập nhật bảng KHACHHANG
             const updatedCustomer = await tx.kHACHHANG.update({
                 where: { MAKH: id },
@@ -182,11 +189,27 @@ const updateProfileFull = async (req, res) => {
 
             //Cập nhật bảng TAIKHOAN (Chỉ cập nhật nếu Frontend có gửi accountData lên)
             let updatedAccount = null;
-            if (accountData && accountData.PASS && accountData.PASS.trim() !== '') {
+            if (
+                accountData &&
+                accountData.PASS &&
+                accountData.PASS.trim() !== ''
+            ) {
+                const hashedPassword = await bcrypt.hash(
+                    accountData.PASS,
+                    10
+                );
+
                 updatedAccount = await tx.tAIKHOAN.update({
-                    where: { MATK: id }, 
+                    where: {
+                        MATK: id
+                    },
                     data: {
-                        PASS: accountData.PASS
+                        PASS: hashedPassword
+                    },
+                    select: {
+                        MATK: true,
+                        PHANQUYEN: true,
+                        TRANGTHAI: true
                     }
                 });
             }
@@ -194,19 +217,19 @@ const updateProfileFull = async (req, res) => {
             return { updatedCustomer, updatedAccount };
         });
 
-        return res.status(200).json({ 
-            success: true, 
-            message: "Cập nhật hồ sơ thành công!", 
-            data: result 
+        return res.status(200).json({
+            success: true,
+            message: "Cập nhật hồ sơ thành công!",
+            data: result
         });
 
     } catch (error) {
         console.error("Lỗi Transaction Update Profile:", error);
-        
+
         if (error.code === 'P2025') {
             return res.status(404).json({ success: false, message: "Không tìm thấy dữ liệu tài khoản!" });
         }
-        
+
         return res.status(500).json({ success: false, message: "Lỗi máy chủ, thao tác đã tự động hoàn tác!" });
     }
 };
