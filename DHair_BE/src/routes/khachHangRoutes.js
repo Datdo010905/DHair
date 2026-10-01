@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const khachHangController = require('../controllers/khachHangController');
+const profileController = require('../controllers/profileController');
+
+router.get('/me', profileController.requireSession, profileController.get);
+router.put('/me', profileController.requireSession, profileController.update);
 
 router.get('/get-all-khachhang', khachHangController.getAll);
 router.get('/get-byId-khachhang/:id', khachHangController.getByID);

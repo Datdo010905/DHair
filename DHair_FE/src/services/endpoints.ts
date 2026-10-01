@@ -1,4 +1,12 @@
 export const endpoints = {
+  profile: '/api/khachhang/me',
+  booking: {
+    history: '/api/lichhen/history',
+    cancel: (id: string) => `/api/lichhen/${encodeURIComponent(id)}/cancel`,
+    options: '/api/lichhen/booking-options',
+    availability: '/api/lichhen/availability',
+    create: '/api/lichhen/book',
+  },
   auth: {
     login: '/api/login/login-taikhoan',
     register: '/api/khachhang/insert-khachhangVoiTaiKhoan',

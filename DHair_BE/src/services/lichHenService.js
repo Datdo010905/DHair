@@ -74,10 +74,24 @@ const createLichHen = async (model) => {
     });
 };
 const updateTrangThai = async (ma, trangthai) => {
-    return await prisma.lICHHEN.update({
-        where: { MALICH: ma },
-        data: { TRANGTHAI: trangthai }
+    const booking = await prisma.lICHHEN.findUnique({ where: { MALICH: ma } });
+    if (!booking) throw Object.assign(new Error('Không tìm thấy lịch hẹn.'), { status: 404 });
+    const nextStatus = typeof trangthai === 'string' ? trangthai.trim() : '';
+    const transitions = {
+        'Đã đặt': ['Đang chờ', 'Đã huỷ'],
+        'Đang chờ': ['Đang thực hiện', 'Đã huỷ'],
+        'Đang thực hiện': ['Hoàn thành'],
+    };
+    if (!transitions[booking.TRANGTHAI?.trim()]?.includes(nextStatus)) {
+        throw Object.assign(new Error('Trạng thái lịch đã thay đổi hoặc không đúng quy trình. Vui lòng tải lại.'), { status: 409 });
+    }
+    // Không để yêu cầu cũ từ admin ghi đè lịch vừa được khách hủy.
+    const result = await prisma.lICHHEN.updateMany({
+        where: { MALICH: ma, TRANGTHAI: booking.TRANGTHAI },
+        data: { TRANGTHAI: nextStatus },
     });
+    if (result.count !== 1) throw Object.assign(new Error('Lịch vừa thay đổi. Vui lòng tải lại.'), { status: 409 });
+    return { ...booking, TRANGTHAI: nextStatus };
 };
 
 const deleteLichHen = async (ma) => await prisma.lICHHEN.delete({ where: { MALICH: ma } });
