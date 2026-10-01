@@ -1,14 +1,27 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const bcrypt = require('bcryptjs');
 
 const checkLogin = async (username, password) => {
-    //Prisma ORM tìm tài khoản
-    const user = await prisma.tAIKHOAN.findFirst({
+    const user = await prisma.tAIKHOAN.findUnique({
         where: {
-            MATK: username,
-            PASS: password
+            MATK: username
         }
     });
+
+    if (!user) {
+        return null;
+    }
+
+    const passwordMatches = await bcrypt.compare(
+        password,
+        user.PASS
+    );
+
+    if (!passwordMatches) {
+        return null;
+    }
+
     return user;
 };
 // Hàm check xem mã tài khoản đã tồn tại chưa
@@ -20,12 +33,22 @@ const checkTaiKhoanTonTai = async (maTK) => {
 
 // Hàm thêm tài khoản mới
 const createTaiKhoan = async (model) => {
+    const hashedPassword = await bcrypt.hash(
+        model.PASS,
+        10
+    );
+
     return await prisma.tAIKHOAN.create({
         data: {
             MATK: model.MATK,
-            PASS: model.PASS,
+            PASS: hashedPassword,
             PHANQUYEN: Number(model.PHANQUYEN),
             TRANGTHAI: model.TRANGTHAI
+        },
+        select: {
+            MATK: true,
+            PHANQUYEN: true,
+            TRANGTHAI: true
         }
     });
 };
@@ -59,5 +82,5 @@ module.exports = {
     createTaiKhoan,
     getAllTaiKhoan,
     updateTaiKhoan,
-    deleteTaiKhoan  
+    deleteTaiKhoan
 };

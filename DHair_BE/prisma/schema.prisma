@@ -138,7 +138,7 @@ model NHANVIEN {
 
 model TAIKHOAN {
   MATK      String @id @db.Char(20)
-  PASS      String @db.Char(50)
+  PASS      String @db.VarChar(255)
   PHANQUYEN Int
   TRANGTHAI String @db.VarChar(50)
 

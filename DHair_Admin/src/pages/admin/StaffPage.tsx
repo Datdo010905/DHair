@@ -177,13 +177,6 @@ const StaffPage: React.FC = () => {
         // submitDataTK.append('PhanQuyen', roleMap[formData.staffPosition] || "3");
         // submitDataTK.append('TrangThai', "Hoạt động");
 
-        const submitDataTK: TaiKhoan = {
-            MATK: formData.staffID,
-            PASS: formData.staffID,
-            PHANQUYEN: Number(roleMap[formData.staffPosition] || "3"),
-            TRANGTHAI: "Hoạt động"
-        };
-
         //GỘP (Map đúng tên biến mà Backend cần)
         const combinedData = {
             MANV: formData.staffID,
@@ -193,7 +186,6 @@ const StaffPage: React.FC = () => {
             DIACHI: formData.staffAddress,
             MACHINHANH: formData.staffBranch,
             NGAYSINH: formData.staffBirthDate,
-            PASS: formData.staffPhone,
             PHANQUYEN: Number(roleMap[formData.staffPosition] || "3"),
             TRANGTHAI: "Hoạt động"
         };

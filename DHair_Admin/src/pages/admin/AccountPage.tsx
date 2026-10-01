@@ -4,7 +4,7 @@ import { useSearch } from '../../context/SearchContext';
 import { toast } from 'react-toastify';
 import DataTable, { Column } from '../../components/ui/DataTable';
 import taikhoanApi, { TaiKhoan } from "../../api/taikhoanApi";
-import { taiKhoanSchema } from "../../utils/taiKhoanSchema";
+import { createTaiKhoanSchema, updateTaiKhoanSchema } from "../../utils/taiKhoanSchema";
 const AccountPage: React.FC = () => {
     //khởi tạo state
     //Gộp state
@@ -67,11 +67,16 @@ const AccountPage: React.FC = () => {
     const handleEditClick = (row: TaiKhoan) => {
         setFormData({
             accUsername: row.MATK ? row.MATK.trim() : '',
-            accPassword: row.PASS ? row.PASS.trim() : '',
-            accRole: row.PHANQUYEN ? String(row.PHANQUYEN) : '',
-            accStatus: row.TRANGTHAI ? row.TRANGTHAI.trim() : 'Hoạt động',
+            accPassword: '',
+            accRole: row.PHANQUYEN !== undefined
+                ? String(row.PHANQUYEN)
+                : '0',
+            accStatus: row.TRANGTHAI
+                ? row.TRANGTHAI.trim()
+                : 'Hoạt động',
         });
-        setFormErrors({}); // Xóa lỗi cũ
+
+        setFormErrors({});
         setModalType('edit');
     };
 
@@ -104,7 +109,10 @@ const AccountPage: React.FC = () => {
         e.preventDefault();
 
         //Kiểm tra dữ liệu với Zod
-        const validationResult = taiKhoanSchema.safeParse(formData);
+        const validationResult =
+            modalType === 'add'
+                ? createTaiKhoanSchema.safeParse(formData)
+                : updateTaiKhoanSchema.safeParse(formData);
 
         //có lỗi
         if (!validationResult.success) {
@@ -122,37 +130,50 @@ const AccountPage: React.FC = () => {
         //hợp lệ
         setFormErrors({});
 
-        //tạo FormData theo swagger
-        // const submitData = new FormData();
-        // submitData.append('MaTK', formData.accUsername);
-        // submitData.append('Pass', formData.accPassword);
-        // submitData.append('PhanQuyen', formData.accRole);
-        // submitData.append('TrangThai', formData.accStatus);
-        const submitData = {
-            MATK: formData.accUsername,
-            PASS: formData.accPassword,
-            PHANQUYEN: Number(formData.accRole),
-            TRANGTHAI: formData.accStatus
-        };
-
         try {
             if (modalType === 'add') {
 
-                await taikhoanApi.create(submitData);
+                const createData = {
+                    MATK: formData.accUsername,
+                    PASS: formData.accPassword,
+                    PHANQUYEN: Number(formData.accRole),
+                    TRANGTHAI: formData.accStatus
+                };
+
+                await taikhoanApi.create(createData);
+
                 toast.success("Thêm tài khoản thành công!");
 
             } else {
-                await taikhoanApi.update(formData.accUsername, submitData);
+
+                const updateData = {
+                    PHANQUYEN: Number(formData.accRole),
+                    TRANGTHAI: formData.accStatus
+                };
+
+                await taikhoanApi.update(
+                    formData.accUsername,
+                    updateData
+                );
+
                 toast.success("Cập nhật tài khoản thành công!");
             }
-            setModalType('none'); // Đóng form
-            fetchData(); // Tải lại dữ liệu
+
+            setModalType('none');
+            fetchData();
+
         } catch (error: any) {
-            // HỨNG LỖI TỪ BACKEND
-            if (error.response && error.response.data && error.response.data.message) {
+
+            if (
+                error.response &&
+                error.response.data &&
+                error.response.data.message
+            ) {
                 toast.error(error.response.data.message);
             } else {
-                toast.error("Thao tác thất bại, vui lòng kiểm tra lại!");
+                toast.error(
+                    "Thao tác thất bại, vui lòng kiểm tra lại!"
+                );
             }
         }
     };
@@ -202,16 +223,9 @@ const AccountPage: React.FC = () => {
         'Hoạt động': { backgroundColor: '#e6f7ff', color: '#52c41a', border: '1px solid #b7eb8f' },
     };
 
-    const Mahoa = (pass: string) => {
-        if (pass) {
-            return '******';
-        }
-        return '';
-    }
     //Định nghĩa cột cho DataTable theo api trả về
     const taiKhoanColumns: Column<TaiKhoan>[] = [
         { tieude: "Tài khoản", cotnhandulieu: "MATK" },
-        { tieude: "Mật khẩu", cotnhandulieu: "PASS", render: (row) => Mahoa(row.PASS) },
         {
             tieude: "Quyền hạn", cotnhandulieu: "PHANQUYEN", render: (row) => {
                 const roleCode = Number(row.PHANQUYEN);
@@ -277,9 +291,9 @@ const AccountPage: React.FC = () => {
                 <input type="text" id="accUsername" value={formData.accUsername} disabled={modalType === 'edit'} name="accUsername" onChange={handleChange} />
                 {formErrors.accUsername && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.accUsername}</span>}
             </div>
-            <div className="form-group">
+            <div className="form-group" hidden={modalType === 'edit'}>
                 <label htmlFor="accPassword">Mật khẩu:</label>
-                <input disabled={modalType === 'edit'} type="password" id="accPassword" value={formData.accPassword} name="accPassword" onChange={handleChange} />
+                <input type="password" id="accPassword" value={formData.accPassword} name="accPassword" onChange={handleChange} />
                 {formErrors.accPassword && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.accPassword}</span>}
 
             </div>

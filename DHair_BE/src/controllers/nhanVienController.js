@@ -1,6 +1,8 @@
 const nhanVienService = require('../services/nhanVienService');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const bcrypt = require('bcryptjs');
+
 const getAll = async (req, res) => {
     try {
         const data = await nhanVienService.getAllNhanVien();
@@ -89,15 +91,26 @@ const createWithAccount = async (req, res) => {
         }
 
         //TRANSACTION: dùng cả 2 service trong 1 transaction để đảm bảo tính nhất quán dữ liệu
+        const defaultPassword = SDT.trim();
+
+        const hashedPassword = await bcrypt.hash(
+            defaultPassword,
+            10
+        );
         const result = await prisma.$transaction(async (tx) => {
 
             //Tạo Tài khoản
             const newTaiKhoan = await tx.tAIKHOAN.create({
                 data: {
                     MATK: MANV.trim(),
-                    PASS: SDT.trim(),
+                    PASS: hashedPassword,
                     PHANQUYEN: Number(PHANQUYEN),
                     TRANGTHAI: TRANGTHAI.trim()
+                },
+                select: {
+                    MATK: true,
+                    PHANQUYEN: true,
+                    TRANGTHAI: true
                 }
             });
 

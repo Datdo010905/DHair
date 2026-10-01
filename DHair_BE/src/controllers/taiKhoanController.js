@@ -1,6 +1,7 @@
 const taiKhoanService = require('../services/taiKhoanService');
 const { PrismaClient } = require('@prisma/client');
 const { forgotPasswordEmail } = require('../services/mailService');
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
@@ -82,40 +83,172 @@ const remove = async (req, res) => {
     }
 };
 
+const changePassword = async (req, res) => {
+    try {
+        const accountId = req.profileAccountId;
+
+        const {
+            currentPassword,
+            newPassword
+        } = req.body || {};
+
+        if (
+            typeof currentPassword !== 'string' ||
+            typeof newPassword !== 'string' ||
+            !currentPassword ||
+            !newPassword
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng nhập đầy đủ mật khẩu.'
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mật khẩu mới phải có ít nhất 6 ký tự.'
+            });
+        }
+
+        if (newPassword.length > 50) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mật khẩu mới không được vượt quá 50 ký tự.'
+            });
+        }
+
+        if (currentPassword === newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mật khẩu mới phải khác mật khẩu hiện tại.'
+            });
+        }
+
+        const account = await prisma.tAIKHOAN.findUnique({
+            where: {
+                MATK: accountId
+            }
+        });
+
+        if (!account) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy tài khoản.'
+            });
+        }
+
+        // So sánh password nhập vào với hash trong DB.
+        const passwordMatches = await bcrypt.compare(
+            currentPassword,
+            account.PASS
+        );
+
+        if (!passwordMatches) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mật khẩu hiện tại không chính xác.'
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(
+            newPassword,
+            10
+        );
+
+        await prisma.tAIKHOAN.update({
+            where: {
+                MATK: accountId
+            },
+            data: {
+                PASS: hashedPassword
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Đổi mật khẩu thành công.'
+        });
+
+    } catch (error) {
+        console.error(
+            'Lỗi đổi mật khẩu:',
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Không thể đổi mật khẩu. Vui lòng thử lại.'
+        });
+    }
+};
+
+
 const forgotPassword = async (req, res) => {
     try {
-        const { email, sdt } = req.body; // Giao diện yêu cầu nhập SDT và Email
+        const { email, sdt } = req.body;
 
-        // check 
         const khachHang = await prisma.kHACHHANG.findFirst({
-            where: { SDT: sdt, EMAIL: email }
+            where: {
+                SDT: sdt,
+                EMAIL: email
+            }
         });
 
         if (!khachHang) {
-            return res.status(404).json({ success: false, message: "Thông tin không chính xác hoặc không tồn tại!" });
+            return res.status(404).json({
+                success: false,
+                message: 'Thông tin không chính xác hoặc không tồn tại!'
+            });
         }
 
-        //Tạo mật khẩu mới 6 số ngẫu nhiên 
-        const newPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        // Password thật gửi cho user.
+        const newPassword = Math.floor(
+            100000 + Math.random() * 900000
+        ).toString();
 
-        //lưu lại pass vào db
+        // Nhưng DB chỉ lưu bcrypt hash.
+        const hashedPassword = await bcrypt.hash(
+            newPassword,
+            10
+        );
+
         await prisma.tAIKHOAN.update({
-            where: { MATK: sdt },
-            data: { PASS: newPassword }
+            where: {
+                MATK: sdt
+            },
+            data: {
+                PASS: hashedPassword
+            }
         });
 
-        // GỬI MAIL NGẦM
-        forgotPasswordEmail(email, newPassword, khachHang.HOTEN)
-            .catch(err => console.error("Lỗi gửi mail cấp lại pass ngầm:", err));
+        // Email vẫn gửi password thật.
+        forgotPasswordEmail(
+            email,
+            newPassword,
+            khachHang.HOTEN
+        ).catch((err) => {
+            console.error(
+                'Lỗi gửi mail cấp lại pass ngầm:',
+                err
+            );
+        });
 
-        return res.status(200).json({ success: true, message: "Mật khẩu mới đã được gửi vào Email của bạn!" });
+        return res.status(200).json({
+            success: true,
+            message: 'Mật khẩu mới đã được gửi vào Email của bạn!'
+        });
 
     } catch (error) {
-        console.error("Lỗi gửi email:", error);
-        return res.status(500).json({ success: false, message: "Lỗi máy chủ, vui lòng thử lại sau!" });
+        console.error('Lỗi gửi email:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Lỗi máy chủ, vui lòng thử lại sau!'
+        });
     }
 };
 
 
 
-module.exports = { getAll, getByID, create, update, remove, forgotPassword };
+module.exports = { getAll, getByID, create, update, remove, changePassword, forgotPassword };
