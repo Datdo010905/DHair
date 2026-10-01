@@ -27,7 +27,14 @@ const checkLogin = async (username, password) => {
 // Hàm check xem mã tài khoản đã tồn tại chưa
 const checkTaiKhoanTonTai = async (maTK) => {
     return await prisma.tAIKHOAN.findUnique({
-        where: { MATK: maTK }
+        where: {
+            MATK: maTK
+        },
+        select: {
+            MATK: true,
+            PHANQUYEN: true,
+            TRANGTHAI: true
+        }
     });
 };
 
@@ -53,17 +60,28 @@ const createTaiKhoan = async (model) => {
     });
 };
 const getAllTaiKhoan = async () => {
-    //tìm all 
-    return await prisma.tAIKHOAN.findMany();
+    return await prisma.tAIKHOAN.findMany({
+        select: {
+            MATK: true,
+            PHANQUYEN: true,
+            TRANGTHAI: true
+        }
+    });
 };
 
 const updateTaiKhoan = async (ma, model) => {
     return await prisma.tAIKHOAN.update({
-        where: { MATK: ma },
+        where: {
+            MATK: ma
+        },
         data: {
-            PASS: model.PASS,
             PHANQUYEN: Number(model.PHANQUYEN),
             TRANGTHAI: model.TRANGTHAI
+        },
+        select: {
+            MATK: true,
+            PHANQUYEN: true,
+            TRANGTHAI: true
         }
     });
 };
