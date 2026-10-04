@@ -1,0 +1,48 @@
+/* Scope layout rules to admin so customer pages keep their own layout. */
+.admin-layout { display: grid; grid-template-columns: 248px minmax(0, 1fr); width: 100%; height: 100vh; height: 100dvh; overflow: hidden; background: #f4f6fb; }
+.admin-layout > .sidebar { width: 248px; min-width: 0; height: 100%; min-height: 0; transform: none; position: relative; inset: auto; background: #132957; border-right: 1px solid #203967; overflow: hidden; }
+.admin-layout > .main { display: flex; flex-direction: column; width: 100%; min-width: 0; min-height: 0; margin: 0; overflow: hidden; }
+.admin-layout .content { flex: 1; width: 100%; min-width: 0; min-height: 0; padding: 24px; margin: 0; overflow: auto; }
+.admin-layout .content > .section { width: 100%; max-width: none; margin: 0; min-width: 0; }
+.admin-layout .topbar { flex: 0 0 68px; min-width: 0; gap: 16px; padding: 0 24px; box-shadow: none; border-bottom: 1px solid #e1e7ef; }
+.admin-layout .admin-topbar-title { color: #52617a; font-size: 13px; font-weight: 600; }
+.admin-layout .topbar-right { min-width: 0; margin-left: auto; gap: 8px; }
+.admin-layout .topbar-right input { width: 280px; max-width: 100%; min-width: 0; font-size: 13px; background: #f7f9fc; border-color: #dce4ef; }
+.admin-layout .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex-shrink: 0; color: #365588; border-radius: 8px; }
+.admin-layout .icon-btn:hover { background: #edf2fc; }
+.admin-layout #toggleSidebar { display: none; }
+.admin-layout .sidebar .brand { padding: 24px 20px; gap: 8px; background: transparent; flex-shrink: 0; border-bottom: 1px solid #ffffff12; }
+.admin-layout .brand a { display: flex; align-items: center; flex: 1; min-width: 0; text-decoration: none; }
+.admin-layout .sidebar .brand .admin-brand-logo { display: block; width: 180px; max-width: 100%; height: auto; object-fit: contain; }
+.admin-layout .sidebar nav { display: block; flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 20px 12px; scrollbar-width: thin; scrollbar-color: #435c89 transparent; }
+.admin-layout .admin-nav-group + .admin-nav-group { margin-top: 22px; }
+.admin-layout .admin-nav-group > p { padding: 0 12px; margin: 0 0 9px; color: #8fa5cc; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; }
+.admin-layout .sidebar nav a { display: flex; gap: 12px; min-height: 43px; padding: 11px 12px; margin: 4px 0; border-radius: 9px; font-size: 13px; color: #c6d3eb; font-weight: 500; border: 1px solid transparent; }
+.admin-layout .sidebar nav a svg { width: 18px; height: 18px; flex-shrink: 0; }
+.admin-layout .sidebar nav a:hover { background: #ffffff0d; color: white; }
+.admin-layout .sidebar nav a.active { background: #2b4781; color: white; border-color: #45649c; box-shadow: inset 3px 0 #a6c4ff; }
+.admin-layout .admin-sidebar-account { display: flex; align-items: center; gap: 10px; margin: 8px 16px 0; padding: 14px 0; border-top: 1px solid #ffffff18; color: #fff; }
+.admin-layout .admin-sidebar-account > div { min-width: 0; }
+.admin-layout .admin-sidebar-account strong { display: block; font-size: 13px; overflow-wrap: anywhere; }
+.admin-layout .admin-sidebar-account small { display: block; color: #9fb2d5; font-size: 11px; margin-top: 4px; }
+.admin-layout .admin-avatar { flex-shrink: 0; display: grid; place-items: center; width: 36px; height: 36px; background: #304d81; border: 1px solid #5270a0; border-radius: 50%; font-weight: 600; }
+.admin-layout .sidebar-footer { padding: 0 16px 18px; border: 0; }
+.admin-layout .sidebar-footer button { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 10px; background: #ffffff08; color: #d4def0; border: 1px solid #ffffff20; font-size: 12px; border-radius: 8px; }
+.admin-layout .sidebar-footer button:hover { background: #e52424; color: white; }
+.admin-layout .admin-sidebar-close { display: none; }
+.admin-layout .admin-sidebar-overlay { display: none; }
+.admin-layout button:focus-visible, .admin-layout a:focus-visible { outline: 3px solid #93b4ff; outline-offset: 2px; }
+@media (max-width: 768px) {
+    .admin-layout { grid-template-columns: minmax(0, 1fr); }
+    .admin-layout > .sidebar { position: fixed; top: 0; bottom: 0; left: 0; height: 100dvh; width: min(288px, 85vw); z-index: 1200; transform: translateX(-100%); visibility: hidden; transition: transform .2s ease, visibility .2s; }
+    .admin-layout > .sidebar.open { transform: translateX(0); visibility: visible; }
+    .admin-layout .admin-sidebar-overlay { display: block; position: fixed; inset: 0; background: #0f172a80; z-index: 1100; border: 0; }
+    .admin-layout .admin-sidebar-close { display: inline-flex; align-items: center; justify-content: center; margin-left: auto; border: 0; background: transparent; color: white; padding: 8px; font-size: 20px; cursor: pointer; }
+    .admin-layout #toggleSidebar { display: inline-flex; }
+    .admin-layout .topbar { padding: 0 16px; flex-basis: 60px; gap: 10px; }
+    .admin-layout .admin-topbar-title { display: none; }
+    .admin-layout .topbar-right { flex: 1; }
+    .admin-layout .topbar-right input { width: 100%; }
+    .admin-layout .content { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .admin-layout > .sidebar { transition: none; } }

@@ -1,7 +1,9 @@
+import AdminIcon from '../ui/AdminIcon';
 import React, { useState } from "react";
 import { useSearch } from "../../context/SearchContext"; // Import hook
 
-const TopBarAdmin = () => {
+import { FiMenu, FiSearch } from 'react-icons/fi';
+const TopBarAdmin = ({ sidebarOpen, onToggleSidebar }: { sidebarOpen: boolean; onToggleSidebar: () => void }) => {
     // Lấy setSearchTerm từ SearchContext để cập nhật từ khóa tìm kiếm
     const {setSearchTerm } = useSearch();
     const [inputValue, setInputValue] = useState('');
@@ -17,7 +19,7 @@ const TopBarAdmin = () => {
     return (
         <>
             <header className="topbar">
-                <button id="toggleSidebar" className="icon-btn"><i className="fas fa-bars"></i></button>
+                <button id="toggleSidebar" className="icon-btn" aria-label="Mở menu quản trị" aria-expanded={sidebarOpen} aria-controls="sidebar" onClick={onToggleSidebar}><AdminIcon icon={FiMenu} aria-hidden="true" /></button><span className="admin-topbar-title">Không gian quản trị</span>
                 <div className="topbar-right">
                     <input 
                         id="adminSearch" 
@@ -27,8 +29,8 @@ const TopBarAdmin = () => {
                         onChange={(e) => setInputValue(e.target.value)} // Cập nhật state chung
                         onKeyDown={handleKeyDown} // Xử lý sự kiện nhấn phím
                     />
-                    <button className="icon-btn" onClick={handleExecuteSearch}>
-                        <i className="fas fa-search"></i>
+                    <button className="icon-btn" aria-label="Thực hiện tìm kiếm" onClick={handleExecuteSearch}>
+                        <AdminIcon icon={FiSearch} aria-hidden="true" />
                     </button>
                 </div>
             </header>

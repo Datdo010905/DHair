@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../../components/ui/Modal";
-import { useSearch } from '../../context/SearchContext';
 import { toast } from 'react-toastify';
-import DataTable, { Column } from '../../components/ui/DataTable';
+import { Column } from '../../components/ui/DataTable';
+import AdminList from '../../components/ui/AdminList';
 import taikhoanApi, { TaiKhoan } from "../../api/taikhoanApi";
 import { createTaiKhoanSchema, updateTaiKhoanSchema } from "../../utils/taiKhoanSchema";
 const AccountPage: React.FC = () => {
@@ -13,7 +13,6 @@ const AccountPage: React.FC = () => {
     const [idToDelete, setIdToDelete] = useState<string | null>(null); // Lưu ID cần xóa
 
     //State dùng chung cho tìm kiếm
-    const { searchTerm } = useSearch();
 
     //Dữ liệu tài khoản
     const [taikhoanList, settaikhoanList] = useState<TaiKhoan[]>([]);
@@ -29,10 +28,6 @@ const AccountPage: React.FC = () => {
         accStatus: 'Hoạt động'
     });
 
-    const filteredtaikhoanList = taikhoanList.filter(tk =>
-        tk.MATK?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tk.TRANGTHAI?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     //up data từ api lên bảng
     const fetchData = async () => {
@@ -269,13 +264,13 @@ const AccountPage: React.FC = () => {
         {
             tieude: "Hành động", cotnhandulieu: "MATK", render: (row) => (
                 <>
-                    <button className="btn small edit" onClick={() => handleEditClick(row)}><i className="fas fa-edit"></i></button>
+                    <button className="ba-button" onClick={() => handleEditClick(row)}>Sửa</button>
                     <button
-                        className="btn small delete"
+                        className="ba-button ba-danger"
                         onClick={() => handleDeleteClick(row)}
                         title="Chỉ xoá những tài khoản đã khoá!"
                     >
-                        <i className="fas fa-trash"></i>
+                        Xóa
                     </button>
                 </>
             )
@@ -314,24 +309,18 @@ const AccountPage: React.FC = () => {
                     <option value="Khoá">Khoá</option>
                 </select>
             </div>
-            <button type="submit" className="btn primary">{modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
+            <button type="submit" className="ba-button ba-primary">{modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
         </>
     );
 
     return (
         <>
-            <div id="accounts" className="section">
-                <div className="panel header-actions">
-                    <h2>Tài khoản</h2>
-                    <button className="btn primary" onClick={handleOpenAdd}>Thêm tài khoản</button>
-                </div>
-                <div className="panel">
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
-                    <DataTable<TaiKhoan> columns={taiKhoanColumns} data={filteredtaikhoanList} isLoading={isLoading} />
-                </div>
+            <div id="accounts" className="section admin-page">
+                <header className="ba-heading"><div><p className="ba-eyebrow">QUẢN LÝ SALON</p><h2>Tài khoản</h2><p>Quản lý tài khoản, quyền truy cập và trạng thái hoạt động.</p></div><div className="ba-actions"><button className="ba-button" disabled={isLoading} onClick={fetchData}>Làm mới</button><button className="ba-button ba-primary" onClick={handleOpenAdd}>Thêm tài khoản</button></div></header>
+                <AdminList<TaiKhoan> title="Danh sách tài khoản" columns={taiKhoanColumns} data={taikhoanList} rowKey="MATK" searchKeys={["MATK", "TRANGTHAI"]} statusKey="TRANGTHAI" filters={[{ key: 'PHANQUYEN', label: 'Quyền hạn', format: value => getRoleName(Number(value)) }]} isLoading={isLoading} error={error} onRetry={fetchData} />
                 {/* DÙNG CHUNG MODAL CHO CẢ THÊM VÀ SỬA */}
                 <Modal isOpen={modalType !== 'none'} onClose={() => setModalType('none')} title={modalType === 'add' ? "Thêm mới tài khoản" : "Sửa thông tin tài khoản"}>
-                    <form className="service-form" onSubmit={handleSubmitForm}>
+                    <form className="ba-form" onSubmit={handleSubmitForm}>
                         {renderFormContent()}
                     </form>
                 </Modal>
@@ -339,7 +328,7 @@ const AccountPage: React.FC = () => {
                 {/* Modal xóa */}
                 <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Xác nhận Xóa">
                     <p>Bạn có chắc chắn muốn xóa tài khoản <strong>{idToDelete}</strong> không?</p><br />
-                    <button className="btn small delete" onClick={handleDeleteConfirm}><i className="fas fa-trash"></i> Xóa ngay</button>
+                    <button className="ba-button ba-danger" onClick={handleDeleteConfirm}>Xóa ngay</button>
                 </Modal>
             </div>
         </>

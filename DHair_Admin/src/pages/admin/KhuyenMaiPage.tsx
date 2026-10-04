@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../../components/ui/Modal";
-import { useSearch } from '../../context/SearchContext';
 import { toast } from 'react-toastify';
-import DataTable, { Column } from '../../components/ui/DataTable';
+import { Column } from '../../components/ui/DataTable';
+import AdminList from '../../components/ui/AdminList';
 import khuyenmaiApi, { KhuyenMai } from "../../api/khuyenmaiApi";
 import { khuyenMaiSchema } from "../../utils/khuyenmaiSchema"
 
@@ -14,7 +14,6 @@ const KhuyenMaiPage = () => {
     const [idToDelete, setIdToDelete] = useState<string | null>(null); // Lưu ID cần xóa
 
     //State dùng chung cho tìm kiếm
-    const { searchTerm } = useSearch();
 
     //Dữ liệu
     const [khuyenmaiList, setkhuyenmaiList] = useState<KhuyenMai[]>([]);
@@ -37,12 +36,6 @@ const KhuyenMaiPage = () => {
     });
 
 
-    const filteredkhuyenmaiList = khuyenmaiList.filter(km =>
-        km.MAKM?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        km.TRANGTHAI?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        km.NGAYBD?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        km.NGAYKT?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
     //up data từ api lên bảng
     const fetchData = async () => {
         setIsLoading(true);
@@ -255,13 +248,13 @@ const KhuyenMaiPage = () => {
         {
             tieude: "Hành động", cotnhandulieu: "MAKM", render: (row) => (
                 <>
-                    <button className="btn small edit" onClick={() => handleEditClick(row)}><i className="fas fa-edit"></i></button>
+                    <button className="ba-button" onClick={() => handleEditClick(row)}>Sửa</button>
                     <button
-                        className="btn small delete"
+                        className="ba-button ba-danger"
                         onClick={() => handleDeleteClick(row)}
                         title="Chỉ xoá những khuyến mại đã hết hạn!"
                     >
-                        <i className="fas fa-trash"></i>
+                        Xóa
                     </button>
                 </>
             )
@@ -337,24 +330,18 @@ const KhuyenMaiPage = () => {
                 />
                 {formErrors.promotionValue && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.promotionValue}</span>}
             </div>
-            <button type="submit" className="btn primary">{modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
+            <button type="submit" className="ba-button ba-primary">{modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
         </>
     );
     return (
         <>
 
-            <div id="promotions" className="section">
-                <div className="panel header-actions">
-                    <h2>Khuyến mại</h2>
-                    <button className="btn primary" onClick={handleOpenAdd}>Thêm khuyến mại</button>
-                </div>
-                <div className="panel">
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
-                    <DataTable<KhuyenMai> columns={taiKhoanColumns} data={filteredkhuyenmaiList} isLoading={isLoading} />
-                </div>
+            <div id="promotions" className="section admin-page">
+                <header className="ba-heading"><div><p className="ba-eyebrow">QUẢN LÝ SALON</p><h2>Khuyến mại</h2><p>Theo dõi các chương trình ưu đãi và thời gian áp dụng.</p></div><div className="ba-actions"><button className="ba-button" disabled={isLoading} onClick={fetchData}>Làm mới</button><button className="ba-button ba-primary" onClick={handleOpenAdd}>Thêm khuyến mại</button></div></header>
+                <AdminList<KhuyenMai> title="Danh sách khuyến mại" columns={taiKhoanColumns} data={khuyenmaiList} rowKey="MAKM" searchKeys={["MAKM", "TENKM", "TRANGTHAI", "NGAYBD", "NGAYKT"]} statusKey="TRANGTHAI"  isLoading={isLoading} error={error} onRetry={fetchData} />
                 {/* DÙNG CHUNG MODAL CHO CẢ THÊM VÀ SỬA */}
                 <Modal isOpen={modalType !== 'none'} onClose={() => setModalType('none')} title={modalType === 'add' ? "Thêm mới khuyến mại" : "Sửa thông tin khuyến mại"}>
-                    <form className="service-form" onSubmit={handleSubmitForm}>
+                    <form className="ba-form" onSubmit={handleSubmitForm}>
                         {renderFormContent()}
                     </form>
                 </Modal>
@@ -362,7 +349,7 @@ const KhuyenMaiPage = () => {
                 {/* Modal xóa */}
                 <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Xác nhận Xóa">
                     <p>Bạn có chắc chắn muốn xóa khuyến mại <strong>{idToDelete}</strong> không?</p><br />
-                    <button className="btn small delete" onClick={handleDeleteConfirm}><i className="fas fa-trash"></i> Xóa ngay</button>
+                    <button className="ba-button ba-danger" onClick={handleDeleteConfirm}>Xóa ngay</button>
                 </Modal>
             </div>
         </>

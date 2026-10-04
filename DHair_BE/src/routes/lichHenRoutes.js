@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const lichHenController = require('../controllers/lichHenController');
 const bookingController = require('../controllers/bookingController');
+router.get('/admin-list', bookingController.requireCustomerSession, lichHenController.getAdminBookings);
 router.get('/history', bookingController.requireCustomerSession, bookingController.history);
 router.post('/:id/cancel', bookingController.requireCustomerSession, bookingController.cancel);
 

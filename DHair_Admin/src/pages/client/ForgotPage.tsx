@@ -4,6 +4,7 @@ import "../../assets/css/login.css";
 import { toast } from "react-toastify";
 import TaiKhoanApi from "../../api/taikhoanApi";
 import useCooldown from "../../hooks/useCooldown";
+import LogoForm from "../../components/ui/LogoForm";
 const Forgot = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -42,12 +43,7 @@ const Forgot = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-        <div className="login-left">
-          <Link to="/">
-            <img src="/img/logoTo.png" alt="30Shine Logo" className="logo" />
-          </Link>
-          <h2>30Shine - Cắt tóc theo phong cách của bạn!</h2>
-        </div>
+        <LogoForm />
 
         <div className="login-right">
           <h1>QUÊN MẬT KHẨU</h1>

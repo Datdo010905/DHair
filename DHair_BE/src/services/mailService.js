@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 
 const forgotPasswordEmail = async (customerEmail, newPassword, customerName) => {
     const mailOptions = {
-        from: '"Hệ thống 30Shine (dotiendat01092005@gmail.com)" <dotiendat01092005@gmail.com>',
+        from: '"Hệ thống DHair (dotiendat01092005@gmail.com)" <dotiendat01092005@gmail.com>',
         to: customerEmail,
         subject: 'Cấp lại mật khẩu tài khoản Salon',
         html: `
@@ -88,7 +88,7 @@ const sendBookingPendingEmail = async (customerEmail, bookingInfo) => {
     const gioFormat = `${gio.getUTCHours().toString().padStart(2, '0')}:${gio.getUTCMinutes().toString().padStart(2, '0')}`;
 
     const mailOptions = {
-        from: '"Hệ thống 30Shine (dotiendat01092005@gmail.com)" <dotiendat01092005@gmail.com>',
+        from: '"Hệ thống DHair (dotiendat01092005@gmail.com)" <dotiendat01092005@gmail.com>',
         to: customerEmail,
         subject: 'Lịch hẹn của bạn đã được duyệt',
         html: `

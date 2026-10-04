@@ -1,0 +1,37 @@
+.admin-page .admin-list { margin-bottom: 22px; }
+.admin-page .admin-search-note { flex-basis: 100%; color: #79879b; font-size: 11px; }
+.admin-page .ba-table td { max-width: 320px; overflow-wrap: anywhere; }
+.admin-page .ba-table td:last-child { min-width: 130px; }
+.admin-page .ba-table td button { margin: 0 6px 6px 0; }
+.admin-page .ba-form .form-group { display: flex; flex-direction: column; gap: 7px; margin: 0; }
+.admin-page .ba-form .form-group[hidden] { display: none; }
+.admin-page .ba-form .form-group label { margin-bottom: 0; }
+.admin-page .ba-danger { color: #b42338; }
+.admin-page .cards { gap: 12px; margin-bottom: 22px; }
+.admin-page .card { border: 1px solid #dce4ef; border-radius: 13px; box-shadow: none; padding: 17px 20px; }
+.admin-page .card:hover { transform: none; box-shadow: none; }
+.admin-page .card h3 { color: #64748b; font-size: 12px; font-weight: 600; }
+.admin-page .card p { font-size: 24px; color: #173691; margin: 10px 0 7px; overflow-wrap: anywhere; }
+.admin-page .card small { color: #64748b; font-size: 12px; }
+.admin-page .panel { border: 1px solid #e1e7ef; border-radius: 14px; box-shadow: none; }
+.admin-page .panel h2 { font-size: 16px; color: #24324b; }
+.admin-page .report-filter, .admin-page .reportDate-form { gap: 14px; flex-wrap: wrap; align-items: end; }
+.admin-page .report-filter { justify-content: space-between; margin-bottom: 20px; }
+.admin-page .admin-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 20px; }
+.admin-page .admin-chart-grid > * { min-width: 0; }
+.admin-page .admin-quick-links { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px; }
+.admin-page .admin-quick-links a { text-decoration: none; }
+@media (max-width: 900px) { .admin-page .admin-chart-grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .admin-page .cards { grid-template-columns: 1fr; } }
+
+.admin-page .service-status-options { border: 0; padding: 0; margin: 0; min-width: 150px; display: grid; gap: 8px; }
+.admin-page .service-status-options legend { font-size: 12px; color: #52617a; font-weight: 600; margin-bottom: 8px; }
+.admin-page .service-status-options label { flex-direction: row; align-items: center; cursor: pointer; font-weight: 500; white-space: nowrap; }
+.admin-page .service-status-options input[type="radio"] { width: 16px; height: 16px; min-height: 0; padding: 0; margin: 0; accent-color: #173691; flex-shrink: 0; }
+.admin-page .service-status-options:disabled label { opacity: .55; cursor: wait; }
+.admin-page .ba-status-filters .admin-status-success { --status-color: #237c4d; --status-bg: #e8f6ed; --status-border: #8ac6a2; }
+.admin-page .ba-status-filters .admin-status-warning { --status-color: #9a6508; --status-bg: #fff4df; --status-border: #e4be75; }
+.admin-page .ba-status-filters .admin-status-danger { --status-color: #b44656; --status-bg: #fcecef; --status-border: #e0a0aa; }
+.admin-page .ba-status-filters button[class^="admin-status-"]:not(.admin-status-neutral) .ba-dot { background: var(--status-color); }
+.admin-page .ba-status-filters button[class^="admin-status-"]:not(.admin-status-neutral)[aria-pressed="true"] { color: var(--status-color); background: var(--status-bg); border-color: var(--status-border); }
+.admin-page .ba-status-filters button[class^="admin-status-"]:not(.admin-status-neutral)[aria-pressed="true"] b { color: var(--status-color); background: var(--status-bg); border: 1px solid var(--status-border); }

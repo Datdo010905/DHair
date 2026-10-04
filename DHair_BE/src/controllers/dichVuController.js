@@ -157,6 +157,12 @@ const updateDichVu = async (req, res) => {
         // Hứng data từ Form
         const { maDV, tenDV, loai, moTa, thoiGian, giaDV, trangThai, quyTrinh } = req.body;
 
+        // Radio trên danh sách chỉ gửi mã và trạng thái, không cập nhật các trường khác.
+        if (!req.file && Object.keys(req.body).every(key => ['maDV', 'trangThai'].includes(key))) {
+            const result = await dichVuService.updateStatus(maDV, trangThai);
+            return res.status(200).json({ success: true, data: result, message: 'Cập nhật trạng thái thành công!' });
+        }
+
         // Nếu chọn ảnh mới thì lấy, không thì để null
         const hinhAnh = req.file ? `/img/product/${req.file.originalname}` : null;
 
@@ -179,9 +185,9 @@ const updateDichVu = async (req, res) => {
             message: "Cập nhật dịch vụ thành công!"
         });
     } catch (error) {
-        res.status(500).json({
+        res.status(error.status || (error.code === 'P2025' ? 404 : 500)).json({
             success: false,
-            message: error.message
+            message: error.code === 'P2025' ? 'Không tìm thấy dịch vụ.' : error.message
         });
     }
 };
