@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Modal from "../../components/ui/Modal";
 import { useSearch } from '../../context/SearchContext';
 import { toast } from 'react-toastify';
 import DataTable, { Column } from '../../components/ui/DataTable';
-import bookingApi, { Booking, BookingDetails } from "../../api/bookingApi";
+import bookingApi, { Booking } from "../../api/bookingApi";
 import hoadonApi, { HoaDon, HoaDonDetails } from "../../api/hoadonApi";
 import customerApi, { Customer } from "../../api/customerApi";
 import dichVuApi, { DichVu } from "../../api/dichvuApi";
@@ -11,8 +11,13 @@ import staffApi, { NhanVien } from "../../api/staffApi";
 import { HoadonSchema } from "../../utils/hoadonSchema";
 import KhuyenMaiApi, { KhuyenMai } from "../../api/khuyenmaiApi";
 
+import "../../assets/css/booking-admin.css";
+import "../../assets/css/invoice-admin.css";
+
+const money = (value: number) => Number(value || 0).toLocaleString("vi-VN") + " ₫";
+const dateKey = (value: string) => value ? value.slice(0, 10) : "";
+
 const HoaDonPage = () => {
-    //khởi tạo state
 
     const [modalType, setModalType] = useState<'add' | 'addDetails' | 'edit' | 'none'>('none');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -21,87 +26,79 @@ const HoaDonPage = () => {
     const today = new Date().toISOString().split('T')[0];
 
     const quyenHientai = localStorage.getItem('phanquyen') || 0;
-    //State dùng chung cho tìm kiếm
     const { searchTerm } = useSearch();
-    //Dữ liệu
     const [hoadonList, setHoadonList] = useState<HoaDon[]>([]);
-    const [hoadonDetailsList, setHoadonDetailsList] = useState<HoaDonDetails[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [bookingList, setBookingList] = useState<Booking[]>([]);
-    const [bookingDetailsList, setBookingDetailsList] = useState<BookingDetails[]>([]);
     const [customerList, setCustomerList] = useState<Customer[]>([]);
     const [dichVuList, setDichVuList] = useState<DichVu[]>([]);
     const [nhanVienList, setNhanVienList] = useState<NhanVien[]>([]);
     const [khuyenMaiList, setKhuyenMaiList] = useState<KhuyenMai[]>([]);
     const [viewDetailsList, setViewDetailsList] = useState<HoaDonDetails[]>([]);
-    const filteredHoadonList = hoadonList.filter(hd =>
-        hd.MALICH?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hd.MAKH?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hd.TRANGTHAI?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hd.MANV?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hd.MAHD?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (hd.NGAYTHANHTOAN
-            ? new Date(hd.NGAYTHANHTOAN).toLocaleDateString('vi-VN').includes(searchTerm)
-            : false)
-    );
-
-    //up data từ api lên bảng
+    const [query, setQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [paymentFilter, setPaymentFilter] = useState("");
+    const [dateRange, setDateRange] = useState({ start: "", end: "" });
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [saving, setSaving] = useState(false);
+    const saveLock = useRef(false);
+    const fetchVersion = useRef(0);
+    const detailVersion = useRef(0);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+    const customers = new Map(customerList.map(item => [item.MAKH?.trim(), item]));
+    const staff = new Map(nhanVienList.map(item => [item.MANV?.trim(), item]));
+    const matchingInvoices = hoadonList.filter(hd => {
+        const customer = customers.get(hd.MAKH?.trim());
+        const cashier = staff.get(hd.MANV?.trim());
+        const haystack = [hd.MAHD, hd.MALICH, hd.MAKH, hd.MANV, customer?.HOTEN,
+            customer?.SDT, cashier?.HOTEN, hd.TRANGTHAI].join(" ").toLocaleLowerCase("vi");
+        const day = dateKey(hd.NGAYTHANHTOAN);
+        return [searchTerm, query].every(term => haystack.includes(term.trim().toLocaleLowerCase("vi")))
+            && (!paymentFilter || hd.HINHTHUCTHANHTOAN?.trim() === paymentFilter)
+            && (!dateRange.start || day >= dateRange.start)
+            && (!dateRange.end || (!!day && day <= dateRange.end));
+    }).sort((a, b) => (b.NGAYTHANHTOAN || "").localeCompare(a.NGAYTHANHTOAN || "") || b.MAHD.localeCompare(a.MAHD));
+    const filteredHoadonList = matchingInvoices.filter(row => !statusFilter || row.TRANGTHAI?.trim() === statusFilter);
+    const invoiceStatuses = ["", "Chưa thanh toán", "Đã thanh toán", "Đã huỷ"];
+    const statusClass = (status: string) => status === "Chưa thanh toán" ? 2 : status === "Đã thanh toán" ? 3 : 4;
+    const totalPages = Math.max(1, Math.ceil(filteredHoadonList.length / pageSize));
+    const currentPage = Math.min(page, totalPages);
+    const pageItems = filteredHoadonList.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    const paid = filteredHoadonList.filter(row => row.TRANGTHAI?.trim() === "Đã thanh toán");
+    const unpaid = filteredHoadonList.filter(row => row.TRANGTHAI?.trim() === "Chưa thanh toán");
+    useEffect(() => { setPage(1); }, [searchTerm, query, statusFilter, paymentFilter, dateRange, pageSize]);
+    useEffect(() => { setPage(currentPage); }, [currentPage]);
     const fetchData = async () => {
+        const version = ++fetchVersion.current;
         setIsLoading(true);
         setError(null);
         try {
-            const resHoadon = await hoadonApi.getAll();
-            const resNhanVien = await staffApi.getAll();
-            const resKH = await customerApi.getAll();
-            const resDichVu = await dichVuApi.getAll();
-            const resBooking = await bookingApi.getAll();
-            const resHoaDonDetails = await hoadonApi.getAllCT();
-            const resBookingDetails = await bookingApi.getAllCT();
-            const resKM = await KhuyenMaiApi.getAll();
-
-            if (resHoadon.data.success) {
-                setHoadonList(resHoadon.data.data);
-            }
-            if (resKM.data.success) {
-                setKhuyenMaiList(resKM.data.data);
-            }
-            if (resHoaDonDetails.data.success) {
-                setHoadonDetailsList(resHoaDonDetails.data.data);
-            }
-
-            if (resKH.data.success) {
-                setCustomerList(resKH.data.data);
-            }
-            if (resDichVu.data.success) {
-                setDichVuList(resDichVu.data.data);
-            }
-            if (resNhanVien.data.success) {
-                setNhanVienList(resNhanVien.data.data);
-            }
-            if (resBooking.data.success) {
-                setBookingList(resBooking.data.data);
-            }
-            if (resBookingDetails.data.success) {
-                setBookingDetailsList(resBookingDetails.data.data);
-            }
-            // const ngaythanhtoan = new Date().toISOString().split('T')[0];
-            // console.log(ngaythanhtoan);
-
-
-        } catch (err) {
-            setError("Không thể tải dữ liệu từ máy chủ.");
+            const responses = await Promise.all([
+                hoadonApi.getAll(), staffApi.getAll(), customerApi.getAll(),
+                dichVuApi.getAll(), bookingApi.getAll(), KhuyenMaiApi.getAll()
+            ]);
+            if (version !== fetchVersion.current) return;
+            if (responses.some(res => !res.data.success)) throw new Error("Không thể tải dữ liệu");
+            const [invoices, employees, clients, services, bookings, promotions] = responses;
+            setHoadonList(invoices.data.data || []);
+            setNhanVienList(employees.data.data || []);
+            setCustomerList(clients.data.data || []);
+            setDichVuList(services.data.data || []);
+            setBookingList(bookings.data.data || []);
+            setKhuyenMaiList(promotions.data.data || []);
+        } catch {
+            if (version === fetchVersion.current) setError("Không thể tải dữ liệu từ máy chủ. Vui lòng thử lại.");
         } finally {
-            setIsLoading(false);
+            if (version === fetchVersion.current) setIsLoading(false);
         }
     };
-    // Tải dữ liệu khi component mount
     useEffect(() => {
         fetchData();
+        return () => { fetchVersion.current++; detailVersion.current++; };
     }, []);
 
-
-    //Form data và lỗi
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [formData, setFormData] = useState({
         hoadonID: '',
@@ -113,7 +110,7 @@ const HoaDonPage = () => {
         methodPayment: '',
         status: '',
         branchID: '',
-        dateThanhToan: ''
+        dateThanhToan: today
     });
     const [formDataDetails, setFormDataDetails] = useState({
         hoadonID: '',
@@ -126,7 +123,6 @@ const HoaDonPage = () => {
         start: '',
         end: ''
     });
-    // Chuẩn bị form rỗng khi Thêm 
     const handleOpenAdd = () => {
         setFormData({
             hoadonID: '',
@@ -138,7 +134,7 @@ const HoaDonPage = () => {
             methodPayment: '',
             status: '',
             branchID: '',
-            dateThanhToan: ''
+            dateThanhToan: today
         });
         setFormDataDetails({
             hoadonID: '',
@@ -150,15 +146,12 @@ const HoaDonPage = () => {
         setFormErrors({}); // Xóa lỗi cũ
         setModalType('add');
     };
-    //xử lý thay đổi form
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { id, value } = e.target;
-        // Cập nhật dữ liệu người dùng nhập vào formData
         setFormData((prev) => ({ ...prev, [id]: value }));
         setFormDataDetails((prev) => ({ ...prev, [id]: value }));
         setFormDataTK((prev) => ({ ...prev, [id]: value }));
 
-        //Tự động xóa lỗi của chính field đang được gõ
         if (formErrors[id]) {
             setFormErrors((prev) => {
                 const newErrors = { ...prev };
@@ -168,13 +161,15 @@ const HoaDonPage = () => {
         }
     };
 
-    //HÀM SUBMIT CHO CẢ THÊM VÀ SỬA
     const handleSubmitForm = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (saveLock.current) return;
+        if (modalType !== 'edit' && (!Number.isInteger(Number(formDataDetails.soluongdung)) || Number(formDataDetails.soluongdung) < 1)) {
+            setFormErrors({ soluongdung: "Số lượng phải là số nguyên lớn hơn 0." });
+            return;
+        }
 
-        //có lỗi
         if (modalType === 'add') {
-            // Kiểm tra toàn bộ dữ liệu với Zod khi thêm mới
             const validationResult = HoadonSchema.safeParse({
                 ...formData,
                 ...formDataDetails
@@ -201,22 +196,12 @@ const HoaDonPage = () => {
                 return;
             }
         }
-        //hợp lệ
         setFormErrors({});
 
-        //tạo FormData theo swagger
-        //form hoá đơn
-        // const submitData = new FormData();
-        // submitData.append('MaHD', formData.hoadonID);
-        // submitData.append('MaKH', formData.khachhangID);
-        // submitData.append('MaKM', formData.khuyenmaiID);
-        // submitData.append('MaLich', formData.bookingID || '');
-        // submitData.append('MaNV', formData.nhanvienID);
 
         let finalTongTien = 0;
 
         if (modalType === 'add') {
-            //giá dịch vụ * số lượng và trừ đi khuyến mại
             const dichVuSelected = dichVuList.find(dv => dv.MADV.trim() === formDataDetails.dichvuID);
             const donGia = dichVuSelected ? Number(dichVuSelected.GIADV) : 0;
             const soLuong = Number(formDataDetails.soluongdung || 0);
@@ -225,29 +210,18 @@ const HoaDonPage = () => {
             const giamgia = khuyenmaiSelected ? (khuyenmaiSelected.GIATRI) : 0;
 
             const tongTienGoc = donGia * soLuong;
-            //console.log("Tiền chưa giảm giá:", tongTienGoc);
-            //console.log("Đơn giá:", donGia);
-            //console.log("Số lượng:", soLuong);
-            //console.log("Khuyến mại:", giamgia / 100);
             finalTongTien = Math.round(tongTienGoc - (tongTienGoc * giamgia / 100));
         } else {
             finalTongTien = Math.round(Number(formData.sum || 0));
         }
-        //console.log("Tổng tiền chuẩn bị gửi đi là:", finalTongTien);
 
 
-        // submitData.append('TongTien', finalTongTien.toString());
-        // submitData.append('HinhThucThanhToan', formData.methodPayment);
-        // submitData.append('TrangThai', formData.status || 'Chưa thanh toán');
-        //chỉ thêm thì mới lấy ngày hiện tại
         const ngayTT = modalType === 'add'
-            ? new Date().toISOString().split('T')[0]
+            ? formData.dateThanhToan || today
             : formData.dateThanhToan; // Lấy lại ngày cũ đã lưu trong state khi sửa
 
-        // submitData.append('NgayTT', ngayTT);
 
 
-        // TẠO JSON HÓA ĐƠN
         const submitData: HoaDon = {
             MAHD: formData.hoadonID.trim(),
             MAKH: formData.khachhangID.trim() || '',
@@ -260,21 +234,7 @@ const HoaDonPage = () => {
             NGAYTT: ngayTT
         } as any; // Ép kiểu vì có biến phụ NGAYTT
 
-        // //form chi tiết hoá đơn
-        // const submitDataCT = new FormData();
-        // submitDataCT.append('MaHD', formData.hoadonID);
-        // submitDataCT.append('MaDV', formDataDetails.dichvuID);
-        // submitDataCT.append('SoLuong', formDataDetails.soluongdung);
-        // //lấy đơn giá theo dịch vụ
-        // const dichVuChon = dichVuList.find(dv => dv.MADV.trim() === formDataDetails.dichvuID.trim());
-        // submitDataCT.append('DonGia', dichVuChon ? dichVuChon.GIADV.toString() : '0');
-        // //tính thành tiền cho chi tiết
-        // const thanhtienCT = dichVuChon ? (Number(dichVuChon.GIADV) * Number(formDataDetails.soluongdung)).toString() : '0';
-        // submitDataCT.append('ThanhTien', thanhtienCT);
 
-        // const trangthaiHienTai = hoadonList.find(b => b.MAHD.trim() === formData.hoadonID.trim())?.TRANGTHAI || "Chưa thanh toán";
-        // //const trangthaiMoi = formData.status;
-        // TẠO JSON CHI TIẾT
         const dichVuChon = dichVuList.find(dv => dv.MADV?.trim() === formDataDetails.dichvuID?.trim());
         const donGiaCT = dichVuChon ? Number(dichVuChon.GIADV) : 0;
 
@@ -287,6 +247,8 @@ const HoaDonPage = () => {
         };
 
         const trangthaiHienTai = hoadonList.find(b => b.MAHD?.trim() === formData.hoadonID?.trim())?.TRANGTHAI?.trim();
+        saveLock.current = true;
+        setSaving(true);
         try {
 
             if (modalType === 'add') {
@@ -300,8 +262,6 @@ const HoaDonPage = () => {
 
             }
             else if (modalType === 'edit') {
-                //chưa thanh toán -> đã thanh toán
-                //chưa thanh toán -> đã huỷ   
                 if (trangthaiHienTai === "Đã huỷ" || trangthaiHienTai === "Đã thanh toán") {
                     toast.error("Hóa đơn đã " + trangthaiHienTai + ", không thể thay đổi trạng thái nữa!");
                     return;
@@ -327,16 +287,17 @@ const HoaDonPage = () => {
             fetchData(); // Tải lại dữ liệu
         } catch (error: any) {
             console.error("Lỗi:", error);
-            // HỨNG LỖI TỪ BACKEND
             if (error.response && error.response.data && error.response.data.message) {
                 toast.error(error.response.data.message);
             } else {
                 toast.error("Thao tác thất bại, vui lòng kiểm tra lại!");
             }
+        } finally {
+            saveLock.current = false;
+            setSaving(false);
         }
     };
 
-    // xoá
     const handleDeleteConfirm = async () => {
         if (!idToDelete) return;
         if (quyenHientai !== '1' && quyenHientai !== '2') {
@@ -344,7 +305,6 @@ const HoaDonPage = () => {
             return;
         }
         try {
-            //chỉ xoá những hoá đơn đã huỷ
             const hoadon = hoadonList.find(b => b.MAHD.trim() === idToDelete.trim());
             if (hoadon?.TRANGTHAI.trim() !== "Đã huỷ") {
                 toast.error("Chỉ có thể xóa những hóa đơn đã huỷ!");
@@ -362,7 +322,6 @@ const HoaDonPage = () => {
                 setViewDetailsList([]);
             }
         } catch (error: any) {
-            // HỨNG LỖI TỪ BACKEND
             if (error.response && error.response.data && error.response.data.message) {
                 toast.error(error.response.data.message);
             } else {
@@ -376,28 +335,23 @@ const HoaDonPage = () => {
     };
 
     const handleViewClick = async (row: HoaDon) => {
+        const version = ++detailVersion.current;
+        setIDtoView(row.MAHD.trim());
+        setViewDetailsList([]);
+        setDetailsLoading(true);
         try {
-            setIDtoView(row.MAHD.trim() || null);
-
-            const view = await hoadonApi.getByIdCT(row.MAHD.trim() || '');
-            if (view.data.success) {
-                const responseData = view.data.data;
-                // Nếu là mảng thì giữ nguyên, không thì bọc []
-                const formattedData = Array.isArray(responseData) ? responseData : [responseData];
-                setViewDetailsList(formattedData);
-
-            } else {
-                toast.error("Không tìm thấy chi tiết hoá đơn!");
-                setViewDetailsList([]); // Xóa rỗng bảng nếu không có data
-            }
-        } catch (error) {
-            console.error("Lỗi xem chi tiết:", error);
-            toast.error("Xem chi tiết thất bại!");
-            setViewDetailsList([]); // Xóa rỗng bảng nếu không có data
+            const response = await hoadonApi.getByIdCT(row.MAHD.trim());
+            if (version !== detailVersion.current) return;
+            if (!response.data.success) throw new Error();
+            const data = response.data.data;
+            setViewDetailsList(Array.isArray(data) ? data : data ? [data] : []);
+        } catch {
+            if (version === detailVersion.current) toast.error("Không tải được chi tiết hóa đơn. Vui lòng thử lại.");
+        } finally {
+            if (version === detailVersion.current) setDetailsLoading(false);
         }
     };
     const handleEditClick = async (row: HoaDon) => {
-        // Tìm chi nhánh của nhân viên thu ngân trong hoá đơn này
         const thuNgan = nhanVienList.find(nv => nv.MANV?.trim() === row.MANV?.trim());
         const machiNhanh = thuNgan ? thuNgan.MACHINHANH?.trim() : '';
         setFormData({
@@ -419,7 +373,7 @@ const HoaDonPage = () => {
     };
     const handleAddDetailsClick = async (row: HoaDon) => {
         const thuNgan = nhanVienList.find(nv => nv.MANV.trim() === row.MANV.trim());
-        const machiNhanh = thuNgan ? thuNgan.MACHINHANH.trim() : '';
+        const machiNhanh = thuNgan?.MACHINHANH?.trim() || '';
         setFormData({
             hoadonID: String(row.MAHD || '').trim(),
             khachhangID: String(row.MAKH || '').trim(),
@@ -443,13 +397,10 @@ const HoaDonPage = () => {
         setModalType('addDetails');
     }
 
-    //nếu là khách vãng lai thì chọn chi nhánh dùng dịch vụ sẽ ra thu ngân tại đó
-    //còn khách có lịch hẹn thì khi chọn lịch hẹn sẽ lấy chi nhánh của lịch hẹn và lấy thu ngân ở đó
     const chiNhanhhoacLich = formData.bookingID && formData.bookingID !== ""
         ? bookingList.find(b => b.MALICH.trim() === formData.bookingID?.trim())?.MACHINHANH
         : formData.branchID;
 
-    //HÀM RENDER FORM CHUNG CHO CẢ THÊM VÀ SỬA
     const renderFormContent = () => (
         <>
             <div className="form-group">
@@ -522,9 +473,9 @@ const HoaDonPage = () => {
 
             <div hidden={modalType === "addDetails"} className="form-group">
                 <label>Khuyến mại:</label>
-                <select id="khuyenmaiID" value={formData.khuyenmaiID} onChange={handleChange}>
+                <select disabled={modalType === "edit"} id="khuyenmaiID" value={formData.khuyenmaiID} onChange={handleChange}>
                     <option value="">-- Chọn khuyến mại --</option>
-                    {khuyenMaiList.filter((km) => km.TRANGTHAI?.trim() === "Đang áp dụng").map((km) =>
+                    {khuyenMaiList.filter((km) => km.TRANGTHAI?.trim() === "Đang áp dụng" || km.MAKM?.trim() === formData.khuyenmaiID).map((km) =>
                     (
                         <option key={km.MAKM?.trim()} value={km.MAKM?.trim()}>
                             {km.TENKM} ({km.MOTA})
@@ -587,75 +538,27 @@ const HoaDonPage = () => {
                 </select>
                 {formErrors.status && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.status}</span>}
             </div>
-            <button type="submit" className="btn primary">{modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
+            <button disabled={saving} type="submit" className="ba-button ba-primary">{saving ? 'Đang lưu…' : modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
         </>
     );
 
-    //CSS cho hình thức thanh toán
-    const MethodPayment: Record<string, React.CSSProperties> = {
-        "Tiền mặt": {
-            backgroundColor: '#f6ffed',
-            color: '#389e0d',
-            border: '1px solid #b7eb8f'
-        },
-        "Thẻ tín dụng": {
-            backgroundColor: '#e6f7ff',
-            color: '#096dd9',
-            border: '1px solid #91d5ff'
-        },
-        "Chuyển khoản": {
-            backgroundColor: '#e6fffe',
-            color: '#08a4d4',
-            border: '1px solid #91ccff'
-        },
-        "Ví điện tử": {
-            backgroundColor: '#f9f0ff',
-            color: '#531dab',
-            border: '1px solid #d3adf7'
-        },
-        "Không xác định": {
-            backgroundColor: '#fafafa',
-            color: '#595959',
-            border: '1px solid #d9d9d9'
-        },
-    };
-
-
-    //css cho trạng thái
-    const statusStyles: Record<string, React.CSSProperties> = {
-        "Chưa thanh toán": { backgroundColor: '#fff7e6', color: '#fa8c16', border: '1px solid #ffd591' },
-        "Đã thanh toán": { backgroundColor: '#f6ffed', color: '#52c41a', border: '1px solid #b7eb8f' },
-        "Đã huỷ": { backgroundColor: '#fff1f0', color: '#f5222d', border: '1px solid #ffa39e' },
-    };
-
-    //Định nghĩa cột cho DataTable theo api trả về
     const hoadonColumns: Column<HoaDon>[] = [
-        { tieude: "ID", cotnhandulieu: "MAHD" },
+        { tieude: "Mã hóa đơn", cotnhandulieu: "MAHD" },
         {
-            tieude: "Ngày lập", cotnhandulieu: "NGAYTHANHTOAN", render(row) {
+            tieude: "Ngày thanh toán", cotnhandulieu: "NGAYTHANHTOAN", render(row) {
                 return row.NGAYTHANHTOAN ? new Date(row.NGAYTHANHTOAN).toLocaleDateString('vi-VN') : "Chưa có";
             },
         },
         {
             tieude: "Khách hàng", cotnhandulieu: "MAKH", render: (row) => {
                 const tenkh = customerList.find(kh => kh.MAKH?.trim() === row.MAKH?.trim())?.HOTEN;
-                return `${row.MAKH} - ${tenkh ? tenkh : "Khách vãng lai"}`;
+                return <div><strong>{tenkh || "Khách vãng lai"}</strong><small>{customers.get(row.MAKH?.trim())?.SDT || row.MAKH || "—"}</small></div>;
             }
         },
-        // {
-        //     tieude: "Khuyến mại", cotnhandulieu: "MAKM", render: (row) => {
-        //         return row.MAKM ? row.MAKM : "Không có";
-        //     }
-        // },
-        // {
-        //     tieude: "Lịch hẹn", cotnhandulieu: "MALICH", render: (row) => {
-        //         return row.MALICH ? row.MALICH : "Không có";
-        //     }
-        // },
         {
             tieude: "Thu ngân", cotnhandulieu: "MANV", render: (row) => {
                 const tennv = nhanVienList.find(nv => nv.MANV?.trim() === row.MANV?.trim())?.HOTEN;
-                return `${row.MANV} - ${tennv ? tennv : "Không xác định"}`;
+                return tennv || row.MANV || "—";
             }
         },
         {
@@ -667,55 +570,31 @@ const HoaDonPage = () => {
         {
             tieude: "Hình thức thanh toán", cotnhandulieu: "HINHTHUCTHANHTOAN", render: (row) => {
                 const method = row.HINHTHUCTHANHTOAN || "Không xác định";
-                const style = MethodPayment[method] || MethodPayment["Không xác định"];
-                return <span style={{
-                    padding: '4px 10px',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    whiteSpace: 'nowrap',
-                    ...style
-                }}>
-                    {style ? row.HINHTHUCTHANHTOAN : "Không xác định"}
-                </span>;
+                return <span className="ba-status">{method}</span>;
             }
         },
         {
             tieude: "Trạng thái", cotnhandulieu: "TRANGTHAI", render: (row) => {
-                const style = statusStyles[row.TRANGTHAI?.trim() || ''] || {};
-                return (
-                    <span style={{
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        whiteSpace: 'nowrap',
-                        ...style
-                    }}>
-                        {style ? row.TRANGTHAI : "Không xác định"}
-                    </span>
-                )
+                const status = row.TRANGTHAI?.trim();
+                return <span className={`ba-status ${status ? "ba-status-" + statusClass(status) : ""}`}>{status || "Không xác định"}</span>;
             }
         },
         {
             tieude: "Hành động", cotnhandulieu: "MALICH", render: (row) => (
-                <>
-                    <button className="btn small view" onClick={() => handleViewClick(row)}><i className="fas fa-eye"></i></button>
-                    <button className="btn small addDetail" onClick={() => handleAddDetailsClick(row)}><i className="fa-regular fa-calendar-plus"></i></button>
-                    <button className="btn small edit" onClick={() => handleEditClick(row)}><i className="fas fa-edit"></i></button>
-                    <button
-                        className="btn small delete"
-                        onClick={() => handleDeleteClick(row)}
-                    >
-                        <i className="fas fa-trash"></i>
-                    </button>
-                </>
+                <div className="ba-row-actions">
+                    <button onClick={() => handleViewClick(row)}>Chi tiết</button>
+                    {row.TRANGTHAI?.trim() === "Chưa thanh toán" && <>
+                        <button onClick={() => handleAddDetailsClick(row)}>Thêm dịch vụ</button>
+                        <button onClick={() => handleEditClick(row)}>Cập nhật</button>
+                    </>}
+                    {row.TRANGTHAI?.trim() === "Đã huỷ" && ['1', '2'].includes(String(quyenHientai)) &&
+                        <button className="ba-danger" onClick={() => handleDeleteClick(row)}>Xóa</button>}
+                </div>
             )
         },
     ];
-    //Định nghĩa cột cho DataTable theo api trả về
     const hoadonDetailsColumns: Column<HoaDonDetails>[] = [
-        { tieude: "ID", cotnhandulieu: "MAHD" },
+        { tieude: "Mã hóa đơn", cotnhandulieu: "MAHD" },
         {
             tieude: "Mã dịch vụ", cotnhandulieu: "MADV", render(row) {
                 const dichVu = dichVuList.find(dv => dv.MADV?.trim() === row.MADV?.trim());
@@ -737,110 +616,85 @@ const HoaDonPage = () => {
         },
     ];
 
-    const handleClickReport = async () => {
-        //e.preventDefault();
-        try {
-            if (!formDataTK.start || !formDataTK.end) {
-                toast.warn("Hãy chọn ngày cần lọc!");
-                return;
-            }
-            const ngaybd = formDataTK.start.toString();
-            const ngaykt = formDataTK.end.toString();
-            //console.log(ngaybd);
-            //console.log(ngaykt);
-            if (ngaybd > ngaykt) {
-                toast.warn("Ngày bắt đầu lọc phải nhỏ hơn ngày kết thúc!");
-                return;
-            }
-            const resHoaDonTheoNgay = await hoadonApi.getByNgay(formDataTK.start, formDataTK.end)
-
-            if (resHoaDonTheoNgay.data.success && resHoaDonTheoNgay.data.data) {
-                setHoadonList(resHoaDonTheoNgay.data.data);
-            } else {
-                setHoadonList([]); // Không có reset về rỗng
-            }
-
-
-            toast.success('Lọc theo ngày thành công!');
+    const handleClickReport = () => {
+        if (formDataTK.start && formDataTK.end && formDataTK.start > formDataTK.end) {
+            toast.warn("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.");
+            return;
         }
-        catch (error) {
-            console.error("Lỗi khi lọc theo ngày:", error);
-            toast.error("Có lỗi xảy ra khi tải dữ liệu!");
-        }
-    }
-    const handleClickRefresh = async () => {
-        setFormDataTK({
-            start: '',
-            end: ''
-        })
-        await fetchData();
-        toast.success('Làm mới thành công!');
-    }
+        setDateRange({ ...formDataTK });
+    };
+    const resetFilters = () => {
+        setQuery(""); setStatusFilter(""); setPaymentFilter("");
+        setFormDataTK({ start: "", end: "" });
+        setDateRange({ start: "", end: "" });
+    };
     return (
         <>
-            <div id="invoices" className="section">
-                <div className="panel header-actions">
-                    <h2>Hoá đơn</h2>
-                    <button className="btn primary" onClick={handleOpenAdd}>Thêm hoá đơn</button>
-                </div>
-                {/* <div className="panel">
-                    <DataTable<HoaDonDetails> columns={hoadonDetailsColumns} data={hoadonDetailsList} isLoading={isLoading} />
-                </div> */}
-                <div className="panel">
-                    <div className="reportDate-form">
-                        <div className="form-group reportDate">
-                            <label>Từ ngày:</label>
-                            <input value={formDataTK.start} onChange={handleChange} type="date" id="start" />
-                        </div>
-                        <div className="form-group reportDate">
-                            <label>Đến ngày:</label>
-                            <input value={formDataTK.end} onChange={handleChange} type="date" id="end" />
-                        </div>
-                        <button onClick={handleClickReport} className="btn primary">
-                            <i className="fas fa-filter"></i> Xem hoá đơn theo ngày
-                        </button>
-                        <button onClick={handleClickRefresh} className="btn secondary">
-                            <i className="fas fa-sync"></i> Làm mới
-                        </button>
+            <div id="invoices" className="section invoice-admin">
+                <header className="ba-heading">
+                    <div><p className="ba-eyebrow">QUẢN LÝ SALON</p><h2>Hóa đơn</h2><p>Tra cứu hóa đơn, theo dõi thanh toán và dịch vụ của khách hàng.</p></div>
+                    <div className="ba-actions">
+                        <button className="ba-button" disabled={isLoading} onClick={fetchData}>Làm mới</button>
+                        <button className="ba-button ba-primary" disabled={isLoading || !!error} onClick={handleOpenAdd}>+ Thêm hóa đơn</button>
                     </div>
+                </header>
+                <div className="invoice-summary" aria-label="Thống kê hóa đơn">
+                    <article><span>Hóa đơn phù hợp</span><strong>{isLoading || error ? "—" : filteredHoadonList.length}</strong><small>Theo bộ lọc đang áp dụng</small></article>
+                    <article className="paid"><span>Đã thanh toán</span><strong>{isLoading || error ? "—" : money(paid.reduce((sum, row) => sum + Number(row.TONGTIEN), 0))}</strong><small>{paid.length} hóa đơn</small></article>
+                    <article className="unpaid"><span>Chưa thanh toán</span><strong>{isLoading || error ? "—" : money(unpaid.reduce((sum, row) => sum + Number(row.TONGTIEN), 0))}</strong><small>{unpaid.length} hóa đơn</small></article>
+                    <article><span>Đã huỷ</span><strong>{isLoading || error ? "—" : filteredHoadonList.filter(row => row.TRANGTHAI?.trim() === "Đã huỷ").length}</strong><small>Không tính vào số tiền thanh toán</small></article>
                 </div>
-                {/* CHỈ RENDER KHU VỰC NÀY NẾU IDtoView CÓ GIÁ TRỊ */}
-                {IDtoView && (
-                    <div id="booking-details" className="booking-details" style={{ display: 'block' }}>
-                        {error && <p style={{ color: 'red' }}>{error}</p>}
-
-                        <h3 id="tieudechitiet">Chi tiết hoá đơn {IDtoView}</h3>
-                        <button
-                            type="button"
-                            className="btn small delete"
-                            onClick={() => {
-                                setIDtoView(null); //ẩn bảng
-                                setViewDetailsList([]); //Xóa data
-                            }}
-                        >
-                            <i className="fa-solid fa-circle-xmark"></i> Đóng
-                        </button>
-
-                        <DataTable<HoaDonDetails>
-                            columns={hoadonDetailsColumns}
-                            data={viewDetailsList}
-                            isLoading={isLoading}
-                        />
-
+                <section className="ba-card" aria-label="Danh sách hóa đơn" aria-busy={isLoading}>
+                <div className="ba-filters" aria-label="Bộ lọc hóa đơn">
+                    <label className="ba-search">Tìm hóa đơn<input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Mã hóa đơn, tên khách, SĐT, thu ngân…" /></label>
+                    <label>Hình thức thanh toán<select value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}>
+                        <option value="">Tất cả hình thức</option>
+                        {["Tiền mặt", "Thẻ tín dụng", "Chuyển khoản", "Ví điện tử"].map(value => <option key={value}>{value}</option>)}
+                    </select></label>
+                    <label>Từ ngày<input value={formDataTK.start} onChange={e => setFormDataTK(prev => ({ ...prev, start: e.target.value }))} type="date" /></label>
+                    <label>Đến ngày<input value={formDataTK.end} onChange={e => setFormDataTK(prev => ({ ...prev, end: e.target.value }))} type="date" /></label>
+                    <div className="ba-actions"><button onClick={handleClickReport} className="ba-button ba-primary">Áp dụng ngày</button><button onClick={resetFilters} className="ba-button">Xóa bộ lọc</button></div>
+                    <p className="invoice-filter-note">Ngày thanh toán: {dateRange.start || "Từ đầu"} → {dateRange.end || "Đến nay"}. Thống kê tính trên tất cả kết quả phù hợp, bao gồm các trang khác.{searchTerm && ` Tìm kiếm chung: “${searchTerm}”.`}</p>
+                </div>
+                <div className="ba-status-filters" aria-label="Lọc nhanh theo trạng thái">
+                    {invoiceStatuses.map(status => <button key={status} aria-pressed={statusFilter === status} onClick={() => setStatusFilter(status)}>
+                        <span className={`ba-dot ba-dot-${status ? statusClass(status) + 1 : 0}`} />
+                        {status || "Tất cả"} <b>{isLoading || error ? "…" : matchingInvoices.filter(row => !status || row.TRANGTHAI?.trim() === status).length}</b>
+                    </button>)}
+                </div>
+                    <div className="ba-list-heading"><h3>Danh sách hóa đơn</h3><span>Mới nhất trước</span></div>
+                    {isLoading ? <div className="ba-empty" role="status">Đang tải hóa đơn…</div>
+                        : error ? <div className="ba-empty ba-error" role="alert">{error}<button className="ba-button" onClick={fetchData}>Thử lại</button></div>
+                        : !pageItems.length ? <div className="ba-empty"><strong>Không có hóa đơn phù hợp</strong><p>Thử đổi khoảng ngày hoặc xóa bộ lọc để xem thêm.</p></div>
+                        : <div className="ba-table-scroll"><table className="ba-table invoice-table">
+                            <thead><tr>{hoadonColumns.map(column => <th key={column.tieude}>{column.tieude}</th>)}</tr></thead>
+                            <tbody>{pageItems.map(row => <tr key={row.MAHD}>{hoadonColumns.map(column => <td key={column.tieude}>{column.render ? column.render(row) : row[column.cotnhandulieu]}</td>)}</tr>)}</tbody>
+                        </table></div>}
+                    <div className="ba-pagination">
+                        <span>{filteredHoadonList.length ? (currentPage - 1) * pageSize + 1 : 0}–{Math.min(currentPage * pageSize, filteredHoadonList.length)} / {filteredHoadonList.length} hóa đơn</span>
+                        <label>Số dòng<select value={pageSize} onChange={e => setPageSize(Number(e.target.value))}>{[10, 20, 50].map(size => <option key={size} value={size}>{size}</option>)}</select></label>
+                        <div className="ba-actions"><button className="ba-button" disabled={isLoading || !!error || currentPage === 1} onClick={() => setPage(currentPage - 1)}>Trước</button><span>Trang {currentPage}/{totalPages}</span><button className="ba-button" disabled={isLoading || !!error || currentPage === totalPages} onClick={() => setPage(currentPage + 1)}>Sau</button></div>
                     </div>
-                )}
-                <div className="panel">
-                    <DataTable<HoaDon> columns={hoadonColumns} data={filteredHoadonList} isLoading={isLoading} />
-                </div>
+                </section>
+                <Modal isOpen={!!IDtoView} onClose={() => { detailVersion.current++; setIDtoView(null); setViewDetailsList([]); }} title={`Chi tiết hóa đơn ${IDtoView || ""}`}>
+                    <div className="ba-detail">
+                        <div className="ba-detail-item">
+                            <strong>{customers.get(hoadonList.find(row => row.MAHD.trim() === IDtoView)?.MAKH?.trim() || "")?.HOTEN || "Khách vãng lai"}</strong>
+                            <p>Tổng tiền: {money(hoadonList.find(row => row.MAHD.trim() === IDtoView)?.TONGTIEN || 0)}</p>
+                        </div>
+                        <div className="ba-table-scroll invoice-detail-table"><DataTable<HoaDonDetails> columns={hoadonDetailsColumns} data={viewDetailsList} isLoading={detailsLoading} /></div>
+                        <div className="ba-actions"><button className="ba-button" onClick={() => { detailVersion.current++; setIDtoView(null); }}>Đóng</button></div>
+                    </div>
+                </Modal>
                 {/* DÙNG CHUNG MODAL CHO CẢ THÊM VÀ SỬA */}
-                <Modal isOpen={modalType !== 'none'} onClose={() => setModalType('none')} title={modalType === 'add' ? "Thêm mới hoá đơn" : "Sửa thông tin hoá đơn"}>
-                    <form className="service-form" onSubmit={handleSubmitForm}>
+                <Modal isOpen={modalType === 'add' || modalType === 'edit'} onClose={() => setModalType('none')} title={modalType === 'add' ? "Thêm mới hoá đơn" : "Sửa thông tin hoá đơn"}>
+                    <form className="ba-form" onSubmit={handleSubmitForm}>
                         {renderFormContent()}
                     </form>
                 </Modal>
                 {/* modal thêm chi tiết */}
                 <Modal isOpen={modalType === 'addDetails'} onClose={() => setModalType('none')} title="Thêm chi tiết hoá đơn">
-                    <form className="service-form" onSubmit={handleSubmitForm}>
+                    <form className="ba-form" onSubmit={handleSubmitForm}>
                         {renderFormContent()}
                     </form>
                 </Modal>
@@ -848,7 +702,7 @@ const HoaDonPage = () => {
                 {/* Modal xóa */}
                 <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Xác nhận Xóa">
                     <p>Bạn có chắc chắn muốn xóa hoá đơn <strong>{idToDelete}</strong> không?</p><br />
-                    <button className="btn small delete" onClick={handleDeleteConfirm}><i className="fas fa-trash"></i> Xóa ngay</button>
+                    <button className="ba-button ba-danger" onClick={handleDeleteConfirm}><i className="fas fa-trash"></i> Xóa ngay</button>
                 </Modal>
             </div>
         </>

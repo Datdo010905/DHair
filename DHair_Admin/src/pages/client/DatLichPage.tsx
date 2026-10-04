@@ -1,373 +1,207 @@
-import React, { useState, useEffect, useMemo } from "react";
-import "../../assets/css/lichhen.css";
-import { toast } from "react-toastify";
-import dichVuApi, { DichVu } from "../../api/dichvuApi";
-import Modal from "../../components/ui/Modal";
-import bookingApi, { Booking, BookingDetails } from "../../api/bookingApi";
-import staffApi, { NhanVien } from "../../api/staffApi";
-import TaiKhoanApi from "../../api/taikhoanApi";
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import '../../assets/css/booking-admin.css';
+import '../../assets/css/lichhen.css';
+import { toast } from 'react-toastify';
+import Modal from '../../components/ui/Modal';
+import dichVuApi, { DichVu } from '../../api/dichvuApi';
+import bookingApi from '../../api/bookingApi';
+import axiosClient from '../../api/axiosClient';
+import axios from 'axios';
 
-const DatLichPage = () => {
+interface Options {
+    branches: { MACHINHANH: string; TENCHINHANH: string; DIACHI: string }[];
+    stylists: { MANV: string; HOTEN: string }[];
+    today: string;
+    lastDay: string;
+}
+const emptyOptions: Options = { branches: [], stylists: [], today: '', lastDay: '' };
+const currency = (value: number) => value.toLocaleString('vi-VN') + ' ₫';
+const dateLabel = (value: string) => value ? value.split('-').reverse().join('/') : 'Chưa chọn';
 
-	const [modalType, setModalType] = useState<'checkpass' | 'none'>('none');
+export default function DatLichPage() {
+    const navigate = useNavigate();
+    const username = localStorage.getItem('username') || '';
+    const [fullName, setFullName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [profileLoading, setProfileLoading] = useState(false);
+    const [profileError, setProfileError] = useState('');
+    const [profileReload, setProfileReload] = useState(0);
+    const [services, setServices] = useState<DichVu[]>([]);
+    const [options, setOptions] = useState<Options>(emptyOptions);
+    const [form, setForm] = useState({ service: localStorage.getItem('madvCanXem')?.trim() || '', branch: '', staff: '', date: '', time: '', note: '' });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [reload, setReload] = useState(0);
+    const [staffLoading, setStaffLoading] = useState(false);
+    const [staffError, setStaffError] = useState('');
+    const [hoursLoading, setHoursLoading] = useState(false);
+    const [hoursError, setHoursError] = useState('');
+    const [slots, setSlots] = useState<string[]>([]);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [password, setPassword] = useState('');
+    const [saving, setSaving] = useState(false);
+    const saveLock = useRef(false);
 
-	const getSDT = localStorage.getItem("username");
-	const getName = localStorage.getItem("tenkhach");
+    useEffect(() => {
+        const controller = new AbortController();
+        setFullName(''); setPhone(''); setProfileError('');
+        if (!username) { setProfileLoading(false); return; }
+        setProfileLoading(true);
+        axiosClient.get<{ success: boolean; data: { fullName: string; phone: string } }>('/api/khachhang/me', { signal: controller.signal })
+            .then(response => {
+                if (controller.signal.aborted) return;
+                if (!response.data.success) throw new Error();
+                setFullName(response.data.data.fullName);
+                setPhone(response.data.data.phone);
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) setProfileError('Không tải được thông tin khách hàng. Vui lòng thử lại.');
+            })
+            .finally(() => { if (!controller.signal.aborted) setProfileLoading(false); });
+        return () => controller.abort();
+    }, [username, profileReload]);
 
-	//dùng dv cần xem bằng state
-	const [selectedDichVu, setSelectedDichVu] = useState<string>(localStorage.getItem("madvCanXem")?.trim() || "");
-	//state lựa chọn
-	const [dichVuList, setDichVuList] = useState<DichVu[]>([]);
-	const [nhanVienList, setNhanVienList] = useState<NhanVien[]>([]); // Dữ liệu nhân viên để đổ vào select
-	const [bookingList, setBookingList] = useState<Booking[]>([]);
-	const [bookingDetailsList, setBookingDetailsList] = useState<BookingDetails[]>([]);
+    useEffect(() => {
+        let active = true;
+        setLoading(true); setError('');
+        Promise.all([dichVuApi.getAllDichVuClient(), axiosClient.get('/api/lichhen/booking-options')])
+            .then(([serviceResponse, optionResponse]) => {
+                if (!active) return;
+                if (!serviceResponse.data.success || !optionResponse.data.success) throw new Error();
+                setServices(serviceResponse.data.data || []);
+                setOptions(prev => ({ ...optionResponse.data.data, stylists: prev.stylists }));
+                setForm(prev => ({ ...prev, date: prev.date || optionResponse.data.data.today }));
+            }).catch(() => { if (active) setError('Không tải được thông tin đặt lịch. Vui lòng thử lại.'); })
+            .finally(() => { if (active) setLoading(false); });
+        return () => { active = false; };
+    }, [reload]);
 
-	const [matkhauCheck, setmatkhauCheck] = useState<string>("");
+    useEffect(() => {
+        const controller = new AbortController();
+        setStaffError('');
+        if (!form.branch) { setStaffLoading(false); return; }
+        setStaffLoading(true);
+        axiosClient.get('/api/lichhen/booking-options', { params: { branchId: form.branch }, signal: controller.signal })
+            .then(response => {
+                if (controller.signal.aborted) return;
+                if (!response.data.success) throw new Error();
+                setOptions(response.data.data);
+            }).catch(() => { if (!controller.signal.aborted) setStaffError('Không tải được stylist. Vui lòng thử lại.'); })
+            .finally(() => { if (!controller.signal.aborted) setStaffLoading(false); });
+        return () => controller.abort();
+    }, [form.branch, reload]);
 
-	const [formData, setFormData] = useState({
-		bookingID: '',
-		customerID: '',
-		branchID: '',
-		bookingDate: '',
-		bookingTime: '',
-		status: '',
-		dichvu: '',
-		soluong: '',
-		nhanvien: '',
-	});
+    useEffect(() => {
+        const controller = new AbortController();
+        setSlots([]); setHoursError('');
+        setForm(prev => prev.time ? { ...prev, time: '' } : prev);
+        if (!form.branch || !form.staff || !form.service || !form.date) { setHoursLoading(false); return; }
+        setHoursLoading(true);
+        bookingApi.availability({ branchId: form.branch, staffId: form.staff, serviceId: form.service, date: form.date, quantity: 1 }, controller.signal)
+            .then(response => {
+                if (controller.signal.aborted) return;
+                if (!response.data.success) throw new Error(response.data.message);
+                setSlots(response.data.data.slots.map((slot: { time: string }) => slot.time));
+            }).catch((err: any) => {
+                if (!controller.signal.aborted) setHoursError(err.response?.data?.message || 'Không tải được giờ trống. Vui lòng thử lại.');
+            }).finally(() => { if (!controller.signal.aborted) setHoursLoading(false); });
+        return () => controller.abort();
+    }, [form.branch, form.staff, form.service, form.date, reload]);
 
-	const [formDataDetails, setFormDataDetails] = useState({
-		bookingID: '',
-		branchID: '',
-		dichvu: '',
-		soluong: '',
-		giadukien: '',
-		nhanvien: '',
-		ghichu: '',
-	});
-	//up data từ api
-	const fetchDichVu = async () => {
-		try {
-			const resToc = await dichVuApi.getAllDichVuClient();
-			if (resToc?.data?.success) {
-				setDichVuList(resToc.data.data || []);
-			}
-		} catch (err) {
-			toast.error("Không thể tải dữ liệu từ máy chủ.");
-		}
-	};
-
-	const fetchData = async () => {
-		try {
-			const resNhanVien = await staffApi.getAll();
-			const resBookingDetails = await bookingApi.getAllCT();
-
-			if (resNhanVien?.data?.success) {
-				setNhanVienList(resNhanVien.data.data || []);
-			}
-			if (resBookingDetails?.data?.success) {
-				setBookingDetailsList(resBookingDetails.data.data || []);
-			}
-
-			const resBooking = await bookingApi.getAll();
-			if (resBooking?.data?.success) {
-				setBookingList(resBooking.data.data || []);
-			}
-
-		} catch (err) {
-			toast.error("Không thể tải dữ liệu từ máy chủ.");
-		}
-	};
-
-	// Tải dữ liệu khi component mount
-	useEffect(() => {
-		fetchDichVu();
-		fetchData();
-	}, []);
-
-	//xử lý thay đổi form
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-		const { id, value } = e.target;
-		// Cập nhật dữ liệu người dùng nhập vào formData
-		setFormData((prev) => ({ ...prev, [id]: value }));
-		setFormDataDetails((prev) => ({ ...prev, [id]: value }));
-		setmatkhauCheck((prev) => id === "password" ? value : prev); // Cập nhật mật khẩu kiểm tra nếu trường thay đổi là password
-	};
-
-
-
-	// TỰ ĐỘNG TÍNH TOÁN GIỜ TRỐNG
-	const availableHours = useMemo(() => {
-		if (!formData.nhanvien || !formData.bookingDate) {
-			return [];
-		}
-		//tìm lịch đã được khách chọn nhân viên thực hiện trong ngày đó
-		const bookedIdsForStaff = bookingDetailsList
-			.filter(detail => detail.MANV?.trim() === formData.nhanvien)
-			.map(detail => detail.MALICH?.trim());
-
-		//lọc ra những lịch ngày đó, chưa huỷ hoặc chưa hoàn thành và có nhân viên thực hiện trùng với nhân viên đang chọn
-		const lichDabook = bookingList.filter(booking => {
-			const trungNgay = booking.NGAYHEN && booking.NGAYHEN.split('T')[0] === formData.bookingDate;
-			const chuahuy = booking.TRANGTHAI?.trim() !== "Đã huỷ";
-			const chuahoanthanh = booking.TRANGTHAI?.trim() !== "Đã hoàn thành";
-			//iclude kiểm tra mã lịch của booking có nằm trong danh sách mã lịch đã được chọn nhân viên thực hiện hay không
-			const NVDuocChon = bookedIdsForStaff.includes(booking.MALICH?.trim());
-
-			return trungNgay && chuahuy && chuahoanthanh && NVDuocChon;
-		});
-
-		//giờ hẹn từ API
-		//Chỉ lấy 5 ký tự đầu (HH:mm) để bỏ qua giây (nếu có)
-		const bookedHours = lichDabook.map(b => {
-			if (!b.GIOHEN) return "";
-
-			// lấy phần sau chữ T
-			return b.GIOHEN.split("T")[1]?.substring(0, 5) || "";
-		});
-
-		//console.log("Giờ đã đặt:", bookedHours);
-
-		//tạo danh sách giờ trống từ 8h đến 22h với khoảng cách 30 phút
-		const hours: string[] = [];
-		for (let h = 8; h <= 22; h++) {
-			for (let m of [0, 30]) {
-				//Định dạng giờ thành HH:mm
-				const time = `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-				//thêm vào select
-				if (!bookedHours.includes(time)) {
-					hours.push(time);
-				}
-			}
-		}
-		return hours;
-	}, [formData.nhanvien, formData.bookingDate, bookingList, bookingDetailsList]);
-
-
-
-	
-
-	const themlichhen = (e: React.FormEvent) => {
-		e.preventDefault();
-		//check mật khẩu trước rồi mới cho đặt lịch
-		//hiện popup xác nhận mật khẩu
-		const bookingDateTime = new Date(`${formData.bookingDate}T${formData.bookingTime}`);
-		const now = new Date();
-		if (!formData.bookingTime || !formData.bookingDate) {
-			toast.error("Hãy chọn thời điểm cần đặt lịch!");
-			return;
-		}
-		else if (bookingDateTime <= now) {
-			toast.error("Lịch hẹn phải ở sau thời gian hiện tại");
-			return;
-		}
-
-		setModalType('checkpass');
-	};
-	const submitDatLich = async () => {
-
-		if (!matkhauCheck) {
-			toast.error("Mật khẩu không được để trống!");
-			return;
-		}
-
-		try {
-			const loggedUser = getSDT;
-			if (loggedUser) {
-				//tìm tk
-				const resTaiKhoan = await TaiKhoanApi.getById(loggedUser);
-				//console.log("Thông tin tài khoản:", resTaiKhoan);
-				const thongTinTaiKhoan = resTaiKhoan.data.data;
-				//console.log("Thông tin tài khoản sau khi lấy:", thongTinTaiKhoan);
-				//check mk
-				if (thongTinTaiKhoan.PASS.trim() !== matkhauCheck.trim()) {
-					toast.error("Mật khẩu không chính xác! Vui lòng thử lại.");
-					// console.log("Mật khẩu nhập vào:", matkhauCheck);
-					// console.log("Mật khẩu thực tế:", thongTinTaiKhoan.PASS);
-
-					return;
-				}
-				toast.success("Xác thực thành công! Đang xử lý đặt lịch...");
-				// //tạo FormData theo swagger
-				// const submitData = new FormData();
-
-				// //tạo mã lịch mới theo format LH + timestamp + random 3 số để đảm bảo tính duy nhất
-				// const maLichMoi = "LH" + Date.now() + Math.floor(Math.random() * 1000);
-
-				// submitData.append('MaLich', maLichMoi);
-				// submitData.append('NgayHen', formData.bookingDate);
-				// submitData.append('GioHen', formData.bookingTime);
-				// submitData.append('TrangThai', "Đã đặt");//mặc định
-				// submitData.append('MaChiNhanh', formData.branchID);
-				// //khách hàng là nick đang đăng nhập
-				// submitData.append('MaKH', loggedUser);
-
-				// const submitDataCT = new FormData();
-				// submitDataCT.append('MaLich', maLichMoi);
-
-				// submitDataCT.append('MaDV', selectedDichVu);
-				// submitDataCT.append('MaNV', formData.nhanvien);
-				// submitDataCT.append('SoLuong', formData.soluong || '1'); //mặc định 1 dịch vụ	
-
-				// const dichVuSelected = dichVuList.find(dv => dv.MADV?.trim() === selectedDichVu);
-
-				// submitDataCT.append('GiaDuKien', dichVuSelected ? dichVuSelected.GIADV.toString() : '0');
-				// submitDataCT.append('GhiChu', formDataDetails.ghichu || 'Không có ghi chú');
-
-
-				// Tạo mã lịch mới theo format LH + timestamp + random 3 số để đảm bảo tính duy nhất
-				const maLichMoi = "LH" + Date.now() + Math.floor(Math.random() * 1000);
-
-				// TẠO JSON CHO BẢNG (LỊCH HẸN)
-				const submitData = {
-					MALICH: maLichMoi,
-					NGAYHEN: formData.bookingDate,
-					GIOHEN: formData.bookingTime,
-					TRANGTHAI: "Đã đặt", // Mặc định
-					MACHINHANH: formData.branchID,
-					MAKH: loggedUser // Khách hàng là nick đang đăng nhập
-				};
-
-				// Tìm dịch vụ để lấy giá dự kiến
-				const dichVuSelected = dichVuList.find(dv => dv.MADV?.trim() === selectedDichVu?.trim());
-
-				// TẠO JSON CHO BẢNG (CHI TIẾT LỊCH HẸN)
-				const submitDataCT = {
-					MALICH: maLichMoi,
-					MADV: selectedDichVu?.trim(),
-					MANV: formData.nhanvien?.trim(),
-					SOLUONG: Number(formData.soluong || 1), //mặc định 1
-					GIA_DUKIEN: dichVuSelected ? Number(dichVuSelected.GIADV) : 0,
-					GHICHU: formDataDetails.ghichu || 'Không có ghi chú'
-				};
-
-				const combinedData = {
-					booking: submitData,
-					details: submitDataCT
-				};
-				await bookingApi.createFull(combinedData);
-				toast.success("Đặt lịch thành công!");
-
-				setModalType('none');
-				setmatkhauCheck('');
-				//chuyển hướng về trang lịch sử sau khi đặt lịch thành công
-				setTimeout(() => {
-					window.location.href = "/lichsu";
-				}, 2000);
-			}
-		}
-		catch (error: any) {
-			console.error("Lỗi:", error);
-			console.error("Lỗi khi kiểm tra tài khoản:", error);
-			toast.error("Đã xảy ra lỗi khi xác thực tài khoản!");
-			// HỨNG LỖI TỪ BACKEND
-			if (error.response && error.response.data && error.response.data.message) {
-				toast.error(error.response.data.message);
-			} else {
-				toast.error("Thao tác thất bại, vui lòng kiểm tra lại!");
-			}
-
-		}
-	}
-
-	return (
-		<>
-			<div className="datlich-page">
-				<div className="datlich-form">
-					<h1>ĐẶT LỊCH GIỮ CHỖ</h1>
-					<form>
-						<span>Họ và tên:<span style={{ color: "red" }}>*</span></span><br />
-						<input readOnly id="hoten-dat" className="input-field" maxLength={50} type="text"
-							placeholder="Nhập họ và tên của bạn"
-							value={getName || ''} /><br />
-
-						<span>Số điện thoại:<span style={{ color: "red" }}>*</span></span><br />
-						<input type="text" readOnly maxLength={10} id="sdt-dat" className="input-field" placeholder="Nhập số"
-							value={getSDT || ''}
-						/>
-						<br />
-						<span>Dịch vụ:<span style={{ color: "red" }}>*</span></span><br />
-						<select id="dichvu" className="input-field" value={selectedDichVu}
-							onChange={(e) => setSelectedDichVu(e.target.value.trim())}
-						>
-							<option value="" disabled>-- Chọn dịch vụ --</option>
-							{dichVuList?.map((dv) => (
-								<option key={dv.MADV?.trim()} value={dv.MADV?.trim()}>
-									{dv.TENDV} - {dv.THOIGIAN} phút - {dv.GIADV.toLocaleString()} VNĐ
-								</option>
-							))}
-						</select>
-						<br />
-						<span>Chi nhánh:<span style={{ color: "red" }}>*</span></span><br />
-						<select id="branchID" value={formData.branchID} onChange={handleChange} className="input-field">
-							<option value="">-- Chọn chi nhánh --</option>
-							<option value="CN001">30Shine - Nguyễn Trãi</option>
-							<option value="CN002">30Shine - Cầu Giấy</option>
-							<option value="CN003">30Shine - Tân Bình</option>
-							<option value="CN004">30Shine - Đà Nẵng</option>
-						</select>
-						<br />
-
-
-						<span>Thợ cắt tóc:<span style={{ color: "red" }}>*</span></span><br />
-						<select id="nhanvien" className="input-field" value={formData.nhanvien} disabled={!formData.branchID} onChange={handleChange}>
-							<option value="">-- Chọn nhân viên --</option>
-							{/* lọc nhân viên theo chi nhánh đã chọn và chức vụ */}
-							{nhanVienList?.filter((nv) => nv.MACHINHANH?.trim() === formData.branchID && nv.CHUCVU === "Stylist").map((nv) => (
-								<option key={nv.MANV?.trim()} value={nv.MANV?.trim()}>
-									{nv.MANV} - {nv.HOTEN} {`(${nv.SDT})`}
-								</option>
-							))}
-						</select><br />
-
-
-
-						<span>Ngày hẹn:<span style={{ color: "red" }}>*</span></span><br />
-						<input id="bookingDate" className="input-field" type="date" value={formData.bookingDate} onChange={handleChange} /><br />
-
-						<span>Giờ hẹn:<span style={{ color: "red" }}>*</span></span><br />
-						<select
-							id="bookingTime"
-							className="input-field"
-							value={formData.bookingTime}
-							onChange={handleChange}
-							disabled={!formData.nhanvien || !formData.bookingDate}
-						>
-							<option value="">-- Chọn giờ hẹn --</option>
-							{/* Đổ danh sách giờ trống */}
-							{availableHours.map((time) => (
-								<option key={time} value={time}>
-									{time}
-								</option>
-							))}
-						</select>
-						<br /><br />
-						<div className="form-group">
-							<label htmlFor="ghichu">Ghi chú:</label>
-							<textarea id="ghichu" rows={3} value={formDataDetails.ghichu} onChange={handleChange} />
-						</div>
-
-
-						<input id="btn-datlichpage" onClick={themlichhen} type="submit" value="ĐẶT LỊCH NGAY" />
-					</form>
-					<br />
-					<p style={{ "textAlign": "center" }}>📅 Cắt xong trả tiền – Huỷ lịch không sao</p>
-
-					<Modal isOpen={modalType !== 'none'} onClose={() => setModalType('none')} title="Nhập mật khẩu để tiếp tục">
-						<label>Mật khẩu:</label>
-						<div className="password-container">
-							<input id="password" className="input-field" type="password" onChange={handleChange} value={matkhauCheck} placeholder="Mật khẩu" required />
-						</div>
-						<div className="form-actions">
-							<button type="submit" className="btn primary" onClick={submitDatLich}>
-								Xác nhận
-							</button>
-						</div>
-					</Modal>
-				</div>
-			</div>
-		</>
-	);
-};
-
-export default DatLichPage;
+    const service = services.find(item => item.MADV.trim() === form.service);
+    const branch = options.branches.find(item => item.MACHINHANH.trim() === form.branch);
+    const staff = options.stylists.find(item => item.MANV.trim() === form.staff);
+    const ready = !!(service && branch && staff && form.date && form.time && slots.includes(form.time)) && !loading && !staffLoading && !hoursLoading && !error && !staffError && !hoursError;
+    const review = (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!username) { navigate('/login'); return; }
+        if (!ready) { toast.info('Vui lòng chọn đủ dịch vụ, stylist và giờ hẹn.'); return; }
+        setPassword(''); setConfirmOpen(true);
+    };
+    const submit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (saveLock.current || !ready || !password) return;
+        saveLock.current = true; setSaving(true);
+        try {
+            const login = await axios.post('/api/login/login-taikhoan', { username, pass: password }, { baseURL: axiosClient.defaults.baseURL });
+            if (!login.data.success) throw new Error(login.data.message || 'Không xác nhận được tài khoản.');
+            const response = await axiosClient.post('/api/lichhen/book', {
+                accountId: username, branchId: form.branch, staffId: form.staff,
+                serviceId: form.service, date: form.date, time: form.time, quantity: 1, note: form.note.trim(),
+            });
+            if (!response.data.success) throw new Error(response.data.message || 'Không đặt được lịch.');
+            setPassword(''); setConfirmOpen(false);
+            localStorage.removeItem('madvCanXem');
+            toast.success('Đặt lịch thành công!');
+            navigate('/lichsu');
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || err.message || 'Đặt lịch thất bại. Vui lòng thử lại.');
+            if (err.response?.status === 409) { setConfirmOpen(false); setPassword(''); setReload(value => value + 1); }
+        } finally { saveLock.current = false; setSaving(false); }
+    };
+    const close = () => { if (!saving) { setConfirmOpen(false); setPassword(''); } };
+    return <div className="reservation-page booking-admin">
+        <header className="ba-heading">
+            <div><p className="ba-eyebrow">ĐẶT HẸN CÙNG DHAIR</p><h2>Đặt lịch giữ chỗ</h2><p>Chọn dịch vụ, stylist và khung giờ phù hợp với bạn.</p></div>
+            <Link className="ba-button" to="/lichsu">Lịch hẹn của tôi</Link>
+        </header>
+        {!username && <div className="reservation-notice">Bạn cần <Link to="/login">đăng nhập</Link> để xác nhận đặt lịch.</div>}
+        {error && <div role="alert" className="reservation-notice ba-error">{error} <button className="ba-button" onClick={() => setReload(value => value + 1)}>Thử lại</button></div>}
+        <form className="reservation-layout" onSubmit={review} noValidate={!username}>
+            <div className="reservation-sections">
+                <section className="ba-card reservation-section">
+                    <h3><span>01</span> Thông tin của bạn</h3>
+                    <div className="reservation-fields">
+                        <label>Họ và tên<input readOnly value={fullName} placeholder={profileLoading ? 'Đang tải thông tin…' : 'Chưa có thông tin'} /></label>
+                        <label>Số điện thoại<input readOnly value={phone} placeholder={profileLoading ? 'Đang tải thông tin…' : 'Chưa có thông tin'} /></label>
+                    </div>
+                    {profileError && <p role="alert" className="ba-error">{profileError} <button type="button" className="ba-button" onClick={() => setProfileReload(value => value + 1)}>Thử lại</button></p>}
+                </section>
+                <section className="ba-card reservation-section">
+                    <h3><span>02</span> Dịch vụ và salon</h3>
+                    <div className="reservation-fields">
+                        <label className="reservation-wide">Dịch vụ<select required disabled={loading || !!error} value={form.service} onChange={e => setForm({ ...form, service: e.target.value, time: '' })}>
+                            <option value="">{loading ? 'Đang tải dịch vụ…' : 'Chọn dịch vụ'}</option>
+                            {services.map(item => <option key={item.MADV} value={item.MADV.trim()}>{item.TENDV} · {item.THOIGIAN} phút · {currency(Number(item.GIADV))}</option>)}
+                        </select></label>
+                        <label>Chi nhánh<select required disabled={loading || !!error} value={form.branch} onChange={e => setForm({ ...form, branch: e.target.value, staff: '', time: '' })}>
+                            <option value="">Chọn chi nhánh</option>{options.branches.map(item => <option key={item.MACHINHANH} value={item.MACHINHANH.trim()}>{item.TENCHINHANH}</option>)}
+                        </select></label>
+                        <label>Stylist<select required disabled={!form.branch || staffLoading || !!staffError} value={form.staff} onChange={e => setForm({ ...form, staff: e.target.value, time: '' })}>
+                            <option value="">{staffLoading ? 'Đang tải stylist…' : 'Chọn stylist'}</option>{!staffLoading && options.stylists.map(item => <option key={item.MANV} value={item.MANV.trim()}>{item.HOTEN}</option>)}
+                        </select></label>
+                    </div>
+                    {branch?.DIACHI && <p className="reservation-help">{branch.DIACHI}</p>}
+                    {staffError && <p role="alert" className="ba-error">{staffError} <button type="button" className="ba-button" onClick={() => setReload(value => value + 1)}>Thử lại</button></p>}
+                </section>
+                <section className="ba-card reservation-section">
+                    <h3><span>03</span> Ngày và giờ hẹn</h3>
+                    <label>Ngày hẹn<input required type="date" min={options.today} max={options.lastDay} disabled={loading || !!error} value={form.date} onChange={e => setForm({ ...form, date: e.target.value, time: '' })} /></label>
+                    <p className="reservation-help">Đặt lịch trong 5 ngày: {dateLabel(options.today)} – {dateLabel(options.lastDay)}.</p>
+                    <fieldset className="reservation-hours"><legend>Chọn giờ trống</legend>
+                        {hoursLoading ? <p role="status">Đang kiểm tra giờ trống…</p> : hoursError ? <p className="ba-error" role="alert">{hoursError} <button type="button" className="ba-button" onClick={() => setReload(value => value + 1)}>Thử lại</button></p>
+                            : !form.service || !form.staff || !form.date ? <p>Chọn dịch vụ, stylist và ngày để xem giờ trống.</p>
+                            : !slots.length ? <p>Ngày này đã hết giờ trống. Bạn hãy chọn ngày hoặc stylist khác.</p>
+                            : <div className="reservation-slots">{slots.map(time => <button type="button" key={time} aria-pressed={form.time === time} onClick={() => setForm({ ...form, time })}>{time}</button>)}</div>}
+                    </fieldset>
+                    <label>Ghi chú <textarea maxLength={200} rows={3} value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} placeholder="Yêu cầu về kiểu tóc hoặc thông tin cần lưu ý…" /></label>
+                </section>
+            </div>
+            <aside className="ba-card reservation-summary">
+                <p className="ba-eyebrow">THÔNG TIN ĐẶT LỊCH</p><h3>Lịch hẹn của bạn</h3>
+                <dl><div><dt>Dịch vụ</dt><dd>{service?.TENDV || 'Chưa chọn'}</dd></div><div><dt>Chi nhánh</dt><dd>{branch?.TENCHINHANH || 'Chưa chọn'}</dd></div><div><dt>Stylist</dt><dd>{staff?.HOTEN || 'Chưa chọn'}</dd></div><div><dt>Thời gian</dt><dd>{dateLabel(form.date)}{form.time && ' · ' + form.time}</dd></div><div><dt>Thời lượng</dt><dd>{service ? service.THOIGIAN + ' phút' : '—'}</dd></div></dl>
+                <div className="reservation-total"><span>Giá dự kiến</span><strong>{service ? currency(Number(service.GIADV)) : '—'}</strong></div>
+                <button className="ba-button ba-primary" type="submit" disabled={!!username && !ready}>{username ? 'Tiếp tục đặt lịch' : 'Đăng nhập để đặt lịch'}</button>
+                <p className="reservation-help">Thanh toán tại salon sau khi sử dụng dịch vụ.</p>
+            </aside>
+        </form>
+        <Modal isOpen={confirmOpen} onClose={close} title="Xác nhận đặt lịch">
+            <form className="ba-form" onSubmit={submit}>
+                <div className="ba-detail-item"><strong>{service?.TENDV}</strong><p>{branch?.TENCHINHANH} · {staff?.HOTEN}</p><p>{dateLabel(form.date)} · {form.time}</p></div>
+                <label>Mật khẩu tài khoản<input type="password" autoComplete="current-password" required disabled={saving} value={password} onChange={e => setPassword(e.target.value)} /></label>
+                <div className="ba-actions"><button type="button" className="ba-button" disabled={saving} onClick={close}>Quay lại</button><button className="ba-button ba-primary" disabled={saving || !ready}>{saving ? 'Đang đặt lịch…' : 'Xác nhận đặt lịch'}</button></div>
+            </form>
+        </Modal>
+    </div>;
+}

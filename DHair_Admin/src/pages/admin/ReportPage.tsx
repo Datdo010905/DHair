@@ -7,11 +7,13 @@ import dichVuApi, { DichVu, TopDVData } from "../../api/dichvuApi";
 import hoadonApi, { HoaDon, HoaDonDetails } from "../../api/hoadonApi";
 import thongkeApi from "../../api/thongkeApi";
 import { toast } from "react-toastify";
-import DataTable, { Column } from '../../components/ui/DataTable';
+import { Column } from '../../components/ui/DataTable';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PieChart, Pie, Cell, Legend } from 'recharts';
 import { AreaChart, Area } from 'recharts';
 import { exportToExcel } from "../../utils/excelUtils";
+
+import AdminList from "../../components/ui/AdminList";
 
 const ReportPage = () => {
 
@@ -433,24 +435,22 @@ const ReportPage = () => {
 
     return (
         <>
-            <div id="reports" className="section">
-                <div className="panel header-actions">
-                    <h2>Báo cáo thống kê</h2>
-                </div>
+            <div id="reports" className="section admin-page">
+                <header className="ba-heading"><div><p className="ba-eyebrow">QUẢN LÝ SALON</p><h2>Báo cáo thống kê</h2><p>Theo dõi doanh thu, lịch hẹn và hiệu quả dịch vụ.</p></div></header>
                 <div className="panel">
                     <div className="reportDate-form">
                         <div className="form-group reportDate">
-                            <label>Từ ngày:</label>
+                            <label htmlFor="start">Từ ngày:</label>
                             <input value={formData.start} onChange={handleChange} type="date" id="start" />
                         </div>
                         <div className="form-group reportDate">
-                            <label>Đến ngày:</label>
+                            <label htmlFor="end">Đến ngày:</label>
                             <input value={formData.end} onChange={handleChange} type="date" id="end" />
                         </div>
-                        <button onClick={handleClickReport} className="btn primary">
+                        <button onClick={handleClickReport} className="ba-button ba-primary">
                             <i className="fas fa-filter"></i> Xem thống kê
                         </button>
-                        <button onClick={handleClickRefresh} className="btn secondary">
+                        <button onClick={handleClickRefresh} className="ba-button">
                             <i className="fas fa-sync"></i> Làm mới
                         </button>
                     </div>
@@ -478,7 +478,7 @@ const ReportPage = () => {
                 </div>
 
                 {/* ===== BỐ CỤC CHIA 2 CỘT CHO BIỂU ĐỒ ===== */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+                <div className="admin-chart-grid">
 
                     {/* --- CỘT 1: BIỂU ĐỒ DOANH THU --- */}
                     <div className="panel" style={{ margin: 0, padding: '20px' }}>
@@ -597,20 +597,20 @@ const ReportPage = () => {
                 <div className="panel" style={{ "marginTop": "20px" }}>
                     <div className="report-filter">
                         <h3>Top Dịch Vụ hay dùng</h3>
-                        <button onClick={handleClickExcelDichVu} className="btn primary">
+                        <button onClick={handleClickExcelDichVu} className="ba-button ba-primary">
                             <i className="fas fa-download"></i> Xuất Excel
                         </button>
                     </div>
-                    <DataTable<TopDVData> columns={dichVuColumns} data={TopDV} />
+                    <AdminList<TopDVData> title="Dịch vụ được sử dụng nhiều" columns={dichVuColumns} data={TopDV} rowKey="madv" searchKeys={["madv", "tendv"]} />
                 </div>
                 <div className="panel" style={{ "marginTop": "20px" }}>
                     <div className="report-filter">
                         <h3>Top Nhân Viên Xuất Sắc</h3>
-                        <button onClick={handleClickExcelNhanVien} className="btn primary">
+                        <button onClick={handleClickExcelNhanVien} className="ba-button ba-primary">
                             <i className="fas fa-download"></i> Xuất Excel
                         </button>
                     </div>
-                    <DataTable<TopStaffData> columns={staffColumns} data={TopNV} />
+                    <AdminList<TopStaffData> title="Nhân viên có nhiều lịch hẹn" columns={staffColumns} data={TopNV} rowKey="manv" searchKeys={["manv", "hoten", "sdt"]} filters={[{ key: "machinhanh", label: "Chi nhánh", format: getChiNhanhName }]} />
                 </div>
 
             </div>

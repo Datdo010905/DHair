@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from "react";
 import Modal from "../../components/ui/Modal";
-import { useSearch } from '../../context/SearchContext';
 import { toast } from 'react-toastify';
-import DataTable, { Column } from '../../components/ui/DataTable';
+import { Column } from '../../components/ui/DataTable';
+import AdminList from '../../components/ui/AdminList';
 import customerApi, { Customer } from "../../api/customerApi";
 import { customerSchema } from "../../utils/customerSchema";
 
@@ -16,7 +16,6 @@ const CustomerPage: React.FC = () => {
     const [sdtToDelete, setSdtToDelete] = useState<string | null>(null); // Lưu SĐT cần xóa (cho tài khoản)
 
     //State dùng chung cho tìm kiếm
-    const { searchTerm } = useSearch();
 
     //Dữ liệu khách hàng
     const [customerList, setCustomerList] = useState<Customer[]>([]);
@@ -31,11 +30,6 @@ const CustomerPage: React.FC = () => {
         cusAcc: '',
         cusEmail: '',
     });
-    const filteredCustomerList = customerList.filter(customer =>
-        customer.MAKH?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.MATK?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.SDT?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     //up data từ api lên bảng
     const fetchData = async () => {
@@ -208,12 +202,12 @@ const CustomerPage: React.FC = () => {
         {
             tieude: "Hành động", cotnhandulieu: "MAKH", render: (row) => (
                 <>
-                    <button className="btn small edit" onClick={() => handleEditClick(row)}><i className="fas fa-edit"></i></button>
+                    <button className="ba-button" onClick={() => handleEditClick(row)}>Sửa</button>
                     <button
-                        className="btn small delete"
+                        className="ba-button ba-danger"
                         onClick={() => handleDeleteClick(row)}
                     >
-                        <i className="fas fa-trash"></i>
+                        Xóa
                     </button>
                 </>
             )
@@ -290,24 +284,18 @@ const CustomerPage: React.FC = () => {
                     onChange={handleChange}
                 />
             </div>
-            <button type="submit" className="btn primary">{modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
+            <button type="submit" className="ba-button ba-primary">{modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
         </>
     );
 
     return (
         <>
-            <div id="accounts" className="section">
-                <div className="panel header-actions">
-                    <h2>Khách hàng</h2>
-                    <button className="btn primary" onClick={handleOpenAdd}>Thêm khách hàng</button>
-                </div>
-                <div className="panel">
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
-                    <DataTable<Customer> columns={customerColumns} data={filteredCustomerList} isLoading={isLoading} />
-                </div>
+            <div id="accounts" className="section admin-page">
+                <header className="ba-heading"><div><p className="ba-eyebrow">QUẢN LÝ SALON</p><h2>Khách hàng</h2><p>Quản lý thông tin liên hệ và hồ sơ khách hàng.</p></div><div className="ba-actions"><button className="ba-button" disabled={isLoading} onClick={fetchData}>Làm mới</button><button className="ba-button ba-primary" onClick={handleOpenAdd}>Thêm khách hàng</button></div></header>
+                <AdminList<Customer> title="Danh sách khách hàng" columns={customerColumns} data={customerList} rowKey="MAKH" searchKeys={["MAKH", "HOTEN", "SDT", "EMAIL", "MATK"]}  isLoading={isLoading} error={error} onRetry={fetchData} />
                 {/* DÙNG CHUNG MODAL CHO CẢ THÊM VÀ SỬA */}
                 <Modal isOpen={modalType !== 'none'} onClose={() => setModalType('none')} title={modalType === 'add' ? "Thêm mới khách hàng" : "Sửa thông tin khách hàng"}>
-                    <form className="service-form" onSubmit={handleSubmitForm}>
+                    <form className="ba-form" onSubmit={handleSubmitForm}>
                         {renderFormContent()}
                     </form>
                 </Modal>
@@ -315,7 +303,7 @@ const CustomerPage: React.FC = () => {
                 {/* Modal xóa */}
                 <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Xác nhận Xóa">
                     <p>Bạn có chắc chắn muốn xóa khách hàng <strong>{idToDelete}</strong> không?</p><br />
-                    <button className="btn small delete" onClick={handleDeleteConfirm}><i className="fas fa-trash"></i> Xóa ngay</button>
+                    <button className="ba-button ba-danger" onClick={handleDeleteConfirm}>Xóa ngay</button>
                 </Modal>
             </div>
         </>

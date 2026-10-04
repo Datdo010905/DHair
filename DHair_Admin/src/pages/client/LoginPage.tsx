@@ -4,6 +4,7 @@ import "../../assets/css/login.css";
 import authApi, { LoginPayload } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
+import LogoForm from "../../components/ui/LogoForm";
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -76,12 +77,7 @@ const Login: React.FC = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-        <div className="login-left">
-          <Link to="/">
-            <img src="/img/logoTo.png" alt="30Shine Logo" className="logo" />
-          </Link>
-          <h2>30Shine - Cắt tóc theo phong cách của bạn!</h2>
-        </div>
+        <LogoForm />
 
         <div className="login-right">
           <h1>ĐĂNG NHẬP</h1>

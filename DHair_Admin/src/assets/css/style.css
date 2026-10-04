@@ -1635,3 +1635,12 @@ html {
 .search-dropdown li:last-child {
     border-bottom: none;
 }
+#footer .input-field {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0 14px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+}
+
+#footer .input-field:focus { border-color: #41559f; }

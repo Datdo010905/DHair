@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Modal from "../../components/ui/Modal";
-import DataTable, { Column } from '../../components/ui/DataTable';
+import { Column } from '../../components/ui/DataTable';
+import AdminList from '../../components/ui/AdminList';
 import dichVuApi, { DichVu } from "../../api/dichvuApi";
 import { dichVuSchema } from '../../utils/dichVuSchema';
-import { useSearch } from '../../context/SearchContext';
 import { toast } from 'react-toastify';
 
 const DichVuPage: React.FC = () => {
@@ -13,13 +13,35 @@ const DichVuPage: React.FC = () => {
     const [idToDelete, setIdToDelete] = useState<string | null>(null); // Lưu ID cần xóa
 
     //State dùng chung cho tìm kiếm
-    const { searchTerm } = useSearch();
 
     //Dữ liệu dịch vụ
     const [dichVuList, setDichVuList] = useState<DichVu[]>([]);
     const [dichVuCSDList, setDichVuCSDList] = useState<DichVu[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [savingStatuses, setSavingStatuses] = useState<Set<string>>(new Set());
+    const statusLocks = useRef(new Set<string>());
+    const serviceStatuses = ['Đang cung cấp', 'Ngừng cung cấp'] as const;
+    const handleStatusChange = async (row: DichVu, nextStatus: typeof serviceStatuses[number]) => {
+        const id = row.MADV;
+        if (statusLocks.current.has(id) || row.TRANGTHAI?.trim() === nextStatus || isLoading) return;
+        statusLocks.current.add(id);
+        setSavingStatuses(new Set(statusLocks.current));
+        try {
+            const response = await dichVuApi.updateStatus(id, nextStatus);
+            if (!response.data.success) throw new Error(response.data.message);
+            const update = (rows: DichVu[]) => rows.map(item => item.MADV === id
+                ? { ...item, TRANGTHAI: response.data.data.TRANGTHAI } : item);
+            setDichVuList(update);
+            setDichVuCSDList(update);
+            toast.success('Đã cập nhật trạng thái dịch vụ.');
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || err.message || 'Không đổi được trạng thái. Vui lòng thử lại.');
+        } finally {
+            statusLocks.current.delete(id);
+            setSavingStatuses(new Set(statusLocks.current));
+        }
+    };
     //Form data và lỗi
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -33,15 +55,7 @@ const DichVuPage: React.FC = () => {
     const [imageFile, setImageFile] = useState<File | null>(null);
 
 
-    const filteredDichVuList = dichVuList.filter(dv =>
-        dv.TENDV?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        dv.MADV?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
-    const filteredDichVuCSDList = dichVuCSDList.filter(dv =>
-        dv.TENDV?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        dv.MADV?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     //up data từ api lên bảng
     const fetchData = async () => {
@@ -213,11 +227,6 @@ const DichVuPage: React.FC = () => {
             }
         }
     };
-    const status: Record<string, React.CSSProperties> = {
-        'Ngừng cung cấp': { backgroundColor: '#fff1f0', color: '#f5222d', border: '1px solid #ffa39e' },
-        'Đang cung cấp': { backgroundColor: '#e6f7ff', color: '#52c41a', border: '1px solid #b7eb8f' },
-    };
-
     //Định nghĩa cột cho DataTable
     const dichVuColumns: Column<DichVu>[] = [
         { tieude: "ID", cotnhandulieu: "MADV" },
@@ -232,21 +241,15 @@ const DichVuPage: React.FC = () => {
         },
         {
             tieude: "Trạng thái", cotnhandulieu: "TRANGTHAI", render: (row) => {
-                const codeStatus = row.TRANGTHAI;
-                const style = status[codeStatus] || status['Đang cung cấp'];
-
-                return (
-                    <span style={{
-                        padding: '4px 10px',
-                        borderRadius: '15px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        whiteSpace: 'nowrap',
-                        ...style
-                    }}>
-                        {codeStatus}
-                    </span>
-                )
+                return <fieldset className="service-status-options" aria-label={`Trạng thái ${row.TENDV}`} disabled={savingStatuses.has(row.MADV) || isLoading || modalType !== 'none' || isDeleteModalOpen}>
+                    {serviceStatuses.map(value => <label key={value}>
+                        <input type="radio" name={`service-status-${row.MADV}`} value={value}
+                            checked={row.TRANGTHAI?.trim() === value}
+                            onChange={() => handleStatusChange(row, value)} />
+                        {value}
+                    </label>)}
+                    {savingStatuses.has(row.MADV) && <small role="status">Đang lưu…</small>}
+                </fieldset>;
             }
         },
         {
@@ -258,13 +261,14 @@ const DichVuPage: React.FC = () => {
         {
             tieude: "Hành động", cotnhandulieu: "MADV", render: (row) => (
                 <>
-                    <button className="btn small edit" onClick={() => handleEditClick(row)}><i className="fas fa-edit"></i></button>
+                    <button className="ba-button" disabled={savingStatuses.has(row.MADV)} onClick={() => handleEditClick(row)}>Sửa</button>
                     <button
-                        className="btn small delete"
+                        className="ba-button ba-danger"
+                        disabled={savingStatuses.has(row.MADV)}
                         onClick={() => handleDeleteClick(row)}
                         title="Chỉ xoá những dịch vụ đã ngừng cung cấp!"
                     >
-                        <i className="fas fa-trash"></i>
+                        Xóa
                     </button>
                 </>
             )
@@ -307,13 +311,15 @@ const DichVuPage: React.FC = () => {
                 <input type="number" id="servicePrice" value={formData.servicePrice} onChange={handleChange} />
                 {formErrors.servicePrice && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.servicePrice}</span>}
             </div>
-            <div className="form-group">
-                <label htmlFor="serviceStatus">Trạng thái:</label>
-                <select id="serviceStatus" value={formData.serviceStatus} onChange={handleChange}>
-                    <option value="Đang cung cấp">Đang cung cấp</option>
-                    <option value="Ngừng cung cấp">Ngừng cung cấp</option>
-                </select>
-            </div>
+            <fieldset className="service-status-options">
+                <legend>Trạng thái dịch vụ</legend>
+                {serviceStatuses.map(value => <label key={value}>
+                    <input type="radio" name="form-service-status" value={value}
+                        checked={formData.serviceStatus === value}
+                        onChange={() => setFormData(prev => ({ ...prev, serviceStatus: value }))} />
+                    {value}
+                </label>)}
+            </fieldset>
             <div className="form-group">
                 <label htmlFor="serviceImg">Ảnh (Chọn để thay đổi):</label>
                 {formErrors.serviceImg && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.serviceImg}</span>}
@@ -326,31 +332,21 @@ const DichVuPage: React.FC = () => {
                 {formErrors.serviceProcedure && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.serviceProcedure}</span>}
 
             </div>
-            <button type="submit" className="btn primary">{modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
+            <button type="submit" className="ba-button ba-primary">{modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
         </>
     );
 
     return (
-        <div id="services" className="section">
-            <div className="panel header-actions">
-                <h2>Dịch vụ</h2>
-                <button className="btn primary" onClick={handleOpenAdd}>Thêm dịch vụ</button>
-            </div>
+        <div id="services" className="section admin-page">
+            <header className="ba-heading"><div><p className="ba-eyebrow">QUẢN LÝ SALON</p><h2>Dịch vụ</h2><p>Quản lý dịch vụ tóc, chăm sóc da và thư giãn.</p></div><div className="ba-actions"><button className="ba-button" disabled={isLoading || savingStatuses.size > 0} onClick={fetchData}>Làm mới</button><button className="ba-button ba-primary" onClick={handleOpenAdd}>Thêm dịch vụ</button></div></header>
 
-            <div className="panel">
-                <h3>Tóc</h3>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                <DataTable<DichVu> columns={dichVuColumns} data={filteredDichVuList} isLoading={isLoading} />
-            </div>
+            <AdminList<DichVu> title="Dịch vụ tóc" columns={dichVuColumns} data={dichVuList} rowKey="MADV" searchKeys={["MADV", "TENDV"]} statusKey="TRANGTHAI"  isLoading={isLoading} error={error} onRetry={fetchData} />
 
-            <div className="panel">
-                <h3>Chăm sóc da & Thư giãn</h3>
-                <DataTable<DichVu> columns={dichVuColumns} data={filteredDichVuCSDList} isLoading={isLoading} />
-            </div>
+            <AdminList<DichVu> title="Chăm sóc da & Thư giãn" columns={dichVuColumns} data={dichVuCSDList} rowKey="MADV" searchKeys={["MADV", "TENDV"]} statusKey="TRANGTHAI"  isLoading={isLoading} error={error} onRetry={fetchData} />
 
             {/* DÙNG CHUNG MODAL CHO CẢ THÊM VÀ SỬA */}
             <Modal isOpen={modalType !== 'none'} onClose={() => setModalType('none')} title={modalType === 'add' ? "Thêm mới dịch vụ" : "Sửa thông tin dịch vụ"}>
-                <form className="service-form" onSubmit={handleSubmitForm}>
+                <form className="ba-form" onSubmit={handleSubmitForm}>
                     {renderFormContent()}
                 </form>
             </Modal>
@@ -358,7 +354,7 @@ const DichVuPage: React.FC = () => {
             {/* Modal xóa */}
             <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Xác nhận Xóa">
                 <p>Bạn có chắc chắn muốn xóa dịch vụ mã <strong>{idToDelete}</strong> không?</p><br />
-                <button className="btn small delete" onClick={handleDeleteConfirm}><i className="fas fa-trash"></i> Xóa ngay</button>
+                <button className="ba-button ba-danger" onClick={handleDeleteConfirm}>Xóa ngay</button>
             </Modal>
         </div>
     );

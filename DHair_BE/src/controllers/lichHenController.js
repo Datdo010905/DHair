@@ -3,6 +3,23 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { sendBookingPendingEmail } = require('../services/mailService');
 
+const getAdminBookings = async (req, res) => {
+    try {
+        const account = await prisma.tAIKHOAN.findUnique({
+            where: { MATK: req.bookingAccountId },
+            select: { MATK: true, PHANQUYEN: true, TRANGTHAI: true },
+        });
+        if (!account || account.TRANGTHAI?.trim().toLowerCase() !== 'hoạt động') {
+            return res.status(401).json({ success: false, message: 'Tài khoản không còn hoạt động.' });
+        }
+        const data = await lichHenService.getAdminBookings(req.query, { accountId: account.MATK.trim(), role: account.PHANQUYEN });
+        return res.json({ success: true, data });
+    } catch (error) {
+        if (!error.status) console.error('Admin bookings:', error);
+        return res.status(error.status || 500).json({ success: false, message: error.status ? error.message : 'Không thể tải lịch hẹn.' });
+    }
+};
+
 
 //API (LỊCH HẸN)
 const getAll = async (req, res) => {
@@ -365,6 +382,7 @@ const deleteFullBookingTransaction = async (req, res) => {
 
 
 module.exports = {
+    getAdminBookings,
     getAll,
     getByID,
     getByIDKH,

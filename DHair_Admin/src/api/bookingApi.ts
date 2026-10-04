@@ -17,7 +17,36 @@ export interface BookingDetails {
     GHICHU: string;
 }
 
+export interface AdminBooking extends Booking {
+    KHACHHANG: { HOTEN: string; SDT: string } | null;
+    CHINHANH: { TENCHINHANH: string | null } | null;
+    CHITIETLICHHEN: (BookingDetails & {
+        DICHVU: { TENDV: string } | null;
+        NHANVIEN: { HOTEN: string } | null;
+    })[];
+}
+export interface AdminBookingQuery {
+    mode: 'days' | 'archive'; start: string; end: string;
+    status: string; branchId: string; staffId: string; search: string;
+    page: number; pageSize: number;
+}
+export interface AdminBookingResult {
+    items: AdminBooking[]; total: number; page: number; pageSize: number; totalPages: number;
+    today: string; lastDay: string; start: string; end: string;
+    days: { date: string; count: number }[]; statusCounts: Record<string, number>;
+    branches: { MACHINHANH: string; TENCHINHANH: string | null }[];
+    stylists: { MANV: string; HOTEN: string; MACHINHANH: string | null }[];
+}
+
 const BookingApi = {
+    availability(params: { branchId: string; staffId: string; serviceId: string; date: string; quantity: number }, signal?: AbortSignal) {
+        return axiosClient.get('/api/lichhen/availability', { params, signal });
+    },
+    async getAdminList(params: AdminBookingQuery, signal?: AbortSignal) {
+        const response = await axiosClient.get<{ success: boolean; data: AdminBookingResult; message?: string }>('/api/lichhen/admin-list', { params, signal });
+        if (!response.data.success) throw new Error(response.data.message || 'Không thể tải lịch hẹn.');
+        return response.data.data;
+    },
     // ===== LỊCH HẸN =====
     getAll() {
         return axiosClient.get('/api/lichhen/get-all-lichhen');

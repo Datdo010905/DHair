@@ -85,6 +85,12 @@ const dichVuApi = {
             }
         });
     },
+    updateStatus(id: string, status: 'Đang cung cấp' | 'Ngừng cung cấp') {
+        const data = new FormData();
+        data.append('maDV', id);
+        data.append('trangThai', status);
+        return axiosClient.put<{ success: boolean; message: string; data: DichVu }>('/api/dichvu/update-DichVu', data);
+    },
     // Hàm xoá dịch vụ
     delete(id: string) {
         //const url = `/api-admin/DichVu_/delete-DichVu?ma=${id}`;

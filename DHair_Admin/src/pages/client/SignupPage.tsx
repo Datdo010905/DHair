@@ -3,6 +3,7 @@ import "../../assets/css/login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import customerApi from "../../api/customerApi";
+import LogoForm from "../../components/ui/LogoForm";
 
 const Signup = () => {
     const [fullName, setFullName] = useState("");
@@ -68,12 +69,7 @@ const Signup = () => {
     return (
         <div className="login-page">
             <div className="login-container">
-                <div className="login-left">
-                    <Link to="/">
-                        <img src="/img/logoTo.png" alt="30Shine Logo" className="logo" />
-                    </Link>
-                    <h2>30Shine - Cắt tóc theo phong cách của bạn!</h2>
-                </div>
+                <LogoForm />
 
                 <div className="login-right">
                     <h1>ĐĂNG KÝ TÀI KHOẢN</h1>

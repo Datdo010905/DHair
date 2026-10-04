@@ -96,6 +96,15 @@ const updateDichVu = async (ma, model) => {
     }
 };
 
+const updateStatus = async (ma, status, db = prisma) => {
+    if (typeof ma !== 'string' || !ma.trim() || !['Đang cung cấp', 'Ngừng cung cấp'].includes(status)) {
+        const error = new Error('Mã dịch vụ hoặc trạng thái không hợp lệ.');
+        error.status = 400;
+        throw error;
+    }
+    return db.dICHVU.update({ where: { MADV: ma.trim() }, data: { TRANGTHAI: status } });
+};
+
 const deleteDichVu = async (ma) => {
     try {
         const result = await prisma.dICHVU.delete({
@@ -119,6 +128,7 @@ module.exports = {
     getDVByID,
     insertDichVu,
     updateDichVu,
+    updateStatus,
     deleteDichVu,
     getTatCaDichVuCungCap
 };

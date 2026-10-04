@@ -101,7 +101,7 @@ const Header = () => {
       <div id="top">
         <div id="top-content">
           <div id="top-left">
-            <Link to="/"><img src="/img/logoTo.png" alt="Logo" /></Link>
+            <Link to="/"><img src="/img/logoDHair_V1.png" alt="Logo" /></Link>
           </div>
           <div id="top-mid">
             {/* Thêm ref vào div bọc ngoài cùng của khu vực tìm kiếm */}

@@ -1,9 +1,9 @@
+import "../../assets/css/booking-admin.css";
 import "../../assets/css/lichsu.css";
-import { Navigate } from 'react-router-dom';
-import React, { useEffect, useState } from "react";
+import { Link, Navigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from "react";
 import Modal from "../../components/ui/Modal";
 import { toast } from 'react-toastify';
-import DataTable, { Column } from '../../components/ui/DataTable';
 import bookingApi, { Booking, BookingDetails } from "../../api/bookingApi";
 import dichVuApi, { DichVu } from "../../api/dichvuApi";
 import staffApi, { NhanVien } from "../../api/staffApi";
@@ -22,6 +22,32 @@ const LichSuPage = () => {
 	const [bookingList, setBookingList] = useState<Booking[]>([]);
 	const [dichVuList, setDichVuList] = useState<DichVu[]>([]);
 	const [nhanVienList, setNhanVienList] = useState<NhanVien[]>([]);
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [dateRange, setDateRange] = useState({ start: '', end: '' });
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [saving, setSaving] = useState(false);
+    const saveLock = useRef(false);
+    const detailVersion = useRef(0);
+    const [detailsLoading, setDetailsLoading] = useState(false);
+    const statuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ'];
+    const normalizeStatus = (value: string) => value?.trim() === 'Đã hủy' ? 'Đã huỷ' : value?.trim() === 'Đã hoàn thành' ? 'Hoàn thành' : value?.trim();
+    const matching = bookingList.filter(row => {
+        const date = row.NGAYHEN?.slice(0, 10) || '';
+        return [row.MALICH, row.MACHINHANH].join(' ').toLowerCase().includes(search.trim().toLowerCase())
+            && (!dateRange.start || date >= dateRange.start)
+            && (!dateRange.end || (!!date && date <= dateRange.end));
+    }).sort((a, b) => (b.NGAYHEN || '').localeCompare(a.NGAYHEN || '') || (b.GIOHEN || '').localeCompare(a.GIOHEN || ''));
+    const filtered = matching.filter(row => !statusFilter || normalizeStatus(row.TRANGTHAI) === statusFilter);
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    const currentPage = Math.min(page, totalPages);
+    const pageItems = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    useEffect(() => { setPage(1); }, [search, statusFilter, dateRange, pageSize]);
+    useEffect(() => { setPage(currentPage); }, [currentPage]);
 
 	const [formData, setFormData] = useState({
 		bookingID: '',
@@ -49,24 +75,26 @@ const LichSuPage = () => {
 	});
 	//up data từ api lên bảng
 	const fetchData = async () => {
+        setLoading(true); setError("");
 		try {
 			if (user) {
 				const resBooking = await bookingApi.getAllByIdKH(user);
 				;
-				setBookingList(resBooking.data.data);
+				if (!resBooking.data.success) throw new Error();
+                setBookingList(resBooking.data.data || []);
 
-				const resDichVu = await dichVuApi.getAll();
-				const resNhanVien = await staffApi.getAll();
+				const [resDichVu, resCSD, resNhanVien] = await Promise.all([dichVuApi.getAll(), dichVuApi.getAllCSD(), staffApi.getAll()]);
 				if (resDichVu.data.success) {
-					setDichVuList(resDichVu.data.data);
+					setDichVuList([...(resDichVu.data.data || []), ...(resCSD.data.data || [])]);
 				}
 				if (resNhanVien.data.success) {
 					setNhanVienList(resNhanVien.data.data);
 				}
 			}
 		} catch (err) {
-			toast.error("Không thể tải dữ liệu lịch sử lịch hẹn.");
+			setError("Không thể tải lịch sử lịch hẹn. Vui lòng thử lại.");
 		}
+        finally { setLoading(false); }
 	};
 	// Tải dữ liệu khi component mount
 	useEffect(() => {
@@ -93,10 +121,13 @@ const LichSuPage = () => {
 	}
 
 	const handleViewClick = async (row: Booking) => {
+        const version = ++detailVersion.current;
+        setViewDetailsList([]); setDetailsLoading(true);
 		try {
 			setIDtoView(row.MALICH?.trim() || null);
 
 			const view = await bookingApi.getByIdCT(row.MALICH?.trim() || '');
+            if (version !== detailVersion.current) return;
 			if (view.data.success) {
 				const responseData = view.data.data;
 				// Nếu là mảng thì giữ nguyên, không thì bọc []
@@ -110,10 +141,12 @@ const LichSuPage = () => {
 				setViewDetailsList([]); // Xóa rỗng bảng nếu không có data
 			}
 		} catch (error) {
-			console.error("Lỗi xem chi tiết:", error);
+			if (version !== detailVersion.current) return;
+            console.error("Lỗi xem chi tiết:", error);
 			toast.error("Xem chi tiết thất bại!");
 			setViewDetailsList([]); // Xóa rỗng bảng nếu không có data
 		}
+        finally { if (version === detailVersion.current) setDetailsLoading(false); }
 	};
 	const getChiNhanhName = (branchCode: string) => {
 		switch (branchCode) {
@@ -124,27 +157,6 @@ const LichSuPage = () => {
 			default: return "Không xác định";
 		}
 	};
-	const branchStyles: Record<string, React.CSSProperties> = {
-		"CN001": { backgroundColor: '#fff1f0', color: '#f5222d' },
-		"CN002": { backgroundColor: '#e6f7ff', color: '#1890ff' },
-		"CN003": { backgroundColor: '#f6ffed', color: '#52c41a' },
-		"CN004": { backgroundColor: '#fff7e6', color: '#fa8c16' },
-	};
-
-	//lấy theo trạng thái
-	//<option value="Đã đặt">Đã đặt</option>
-	// <option value="Đang chờ">Đang chờ</option>
-	// <option value="Đang thực hiện">Đang thực hiện</option>
-	// <option value="Hoàn thành">Hoàn thành</option>
-	// <option value="Đã huỷ">Đã huỷ</option>
-	const statusStyles: Record<string, React.CSSProperties> = {
-		"Đã đặt": { backgroundColor: '#e6f7ff', color: '#1890ff', border: '1px solid #91d5ff' },
-		"Đang chờ": { backgroundColor: '#f9f0ff', color: '#722ed1', border: '1px solid #d3adf7' },
-		"Đang thực hiện": { backgroundColor: '#fff7e6', color: '#fa8c16', border: '1px solid #ffd591' },
-		"Hoàn thành": { backgroundColor: '#f6ffed', color: '#52c41a', border: '1px solid #b7eb8f' },
-		"Đã huỷ": { backgroundColor: '#fff1f0', color: '#f5222d', border: '1px solid #ffa39e' },
-	};
-
 	//xử lý thay đổi form
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
 		const { id, value } = e.target;
@@ -180,13 +192,14 @@ const LichSuPage = () => {
 	// huỷ lịch
 	const handleDeleteConfirm = async (e: React.FormEvent) => {
 		e.preventDefault();
+        if (saveLock.current) return;
+        saveLock.current = true; setSaving(true);
 		//tạo FormData theo swagger
-		const submitData = new FormData();
 
 		const trangthaiHienTai = bookingList.find(b => b.MALICH?.trim() === formData.bookingID)?.TRANGTHAI?.trim();
 		try {
 			if (modalType === 'edit') {
-				if (formDataDetails.ghichu === '') {
+				if (!formDataDetails.ghichu.trim()) {
 					toast.info("Vui lòng ghi lý do huỷ lịch của bạn!");
 					return;
 				}
@@ -204,204 +217,78 @@ const LichSuPage = () => {
 			console.error("Lỗi:", error);
 			toast.error("Thao tác thất bại, vui lòng kiểm tra lại!");
 		}
+        finally { saveLock.current = false; setSaving(false); }
 	};
 
 
-	//Định nghĩa cột cho DataTable theo api trả về
-	const bookingColumns: Column<Booking>[] = [
-		{ tieude: "ID", cotnhandulieu: "MALICH" },
-		{ tieude: "Ngày hẹn", cotnhandulieu: "NGAYHEN", render: (row) => row.NGAYHEN ? new Date(row.NGAYHEN).toLocaleDateString('vi-VN') : '' },
-		{
-			tieude: "Giờ hẹn",
-			cotnhandulieu: "GIOHEN",
-			render: (row) => {
-				if (!row.GIOHEN) return "";
+    const handleClickReport = () => {
+        if (formDataTK.start && formDataTK.end && formDataTK.start > formDataTK.end) {
+            toast.warn('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.');
+            return;
+        }
+        setDateRange({ ...formDataTK });
+    };
+    const clearFilters = () => {
+        setSearch(''); setStatusFilter('');
+        setDateRange({ start: '', end: '' }); setFormDataTK({ start: '', end: '' });
+    };
 
-				// chuỗi có chứa chữ 'T' (dạng ISO 1970-01-01T09:00:00...)
-				if (row.GIOHEN.includes('T')) {
-					//Tách chuỗi lấy đoạn giữa (09:00)
-					return row.GIOHEN.split('T')[1].substring(0, 5);
-				}
-
-				// Nếu dạng 09:00:00 lấy 5 ký tự đầu
-				return row.GIOHEN.substring(0, 5);
-			}
-		},
-		{
-			tieude: "Trạng thái", cotnhandulieu: "TRANGTHAI", render: (row) => {
-				const style = statusStyles[row.TRANGTHAI?.trim() || ''] || {};
-				return (
-					<span style={{
-						padding: '4px 10px',
-						borderRadius: '6px',
-						fontSize: '13px',
-						fontWeight: '600',
-						whiteSpace: 'nowrap',
-						...style
-					}}>
-						{style ? row.TRANGTHAI?.trim() : "Không xác định"}
-					</span>
-				)
-			}
-		},
-		{
-			tieude: "Chi nhánh", cotnhandulieu: "MACHINHANH", render: (row) => {
-				const style = branchStyles[row.MACHINHANH?.trim() || ''] || {};
-				return (
-					<span style={style}>
-						{getChiNhanhName(row.MACHINHANH?.trim() || '')}
-					</span>
-				);
-			}
-
-		},
-		{ tieude: "Khách hàng", cotnhandulieu: "MAKH" },
-		{
-			tieude: "Hành động", cotnhandulieu: "MALICH", render: (row) => (
-				<>
-					<button className="btn small view" onClick={() => handleViewClick(row)}><i className="fas fa-eye"></i></button>
-					<button
-						className="btn small delete"
-						onClick={() => handleDeleteClick(row)}
-						disabled={row.TRANGTHAI?.trim() === "Đã huỷ" || row.TRANGTHAI?.trim() === "Hoàn thành"}
-						title={row.TRANGTHAI?.trim() === "Đã huỷ" || row.TRANGTHAI?.trim() === "Hoàn thành" ? "Không thể huỷ lịch đã hoàn thành hoặc đã huỷ" : "Huỷ lịch hẹn"}
-					>
-						<i className="fas fa-trash"></i>
-					</button>
-				</>
-			)
-		},
-	];
-	//Định nghĩa cột cho DataTable theo api trả về
-	const bookingDetailsColumns: Column<BookingDetails>[] = [
-		{ tieude: "ID", cotnhandulieu: "MALICH" },
-		{
-			tieude: "Dịch vụ", cotnhandulieu: "MADV", render(row) {
-				const dichVu = dichVuList.find(dv => dv.MADV === row.MADV);
-				return dichVu ? dichVu.TENDV : "Không xác định";
-
-			}
-		},
-		{
-			tieude: "Nhân viên", cotnhandulieu: "MANV", render(row) {
-				const nv = nhanVienList.find(nv => nv.MANV === row.MANV);
-				return nv ? `${nv.HOTEN} (${nv.SDT})` : "Không xác định";
-			}
-		},
-		{ tieude: "Số lượng", cotnhandulieu: "SOLUONG" },
-		{
-			tieude: "Giá dự kiến", cotnhandulieu: "GIA_DUKIEN", render(row) {
-				const value = parseFloat(row.GIA_DUKIEN as any);
-				return value ? value.toLocaleString('vi-VN') + '₫' : "0₫";
-			},
-		},
-		{ tieude: "Ghi chú", cotnhandulieu: "GHICHU" },
-	];
-	const handleClickReport = async () => {
-		//e.preventDefault();
-		try {
-			if (!formDataTK.start || !formDataTK.end) {
-				toast.warn("Hãy chọn ngày cần lọc!");
-				return;
-			}
-			const ngaybd = formDataTK.start.toString();
-			const ngaykt = formDataTK.end.toString();
-			//console.log(ngaybd);
-			//console.log(ngaykt);
-			if (ngaybd > ngaykt) {
-				toast.warn("Ngày bắt đầu lọc phải nhỏ hơn ngày kết thúc!");
-				return;
-			}
-			const resLichByNgay = await bookingApi.getByNgay(formDataTK.start, formDataTK.end)
-
-			if (resLichByNgay.data.success && resLichByNgay.data.data) {
-				setBookingList(resLichByNgay.data.data);
-			} else {
-				setBookingList([]); // Không có reset về rỗng
-			}
-
-
-			toast.success('Lọc theo ngày thành công!');
-		}
-		catch (error) {
-			console.error("Lỗi khi lọc theo ngày:", error);
-			toast.error("Có lỗi xảy ra khi tải dữ liệu!");
-		}
-	}
-	const handleClickRefresh = async () => {
-		setFormDataTK({
-			start: '',
-			end: ''
-		})
-		await fetchData();
-		toast.success('Làm mới thành công!');
-	}
-
-	return (
-		<>
-			<div id="lichsu-container">
-				<div className="lichsu-box">
-					<h1>LỊCH SỬ LỊCH HẸN CỦA BẠN</h1>
-					<div className="panel">
-						<div className="reportDate-form">
-							<div className="form-group reportDate">
-								<label>Từ ngày:</label>
-								<input value={formDataTK.start} onChange={handleChange} type="date" id="start" />
-							</div>
-							<div className="form-group reportDate">
-								<label>Đến ngày:</label>
-								<input value={formDataTK.end} onChange={handleChange} type="date" id="end" />
-							</div>
-							<button onClick={handleClickReport} className="btn primary">
-								<i className="fas fa-filter"></i> Xem lịch hẹn theo ngày
-							</button>
-							<button onClick={handleClickRefresh} className="btn secondary">
-								<i className="fas fa-sync"></i> Làm mới
-							</button>
-						</div>
-					</div>
-
-					<table className="lichsu-table">
-						<DataTable<Booking> columns={bookingColumns} data={bookingList} />
-					</table>
-
-					{/* CHỈ RENDER KHU VỰC NÀY NẾU IDtoView CÓ GIÁ TRỊ */}
-					{IDtoView && (
-						<div id="booking-details" className="booking-details" style={{ display: 'block' }}>
-
-							<h3 id="tieudechitiet">Chi tiết lịch hẹn {IDtoView}</h3>
-							<button
-								type="button"
-								className="btn small delete"
-								onClick={() => {
-									setIDtoView(null); //ẩn bảng
-									setViewDetailsList([]); //Xóa data
-								}}
-							>
-								<i className="fa-solid fa-circle-xmark"></i> Đóng
-							</button>
-
-							<DataTable<BookingDetails>
-								columns={bookingDetailsColumns}
-								data={viewDetailsList}
-							/>
-
-						</div>
-					)}
-				</div>
-				<Modal isOpen={modalType === 'edit'} onClose={() => setModalType('none')} title="Bạn có chắc chắn huỷ lịch hẹn này?">
-					<form className="service-form" onSubmit={handleDeleteConfirm}>
-						<div className="form-group">
-							<label htmlFor="ghichu">Nhập lý do huỷ lịch của bạn:</label>
-							<input id="ghichu" value={formDataDetails.ghichu} onChange={handleChange} />
-						</div>
-						<button className="btn small delete" onClick={handleDeleteConfirm}><i className="fas fa-trash"></i> Xác nhận</button>
-					</form>
-				</Modal>
-			</div >
-		</>
-	);
-}
-
-
+    return <div className="booking-history booking-admin">
+        <header className="ba-heading">
+            <div><p className="ba-eyebrow">LỊCH HẸN CỦA BẠN</p><h2>Lịch sử lịch hẹn</h2><p>Theo dõi lịch hẹn và xem lại các dịch vụ đã đặt tại DHair.</p></div>
+            <div className="ba-actions"><button className="ba-button" disabled={loading} onClick={fetchData}>Làm mới</button><Link className="ba-button ba-primary" to="/datlich">+ Đặt lịch mới</Link></div>
+        </header>
+        <section className="ba-card" aria-label="Lịch sử lịch hẹn" aria-busy={loading}>
+            <div className="ba-filters">
+                <label className="ba-search">Tìm lịch hẹn<input value={search} onChange={e => setSearch(e.target.value)} placeholder="Mã lịch hoặc mã chi nhánh…" /></label>
+                <label>Từ ngày<input type="date" value={formDataTK.start} onChange={e => setFormDataTK(prev => ({ ...prev, start: e.target.value }))} /></label>
+                <label>Đến ngày<input type="date" value={formDataTK.end} onChange={e => setFormDataTK(prev => ({ ...prev, end: e.target.value }))} /></label>
+                <button className="ba-button ba-primary" onClick={handleClickReport}>Áp dụng ngày</button>
+                <button className="ba-button" onClick={clearFilters}>Xóa bộ lọc</button>
+            </div>
+            <div className="ba-status-filters" aria-label="Lọc trạng thái">
+                {['', ...statuses].map((status, index) => <button key={status} aria-pressed={statusFilter === status} onClick={() => setStatusFilter(status)}>
+                    <span className={`ba-dot ba-dot-${index}`} />{status || 'Tất cả'} <b>{loading || error ? '…' : matching.filter(row => !status || normalizeStatus(row.TRANGTHAI) === status).length}</b>
+                </button>)}
+            </div>
+            <div className="ba-list-heading"><h3>Danh sách lịch hẹn</h3><span>{dateRange.start || dateRange.end ? `${dateRange.start || 'Từ đầu'} — ${dateRange.end || 'Đến nay'} · ` : ''}Mới nhất trước</span></div>
+            {loading ? <div className="ba-empty" role="status">Đang tải lịch hẹn…</div>
+                : error ? <div className="ba-empty ba-error" role="alert">{error}<button className="ba-button" onClick={fetchData}>Thử lại</button></div>
+                : !pageItems.length ? <div className="ba-empty"><strong>Chưa có lịch hẹn phù hợp</strong><p>Thử thay đổi bộ lọc hoặc đặt lịch mới.</p><Link className="ba-button ba-primary" to="/datlich">Đặt lịch</Link></div>
+                : <div className="ba-table-scroll"><table className="ba-table">
+                    <thead><tr><th>Ngày / Giờ hẹn</th><th>Mã lịch</th><th>Chi nhánh</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+                    <tbody>{pageItems.map(row => <tr key={row.MALICH}>
+                        <td><strong className="ba-time">{row.GIOHEN?.includes('T') ? row.GIOHEN.split('T')[1].slice(0, 5) : row.GIOHEN?.slice(0, 5)}</strong><small>{row.NGAYHEN ? new Date(row.NGAYHEN).toLocaleDateString('vi-VN') : '—'}</small></td>
+                        <td>{row.MALICH}</td><td>{getChiNhanhName(row.MACHINHANH?.trim())}</td>
+                        <td><span className={`ba-status ba-status-${statuses.indexOf(normalizeStatus(row.TRANGTHAI))}`}>{normalizeStatus(row.TRANGTHAI) || 'Chưa xác định'}</span></td>
+                        <td><div className="ba-row-actions"><button onClick={() => handleViewClick(row)}>Chi tiết</button>{['Đã đặt', 'Đang chờ'].includes(normalizeStatus(row.TRANGTHAI)) && <button className="ba-danger" onClick={() => handleDeleteClick(row)}>Hủy lịch</button>}</div></td>
+                    </tr>)}</tbody>
+                </table></div>}
+            <footer className="ba-pagination">
+                <span>{filtered.length ? (currentPage - 1) * pageSize + 1 : 0}–{Math.min(currentPage * pageSize, filtered.length)} / {filtered.length} lịch hẹn</span>
+                <label>Số dòng<select value={pageSize} onChange={e => setPageSize(Number(e.target.value))}>{[10, 20, 50].map(size => <option key={size}>{size}</option>)}</select></label>
+                <div className="ba-actions"><button className="ba-button" disabled={loading || !!error || currentPage <= 1} onClick={() => setPage(currentPage - 1)}>Trước</button><span>Trang {currentPage}/{totalPages}</span><button className="ba-button" disabled={loading || !!error || currentPage >= totalPages} onClick={() => setPage(currentPage + 1)}>Sau</button></div>
+            </footer>
+        </section>
+        <Modal isOpen={!!IDtoView} onClose={() => { detailVersion.current++; setIDtoView(null); }} title={`Chi tiết lịch hẹn ${IDtoView || ''}`}>
+            <div className="history-details">
+                {detailsLoading ? <p role="status">Đang tải chi tiết…</p> : !viewDetailsList.length ? <p>Chưa có chi tiết để hiển thị.</p> : viewDetailsList.map(detail => <article className="ba-detail-item" key={detail.MADV}>
+                    <strong>{dichVuList.find(item => item.MADV?.trim() === detail.MADV?.trim())?.TENDV || detail.MADV}</strong>
+                    <p>Nhân viên: {nhanVienList.find(item => item.MANV?.trim() === detail.MANV?.trim())?.HOTEN || 'Chưa phân công'}</p>
+                    <p>Số lượng: {detail.SOLUONG} · Giá dự kiến: {Number(detail.GIA_DUKIEN || 0).toLocaleString('vi-VN')} ₫</p>
+                    <p>Ghi chú: {detail.GHICHU || 'Không có'}</p>
+                </article>)}
+                <button className="ba-button" onClick={() => { detailVersion.current++; setIDtoView(null); }}>Đóng</button>
+            </div>
+        </Modal>
+        <Modal isOpen={modalType === 'edit'} onClose={() => { if (!saving) setModalType('none'); }} title="Hủy lịch hẹn">
+            <form className="ba-form" onSubmit={handleDeleteConfirm}>
+                <p>Bạn muốn hủy lịch <strong>{formData.bookingID}</strong>? Vui lòng cho salon biết lý do.</p>
+                <label htmlFor="ghichu">Lý do hủy<textarea id="ghichu" required maxLength={200} disabled={saving} value={formDataDetails.ghichu} onChange={handleChange} /></label>
+			
+                <div className="ba-actions"><button type="button" className="ba-button" disabled={saving} onClick={() => setModalType('none')}>Giữ lịch hẹn</button><button type="submit" className="ba-button ba-primary" disabled={saving}>{saving ? 'Đang xử lý…' : 'Xác nhận hủy'}</button></div>
+            </form>
+        </Modal>
+    </div>;
+};
 export default LichSuPage;
