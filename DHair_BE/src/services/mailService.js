@@ -56,7 +56,7 @@ const forgotPasswordEmail = async (customerEmail, newPassword, customerName) => 
       <div style="border-top: 0.5px solid #e2e8f0; padding-top: 20px; display: flex; align-items: center; gap: 10px;">
         <div style="width: 32px; height: 32px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 16px;"></div>
         <div>
-          <p style="margin: 0; font-size: 13px; font-weight: 600; color: #1e293b;">Đội ngũ 30Shine</p>
+          <p style="margin: 0; font-size: 13px; font-weight: 600; color: #1e293b;">Đội ngũ DHair</p>
           <p style="margin: 0; font-size: 12px; color: #64748b;">Trân trọng</p>
         </div>
       </div>
@@ -135,7 +135,7 @@ const sendBookingPendingEmail = async (customerEmail, bookingInfo) => {
       <div style="border-top: 0.5px solid #e2e8f0; padding-top: 20px; display: flex; align-items: center; gap: 10px;">
         <div style="width: 32px; height: 32px; border-radius: 50%; background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 16px;"></div>
         <div>
-          <p style="margin: 0; font-size: 13px; font-weight: 600; color: #1e293b;">Đội ngũ 30Shine</p>
+          <p style="margin: 0; font-size: 13px; font-weight: 600; color: #1e293b;">Đội ngũ DHair</p>
           <p style="margin: 0; font-size: 12px; color: #64748b;">Trân trọng</p>
         </div>
       </div>

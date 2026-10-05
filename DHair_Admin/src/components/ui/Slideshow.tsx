@@ -1,31 +1,46 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
+import '../../assets/css/slideshow.css';
+
+const slides = Array.from({ length: 9 }, (_, index) => `/img/SLIDE/slideshow_${index + 1}.jpg`);
+const slideDuration = 600;
 
 const SlideShow = () => {
-  const nextSlide = () => {
-    const slideImg = document.getElementById("slide_dv") as HTMLImageElement;
-    const currentSrc = slideImg.src;
-    const currentIndex = parseInt(currentSrc.match(/slideshow_(\d+)\.jpg/)![1]);
-    const nextIndex = currentIndex === 9 ? 1 : currentIndex + 1;
-    slideImg.src = `img/SLIDE/slideshow_${nextIndex}.jpg`;
-  };
-
-  // const autoSlide = () => {
-  //   setInterval(nextSlide, 2567);
-  // };
+  const [position, setPosition] = useState({ index: 0, animate: true });
 
   useEffect(() => {
-   const interval = setInterval(nextSlide, 2567);
-
-   //cleanup khi component unmount
+    const interval = window.setInterval(() => {
+      setPosition(current => current.index === slides.length
+        ? current
+        : { index: current.index + 1, animate: true });
+    }, 2567);
     return () => {
-      clearInterval(interval);
+      window.clearInterval(interval);
     };
   }, []);
 
+  // Slide into a copy of the first image, then reset invisibly for a seamless loop.
+  useEffect(() => {
+    if (position.index !== slides.length) return;
+    const reset = window.setTimeout(() => {
+      setPosition({ index: 0, animate: false });
+    }, slideDuration);
+    return () => window.clearTimeout(reset);
+  }, [position.index]);
+
   return (
     <div className="product">
-      <div id="slideshow">
-        <img id="slide_dv" src="/img/SLIDE/slideshow_1.jpg" />
+      <div id="slideshow" aria-label="Banner giới thiệu dịch vụ">
+        <div className="dh-slideshow-track" style={{
+          transform: `translateX(-${position.index * 100}%)`,
+          transitionDuration: position.animate ? `${slideDuration}ms` : '0ms',
+        }}>
+          {[...slides, slides[0]].map((src, index) => (
+            <div className="dh-slideshow-slide" key={index}
+              aria-hidden={index !== position.index}>
+              <img src={src} alt={`Banner dịch vụ ${index % slides.length + 1}`} draggable={false} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

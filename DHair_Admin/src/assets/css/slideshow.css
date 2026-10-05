@@ -1,0 +1,31 @@
+#slideshow .dh-slideshow-track {
+  display: flex;
+  width: 100%;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(.22, .61, .36, 1);
+}
+
+#slideshow .dh-slideshow-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  align-self: center;
+}
+
+#slideshow .dh-slideshow-slide img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0;
+  transition: none;
+}
+
+#slideshow .dh-slideshow-slide img:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #slideshow .dh-slideshow-track {
+    transition-property: none;
+  }
+}

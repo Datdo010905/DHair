@@ -111,10 +111,10 @@ export const TAIKHOAN: ITaiKhoan[] = [
 
 // BẢNG CHI NHÁNH
 export const CHINHANH: IChiNhanh[] = [
-  { MACHINHANH: "CN001", TENCHINHANH: "30Shine - Nguyễn Trãi", DIACHI: "123 Nguyễn Trãi, Hà Nội", SDT: "0911001100" },
-  { MACHINHANH: "CN002", TENCHINHANH: "30Shine - Cầu Giấy", DIACHI: "45 Cầu Giấy, Hà Nội", SDT: "0911222333" },
-  { MACHINHANH: "CN003", TENCHINHANH: "30Shine - Tân Bình", DIACHI: "56 Trường Chinh, TP.HCM", SDT: "0911444555" },
-  { MACHINHANH: "CN004", TENCHINHANH: "30Shine - Đà Nẵng", DIACHI: "12 Nguyễn Văn Linh, Đà Nẵng", SDT: "0911666777" },
+  { MACHINHANH: "CN001", TENCHINHANH: "DHair - Nguyễn Trãi", DIACHI: "123 Nguyễn Trãi, Hà Nội", SDT: "0911001100" },
+  { MACHINHANH: "CN002", TENCHINHANH: "DHair - Cầu Giấy", DIACHI: "45 Cầu Giấy, Hà Nội", SDT: "0911222333" },
+  { MACHINHANH: "CN003", TENCHINHANH: "DHair - Tân Bình", DIACHI: "56 Trường Chinh, TP.HCM", SDT: "0911444555" },
+  { MACHINHANH: "CN004", TENCHINHANH: "DHair - Đà Nẵng", DIACHI: "12 Nguyễn Văn Linh, Đà Nẵng", SDT: "0911666777" },
 ];
 
 // BẢNG KHÁCH HÀNG

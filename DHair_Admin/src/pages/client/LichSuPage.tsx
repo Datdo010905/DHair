@@ -150,10 +150,10 @@ const LichSuPage = () => {
 	};
 	const getChiNhanhName = (branchCode: string) => {
 		switch (branchCode) {
-			case "CN001": return "30Shine - Nguyễn Trãi";
-			case "CN002": return "30Shine - Cầu Giấy";
-			case "CN003": return "30Shine - Tân Bình";
-			case "CN004": return "30Shine - Đà Nẵng";
+			case "CN001": return "DHair - Nguyễn Trãi";
+			case "CN002": return "DHair - Cầu Giấy";
+			case "CN003": return "DHair - Tân Bình";
+			case "CN004": return "DHair - Đà Nẵng";
 			default: return "Không xác định";
 		}
 	};

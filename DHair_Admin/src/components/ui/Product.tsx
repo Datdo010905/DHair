@@ -86,11 +86,11 @@ const Product = () => {
         </div>
         <div className="clear"></div>
         <h2 id="nucuoidv" className="product-title"><i className="fa-regular fa-face-smile-wink"></i> Nụ cười dịch vụ</h2>
-        <div className="product-title-2">30Shine - Không chỉ tóc đẹp, còn mang tới sự tận hưởng</div>
+        <div className="product-title-2">DHair - Không chỉ tóc đẹp, còn mang tới sự tận hưởng</div>
         <div className="col-s-6 col-m-4 col-x-4">
           <div className="item">
             <img className="sao-pic" title="nucuoi1" alt = "sanpham" src="/img/nucuoidichvu/nucuoi1.png" /> <br /><br /><br />
-            <span className="nucuoi-mota">Bí Quyết Dịch Vụ Đỉnh Cao tại 30Shine</span>
+            <span className="nucuoi-mota">Bí Quyết Dịch Vụ Đỉnh Cao tại DHair</span>
           </div>
         </div>
         <div className="col-s-6 col-m-4 col-x-4">
@@ -108,25 +108,25 @@ const Product = () => {
         <div className="col-s-6 col-m-6 col-x-6">
           <div className="item">
             <img className="sao-pic" title="nucuoi4" alt = "sanpham" src="/img/nucuoidichvu/nucuoi4.png" /> <br /><br /><br />
-            <span className="nucuoi-mota">30Shine: Nỗ Lực Từng Ngày Để Làm Hài Lòng Khách Hàng</span>
+            <span className="nucuoi-mota">DHair: Nỗ Lực Từng Ngày Để Làm Hài Lòng Khách Hàng</span>
           </div>
         </div>
 
         <div className="col-s-6 col-m-6 col-x-6">
           <div className="item">
             <img className="sao-pic" title="nucuoi5" alt = "sanpham" src="/img/nucuoidichvu/nucuoi5.png" /> <br /><br /><br />
-            <span className="nucuoi-mota">Đội Ngũ 30Shine - Lan Tỏa Giá Trị Hoàn Hảo</span>
+            <span className="nucuoi-mota">Đội Ngũ DHair - Lan Tỏa Giá Trị Hoàn Hảo</span>
           </div>
         </div>
 
         <div className="clear"></div>
         <div className="cuocthi" id="5">
-          <img className="cuocthi-img" title="cuocthi30shine" alt = "sanpham" src="/img/cuocthi/cuocthi30shine.jpg" />
+          <img className="cuocthi-img" title="cuocthidhair" alt = "sanpham" src="/img/cuocthi/cuocthidhair.jpg" />
         </div>
 
         <div className="clear"></div>
 
-        <h2 className="product-title"><i className="fa-solid fa-fire"></i> Cuộc thi "30Shine - You're The Best"</h2>
+        <h2 className="product-title"><i className="fa-solid fa-fire"></i> Cuộc thi "DHair - You're The Best"</h2>
         <div className="product-title-2">Tỏa sáng tài năng – Nâng tầm thương hiệu</div>
         <div className="cuocthi-slide">
           <div className="col-s-6 col-m-4 col-x-3">
@@ -300,24 +300,24 @@ const Product = () => {
           </div>
         </div>
         <div className="clear"></div>
-        <h2 id="6" className="product-title"><i className="fa-solid fa-newspaper"></i> TIN TỨC VỀ 30SHINE</h2>
+        <h2 id="6" className="product-title"><i className="fa-solid fa-newspaper"></i> TIN TỨC VỀ DHair</h2>
         <div className="col-s-6 col-m-6 col-x-6">
           <div className="tintuc-item">
             <img className="tintuc-pic" title="tintuc1" alt = "sanpham" src="/img/tintuc/1.png" /> <br /><br />
-            <span className="tintuc-mota">CEO 30Shine kể chuyện từ bỏ công nghiệp hóa tay nghề stylist, khẳng định
+            <span className="tintuc-mota">CEO DHair kể chuyện từ bỏ công nghiệp hóa tay nghề stylist, khẳng định
               không phải cứ có tiền là mua được nhượng quyền</span>
           </div>
         </div>
         <div className="col-s-6 col-m-6 col-x-6">
           <div className="tintuc-item">
             <img className="tintuc-pic" title="tintuc2" alt = "sanpham" src="/img/tintuc/2.png" /> <br /><br />
-            <span className="tintuc-mota">30Shine đặt mục tiêu 100 triệu USD doanh thu vào 2028</span>
+            <span className="tintuc-mota">DHair đặt mục tiêu 100 triệu USD doanh thu vào 2028</span>
           </div>
         </div>
         <div className="col-s-6 col-m-4 col-x-4">
           <div className="tintuc-item">
             <img className="tintuc-pic" title="tintuc3" alt = "sanpham" src="/img/tintuc/3.png" /> <br /><br />
-            <span className="tintuc-mota">Thói quen bình thường tạo ra những điều phi thường ở 30Shine</span>
+            <span className="tintuc-mota">Thói quen bình thường tạo ra những điều phi thường ở DHair</span>
           </div>
         </div>
         <div className="col-s-6 col-m-4 col-x-4">
@@ -330,7 +330,7 @@ const Product = () => {
         <div className="col-s-6 col-m-4 col-x-4">
           <div className="tintuc-item">
             <img className="tintuc-pic" title="tintuc5" alt = "sanpham" src="/img/tintuc/5.png" /> <br /><br />
-            <span className="tintuc-mota">Mục tiêu doanh thu 100 triệu USD của 30Shine</span>
+            <span className="tintuc-mota">Mục tiêu doanh thu 100 triệu USD của DHair</span>
           </div>
         </div>
 
@@ -434,16 +434,16 @@ const Product = () => {
         </div>
         <div className="clear"></div>
 
-        <h2 id="8" className="product-title"><i className="fa-solid fa-shop"></i> 30Shine shop</h2>
+        <h2 id="8" className="product-title"><i className="fa-solid fa-shop"></i> DHair shop</h2>
         <div className="product-title-2">Mỹ phẩm nam cao cấp chính hãng</div>
         <div className="clear"></div>
         <div className="banner">
-          <img className="cuocthi-img" title="cuocthi30shine" alt = "sanpham" src="/img/30shine_shop/banner.jpg" />
+          <img className="cuocthi-img" title="cuocthidhair" alt = "sanpham" src="/img/dhair_shop/banner.jpg" />
         </div>
         <div className="clear"></div>
         <div className="col-s-6 col-m-4 col-x-3">
           <div className="sanpham-item">
-            <img className="sanpham-pic" title="sp1" alt = "sanpham" src="/img/30shine_shop/30SWVL22-GLANZEN  premium 2025.jpg" />
+            <img className="sanpham-pic" title="sp1" alt = "sanpham" src="/img/dhair_shop/30SWVL22-GLANZEN  premium 2025.jpg" />
             <br /><br />
             <a href="none" className="sao-name">Xịt tạo kiểu tóc Glanzen X2 Booster 2025 tạo phồng dành riêng cho tóc mỏng,
               xẹp</a><br /><br />
@@ -452,7 +452,7 @@ const Product = () => {
         </div>
         <div className="col-s-6 col-m-4 col-x-3">
           <div className="sanpham-item">
-            <img className="sanpham-pic" title="sp1" alt = "sanpham" src="/img/30shine_shop/xittaophong.jpg" /> <br /><br />
+            <img className="sanpham-pic" title="sp1" alt = "sanpham" src="/img/dhair_shop/xittaophong.jpg" /> <br /><br />
             <a href="none" className="sao-name">Xịt tạo phồng Glanzen Booster Pre-Styling - Tạo phồng, Giảm bết tóc & Bảo vệ tóc
               khỏi nhiệt độ cao</a><br /><br />
             <span className="sanpham-gia">199.000 VNĐ</span>
@@ -461,15 +461,15 @@ const Product = () => {
         <div className="col-s-6 col-m-4 col-x-3">
           <div className="sanpham-item">
             <img className="sanpham-pic" title="sp1"
-              alt = "sanpham" src="/img/30shine_shop/30S3X12Q-vn-11134207-7r98o-lof4ti1963efc4.jpg" /> <br /><br />
-            <a href="none" className="sao-name">Gôm xịt giữ nếp tóc Glanzen 30Shine phân phối chính hãng giữ nếp tạo kiểu đỉnh
+              alt = "sanpham" src="/img/dhair_shop/30S3X12Q-vn-11134207-7r98o-lof4ti1963efc4.jpg" /> <br /><br />
+            <a href="none" className="sao-name">Gôm xịt giữ nếp tóc Glanzen DHair phân phối chính hãng giữ nếp tạo kiểu đỉnh
               cao 380ml</a><br /><br />
             <span className="sanpham-gia">189.000 VNĐ</span>
           </div>
         </div>
         <div className="col-s-6 col-m-4 col-x-3">
           <div className="sanpham-item">
-            <img className="sanpham-pic" title="sp1" alt = "sanpham" src="/img/30shine_shop/30S8CAQM-Dưỡng da Dr.FORSKIN 7in1.jpg" />
+            <img className="sanpham-pic" title="sp1" alt = "sanpham" src="/img/dhair_shop/30S8CAQM-Dưỡng da Dr.FORSKIN 7in1.jpg" />
             <br /><br />
             <a href="none" className="sao-name">Tinh chất dưỡng da cho nam Serum Dr.FORSKIN 7IN1 120ml - Kem dưỡng ẩm dưỡng
               trắng da nam 2025</a><br /><br />
@@ -522,7 +522,7 @@ const Product = () => {
           </div>
         </div>
         <div className="clear"></div>
-        <h2 id="timmap" className="product-title"><i className="fa-solid fa-map-location-dot"></i> TÌM 30SHINE GẦN NHẤT</h2>
+        <h2 id="timmap" className="product-title"><i className="fa-solid fa-map-location-dot"></i> TÌM DHair GẦN NHẤT</h2>
         <div className="product-title-2">Để xe thuận tiện an toàn, bản đồ dẫn đường chi tiết (hàng trăm Salon)</div>
         <div className="col-s-6 col-m-4 col-x-3">
           <div className="diadiem-item">
