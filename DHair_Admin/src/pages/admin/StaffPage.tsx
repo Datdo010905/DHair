@@ -236,10 +236,10 @@ const StaffPage: React.FC = () => {
     const getChiNhanhName = (branchCode: string) => {
         //check khoảng trắng khi api trả về
         switch (branchCode?.trim()) {
-            case "CN001": return "30Shine - Nguyễn Trãi";
-            case "CN002": return "30Shine - Cầu Giấy";
-            case "CN003": return "30Shine - Tân Bình";
-            case "CN004": return "30Shine - Đà Nẵng";
+            case "CN001": return "DHair - Nguyễn Trãi";
+            case "CN002": return "DHair - Cầu Giấy";
+            case "CN003": return "DHair - Tân Bình";
+            case "CN004": return "DHair - Đà Nẵng";
             default: return "Không xác định";
         }
     };
@@ -397,10 +397,10 @@ const StaffPage: React.FC = () => {
                 <label>Chi nhánh:</label>
                 <select id="staffBranch" value={formData.staffBranch} onChange={handleChange}>
                     <option value="">-- Chọn chi nhánh --</option>
-                    <option value="CN001">30Shine - Nguyễn Trãi</option>
-                    <option value="CN002">30Shine - Cầu Giấy</option>
-                    <option value="CN003">30Shine - Tân Bình</option>
-                    <option value="CN004">30Shine - Đà Nẵng</option>
+                    <option value="CN001">DHair - Nguyễn Trãi</option>
+                    <option value="CN002">DHair - Cầu Giấy</option>
+                    <option value="CN003">DHair - Tân Bình</option>
+                    <option value="CN004">DHair - Đà Nẵng</option>
                 </select>
                 {formErrors.staffBranch && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.staffBranch}</span>}
             </div>

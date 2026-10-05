@@ -440,10 +440,10 @@ const HoaDonPage = () => {
                 <label>Chi Nhánh:</label>
                 <select id="branchID" value={formData.branchID} onChange={handleChange}>
                     <option value="">-- Chọn chi nhánh --</option>
-                    <option value="CN001">30Shine - Nguyễn Trãi</option>
-                    <option value="CN002">30Shine - Cầu Giấy</option>
-                    <option value="CN003">30Shine - Tân Bình</option>
-                    <option value="CN004">30Shine - Đà Nẵng</option>
+                    <option value="CN001">DHair - Nguyễn Trãi</option>
+                    <option value="CN002">DHair - Cầu Giấy</option>
+                    <option value="CN003">DHair - Tân Bình</option>
+                    <option value="CN004">DHair - Đà Nẵng</option>
                 </select>
                 {formErrors.branchID && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.branchID}</span>}
             </div>

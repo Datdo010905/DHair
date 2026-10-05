@@ -364,7 +364,6 @@ html {
     text-align: center;
     overflow: hidden;
     border-radius: 20px;
-
 }
 
 #slideshow img {
@@ -1278,7 +1277,7 @@ html {
 }
 
 
-/* Cuộc thi 30Shine trượt ngang */
+/* Cuộc thi DHair trượt ngang */
 .cuocthi-slide {
     display: flex;
     overflow-x: auto;

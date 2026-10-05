@@ -1,9 +1,9 @@
 -- create database Dhair;
 use dhair;
-INSERT INTO `CHINHANH` (`MACHINHANH`, `TENCHINHANH`, `DIACHI`, `SDT`) VALUES ('CN001', '30Shine - Nguyễn Trãi', '123 Nguyễn Trãi, Hà Nội', '0911001100');
-INSERT INTO `CHINHANH` (`MACHINHANH`, `TENCHINHANH`, `DIACHI`, `SDT`) VALUES ('CN002', '30Shine - Cầu Giấy', '45 Cầu Giấy, Hà Nội', '0911222333');
-INSERT INTO `CHINHANH` (`MACHINHANH`, `TENCHINHANH`, `DIACHI`, `SDT`) VALUES ('CN003', '30Shine - Tân Bình', '56 Trường Chinh, TP.HCM', '0911444555');
-INSERT INTO `CHINHANH` (`MACHINHANH`, `TENCHINHANH`, `DIACHI`, `SDT`) VALUES ('CN004', '30Shine - Đà Nẵng', '12 Nguyễn Văn Linh, Đà Nẵng', '0911666777');
+INSERT INTO `CHINHANH` (`MACHINHANH`, `TENCHINHANH`, `DIACHI`, `SDT`) VALUES ('CN001', 'DHair - Nguyễn Trãi', '123 Nguyễn Trãi, Hà Nội', '0911001100');
+INSERT INTO `CHINHANH` (`MACHINHANH`, `TENCHINHANH`, `DIACHI`, `SDT`) VALUES ('CN002', 'DHair - Cầu Giấy', '45 Cầu Giấy, Hà Nội', '0911222333');
+INSERT INTO `CHINHANH` (`MACHINHANH`, `TENCHINHANH`, `DIACHI`, `SDT`) VALUES ('CN003', 'DHair - Tân Bình', '56 Trường Chinh, TP.HCM', '0911444555');
+INSERT INTO `CHINHANH` (`MACHINHANH`, `TENCHINHANH`, `DIACHI`, `SDT`) VALUES ('CN004', 'DHair - Đà Nẵng', '12 Nguyễn Văn Linh, Đà Nẵng', '0911666777');
 INSERT INTO `DICHVU` (`MADV`, `LOAI`, `TENDV`, `MOTA`, `THOIGIAN`, `GIADV`, `TRANGTHAI`, `HINH`, `QUYTRINH`) VALUES ('CSD001', 'CSD', 'Chăm sóc da cơ bản', 'Gói chăm sóc da mặt tiêu chuẩn, Giúp làm sạch sâu, Cấp ẩm và thư giãn da mặt.', 50, 250000, 'Đang cung cấp', '/img/product/goi-thu-gian-3.png', 'Tẩy trang-Rửa mặt-Tẩy tế bào chết-Xông hơi-Hút bã nhờn-Massage mặt-Đắp mặt nạ-Thoa kem dưỡng');
 INSERT INTO `DICHVU` (`MADV`, `LOAI`, `TENDV`, `MOTA`, `THOIGIAN`, `GIADV`, `TRANGTHAI`, `HINH`, `QUYTRINH`) VALUES ('CSD002', 'CSD', 'Lấy mụn chuyên sâu', 'Dịch vụ làm sạch mụn ẩn, Mụn viêm bằng dụng cụ vô trùng, Kết hợp mặt nạ làm dịu da, giảm sưng.', 70, 350000, 'Đang cung cấp', '/img/product/goi-thu-gian-2.png', 'Tẩy trang-Rửa mặt-Xông hơi-Lấy mụn-Sát khuẩn-Điện tím-Đắp mặt nạ-Chiếu đèn sinh học-Thoa thuốc');
 INSERT INTO `DICHVU` (`MADV`, `LOAI`, `TENDV`, `MOTA`, `THOIGIAN`, `GIADV`, `TRANGTHAI`, `HINH`, `QUYTRINH`) VALUES ('CSD003', 'CSD', 'Massage body tinh dầu', 'Liệu pháp massage toàn thân với tinh dầu thiên nhiên, Giúp giảm căng cơ, Xả stress và cải thiện lưu thông máu.', 60, 300000, 'Đang cung cấp', '/img/product/goi-thu-gian.png', 'Khởi động-Ấn huyệt lưng-Massage chân-Massage tay-Massage lưng vai gáy-Massage đầu-Lau khăn nóng');

@@ -1,0 +1,703 @@
+/* Discovery pages: scoped to keep the existing Home and booking layouts intact. */
+.dh-discovery {
+  --dd-navy: #173568;
+  --dd-muted: #66758a;
+  color: #203452;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.dh-discovery *,
+.dh-discovery *::before,
+.dh-discovery *::after {
+  box-sizing: border-box;
+}
+
+.dh-discovery .dd-wrap {
+  width: min(1200px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.dh-discovery h1,
+.dh-discovery h2,
+.dh-discovery h3,
+.dh-discovery p,
+.dh-discovery figure {
+  margin: 0;
+}
+
+.dh-discovery a {
+  color: inherit;
+}
+
+.dh-discovery button,
+.dh-discovery input,
+.dh-discovery select {
+  font: inherit;
+}
+
+.dh-discovery button {
+  cursor: pointer;
+}
+
+.dh-discovery a:focus-visible,
+.dh-discovery button:focus-visible,
+.dh-discovery input:focus-visible,
+.dh-discovery select:focus-visible {
+  outline: 3px solid #b28b35;
+  outline-offset: 4px;
+}
+
+.dh-discovery img {
+  display: block;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+.dh-discovery .dd-breadcrumb {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 24px 0;
+  font-size: 12px;
+  color: var(--dd-muted);
+}
+
+.dh-discovery .dd-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.dh-discovery .dd-eyebrow {
+  color: #876621;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+}
+
+.dh-discovery h1 {
+  font-size: clamp(34px, 3.7vw, 50px);
+  line-height: 1.2;
+  letter-spacing: -1.6px;
+  font-weight: 700;
+}
+
+.dh-discovery h1 span {
+  color: #5879a7;
+}
+
+.dh-discovery h2 {
+  font-size: clamp(25px, 2.6vw, 34px);
+  line-height: 1.3;
+  letter-spacing: -.7px;
+}
+
+.dh-discovery h3 {
+  font-size: 19px;
+  line-height: 1.4;
+}
+
+.dh-discovery .dd-intro {
+  color: var(--dd-muted);
+  font-size: 15px;
+  max-width: 540px;
+  margin: 22px 0 28px;
+}
+
+.dh-discovery .dd-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+
+.dh-discovery .dd-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--dd-navy);
+  padding: 12px 22px;
+  min-height: 48px;
+  border-radius: 8px;
+  background: var(--dd-navy);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.dh-discovery .dd-button:hover {
+  background: #2b4d82;
+}
+
+.dh-discovery .dd-text-link {
+  font-size: 13px;
+  color: var(--dd-navy);
+  font-weight: 600;
+  text-underline-offset: 5px;
+}
+
+.dh-discovery .dd-text-link:hover {
+  text-decoration: underline;
+}
+
+.dh-discovery .dd-team-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  padding: 28px 0 48px;
+}
+
+.dh-discovery .dd-team-art {
+  background: #eaf0f8;
+  border-radius: 16px;
+  padding: 26px 28px 22px;
+  overflow: hidden;
+}
+
+.dh-discovery .dd-art-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  display: block;
+  text-align: center;
+  color: #5c7090;
+}
+
+.dh-discovery .dd-team-portraits {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.dh-discovery .dd-team-portraits img {
+  width: calc((100% - 24px) / 3);
+  aspect-ratio: .57;
+  border-radius: 10px;
+}
+
+.dh-discovery .dd-team-portraits img:nth-child(2) {
+  transform: translateY(12px);
+}
+
+.dh-discovery .dd-art-caption {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #5c7090;
+}
+
+.dh-discovery .dd-section {
+  padding: 56px 0;
+  scroll-margin-top: 24px;
+}
+
+.dh-discovery .dd-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.dh-discovery .dd-section-heading>p {
+  font-size: 13px;
+  color: var(--dd-muted);
+}
+
+.dh-discovery .dd-filters {
+  display: flex;
+  align-items: end;
+  gap: 20px;
+  padding: 22px;
+  background: #f4f7fb;
+  border: 1px solid #e3eaf3;
+  border-radius: 12px;
+}
+
+.dh-discovery .dd-filters label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dh-discovery .dd-filters label:first-child {
+  flex: 1;
+}
+
+.dh-discovery .dd-filters label span {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dh-discovery .dd-filters input,
+.dh-discovery .dd-filters select {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #d8e1ed;
+  border-radius: 7px;
+  color: #243b5b;
+}
+
+.dh-discovery .dd-filters select {
+  min-width: 210px;
+}
+
+.dh-discovery .dd-reset {
+  border: 1px solid #cfdae9;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--dd-navy);
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.dh-discovery .dd-reset:hover {
+  background: #edf2f9;
+}
+
+.dh-discovery .dd-result-count {
+  font-size: 12px;
+  color: var(--dd-muted);
+  margin: 20px 0;
+}
+
+.dh-discovery .dd-stylist-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.dh-discovery .dd-stylist-card {
+  overflow: hidden;
+  border: 1px solid #e0e7f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.dh-discovery .dd-stylist-photo {
+  position: relative;
+  background: #eaf0f8;
+}
+
+.dh-discovery .dd-stylist-photo img {
+  width: 100%;
+  aspect-ratio: .66;
+  object-position: center;
+}
+
+.dh-discovery .dd-stylist-photo>span {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  background: #ffffffed;
+  color: #244269;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 9px;
+}
+
+.dh-discovery .dd-stylist-info {
+  padding: 20px;
+}
+
+.dh-discovery .dd-card-label {
+  font-size: 9px;
+  letter-spacing: 1.7px;
+  color: #7788a0;
+  margin-bottom: 5px;
+}
+
+.dh-discovery .dd-address {
+  font-size: 12px;
+  color: var(--dd-muted);
+  margin: 10px 0 18px;
+  min-height: 63px;
+}
+
+.dh-discovery .dd-stylist-info>a {
+  border-top: 1px solid #e5ebf3;
+  padding-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: var(--dd-navy);
+  font-size: 12px;
+}
+
+.dh-discovery .dd-stylist-info>a:hover {
+  text-decoration: underline;
+}
+
+.dh-discovery .dd-help {
+  font-size: 12px;
+  color: var(--dd-muted);
+  margin-top: 22px;
+}
+
+.dh-discovery .dd-empty {
+  text-align: center;
+  padding: 50px 24px;
+  border: 1px dashed #c7d4e6;
+  border-radius: 12px;
+}
+
+.dh-discovery .dd-empty p {
+  color: var(--dd-muted);
+  margin: 12px 0 20px;
+}
+
+.dh-discovery .dd-care-section {
+  padding: 32px;
+  border: 1px solid #e1e8f0;
+  border-radius: 14px;
+  background: #f7f9fc;
+}
+
+.dh-discovery .dd-care-section .dd-section-heading {
+  margin-bottom: 12px;
+}
+
+.dh-discovery .dd-care-section>p {
+  color: var(--dd-muted);
+  font-size: 13px;
+}
+
+.dh-discovery .dd-care-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  padding-top: 28px;
+}
+
+.dh-discovery .dd-care-grid img {
+  width: 100%;
+  aspect-ratio: .8;
+  border-radius: 10px;
+}
+
+.dh-discovery .dd-care-grid figcaption {
+  font-size: 12px;
+  color: var(--dd-muted);
+  padding-top: 12px;
+}
+
+.dh-discovery .dd-booking-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 40px;
+  padding: 34px;
+  background: #edf2f9;
+  border-radius: 12px;
+}
+
+.dh-discovery .dd-booking-note h2 {
+  font-size: 25px;
+}
+
+.dh-discovery .dd-booking-note p {
+  color: var(--dd-muted);
+  margin-top: 10px;
+}
+
+.dh-discovery .dd-booking-note .dd-button {
+  flex-shrink: 0;
+}
+
+.dh-discovery .dd-about-hero {
+  max-width: 800px;
+  text-align: center;
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+.dh-discovery .dd-about-hero .dd-intro {
+  max-width: 650px;
+  margin: 22px auto 28px;
+}
+
+.dh-discovery .dd-about-hero .dd-actions {
+  justify-content: center;
+}
+
+.dh-discovery .dd-salon-banner {
+  overflow: hidden;
+  border-radius: 14px;
+  background: #142e54;
+}
+
+.dh-discovery .dd-salon-banner img {
+  width: 100%;
+  aspect-ratio: 2.84;
+}
+
+.dh-discovery .dd-salon-banner figcaption {
+  color: #d2ddef;
+  font-size: 12px;
+  text-align: center;
+  padding: 16px 24px;
+}
+
+.dh-discovery .dd-story {
+  display: grid;
+  grid-template-columns: .9fr 1.1fr;
+  gap: 70px;
+}
+
+.dh-discovery .dd-story>div>p:not(.dd-eyebrow) {
+  color: var(--dd-muted);
+  margin-bottom: 20px;
+}
+
+.dh-discovery .dd-values-section {
+  background: #f3f6fb;
+  padding: 36px;
+  border-radius: 14px;
+}
+
+.dh-discovery .dd-values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.dh-discovery .dd-values-grid article>span {
+  display: block;
+  font-size: 34px;
+  color: #8fa5c2;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+
+.dh-discovery .dd-values-grid h3 {
+  margin-bottom: 12px;
+}
+
+.dh-discovery .dd-values-grid p,
+.dh-discovery .dd-steps p {
+  color: var(--dd-muted);
+  font-size: 13px;
+}
+
+.dh-discovery .dd-steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  padding: 0;
+  margin: 0;
+}
+
+.dh-discovery .dd-steps li {
+  border: 1px solid #e0e7f0;
+  border-radius: 12px;
+  padding: 26px;
+}
+
+.dh-discovery .dd-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: #edf2f9;
+  color: var(--dd-navy);
+  font-weight: 700;
+  border-radius: 50%;
+  margin-bottom: 22px;
+}
+
+.dh-discovery .dd-steps p {
+  margin: 12px 0 20px;
+}
+
+.dh-discovery .dd-about-contact {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 48px;
+  align-items: center;
+  padding: 32px 0 16px;
+  border-top: 1px solid #e0e7f0;
+}
+
+.dh-discovery .dd-about-contact p:not(.dd-eyebrow) {
+  color: var(--dd-muted);
+  margin: 20px 0;
+}
+
+.dh-discovery .dd-brand-panel {
+  border-radius: 14px;
+  background: #173568;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.dh-discovery .dd-brand-panel img {
+  width: 220px;
+  max-width: 100%;
+  height: 100px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+.dh-discovery .dd-brand-panel p:not(.dd-eyebrow) {
+  color: #c9d6e9;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+
+@media (max-width: 1000px) {
+  .dh-discovery .dd-team-hero {
+    gap: 28px;
+  }
+
+  .dh-discovery .dd-stylist-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .dh-discovery .dd-story {
+    gap: 32px;
+  }
+
+  .dh-discovery .dd-values-grid {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .dh-discovery .dd-wrap {
+    width: calc(100% - 32px);
+  }
+
+  .dh-discovery .dd-breadcrumb {
+    padding: 18px 0;
+  }
+
+  .dh-discovery .dd-team-hero {
+    grid-template-columns: 1fr;
+    padding: 20px 0 28px;
+  }
+
+  .dh-discovery .dd-team-art {
+    max-width: 450px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .dh-discovery .dd-team-portraits img {
+    aspect-ratio: .66;
+  }
+
+  .dh-discovery .dd-section {
+    padding: 36px 0;
+  }
+
+  .dh-discovery .dd-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dh-discovery .dd-filters {
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .dh-discovery .dd-filters label,
+  .dh-discovery .dd-filters label:first-child {
+    flex: 1 1 100%;
+  }
+
+  .dh-discovery .dd-filters input,
+  .dh-discovery .dd-filters select {
+    font-size: 16px;
+  }
+
+  .dh-discovery .dd-stylist-grid,
+  .dh-discovery .dd-care-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .dh-discovery .dd-stylist-info {
+    padding: 14px;
+  }
+
+  .dh-discovery .dd-stylist-info h3 {
+    font-size: 17px;
+  }
+
+  .dh-discovery .dd-stylist-photo>span {
+    left: 8px;
+    bottom: 8px;
+    font-size: 9px;
+  }
+
+  .dh-discovery .dd-care-section {
+    padding: 22px;
+  }
+
+  .dh-discovery .dd-booking-note {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 24px;
+  }
+
+  .dh-discovery .dd-about-hero {
+    padding: 20px 0 32px;
+  }
+
+  .dh-discovery .dd-salon-banner img {
+    aspect-ratio: 1.7;
+  }
+
+  .dh-discovery .dd-story,
+  .dh-discovery .dd-about-contact {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .dh-discovery .dd-values-section {
+    padding: 24px;
+  }
+
+  .dh-discovery .dd-values-grid,
+  .dh-discovery .dd-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .dh-discovery .dd-values-grid article+article {
+    padding-top: 24px;
+    border-top: 1px solid #dae3f0;
+  }
+
+  .dh-discovery .dd-values-grid article>span {
+    font-size: 26px;
+    margin-bottom: 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dh-discovery .dd-stylist-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dh-discovery .dd-stylist-photo img {
+    aspect-ratio: .75;
+  }
+}
