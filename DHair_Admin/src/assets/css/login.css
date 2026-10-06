@@ -1,7 +1,6 @@
 * {
 
   box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
 }
 
 .login-page {
@@ -39,7 +38,7 @@
 /* Bên trái */
 .login-left {
   flex: 1;
-  background: linear-gradient(to right, #3a498a, #173691);
+  background: linear-gradient(110deg, #243f79, #142c58);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -167,7 +166,7 @@
 .login-page button {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(to right, #3a498a, #173691);
+  background: linear-gradient(110deg, #243f79, #142c58);
   color: white;
   border: none;
   border-radius: 8px;

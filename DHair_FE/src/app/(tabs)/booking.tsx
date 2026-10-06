@@ -1,6 +1,6 @@
 ﻿import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import {
   ActivityIndicator,
   Alert,
@@ -321,6 +321,7 @@ function BookingContent() {
       setNote('');
       setValidationError('');
       Alert.alert('Đặt lịch thành công', `Mã lịch hẹn: ${result.MALICH.trim()}`);
+      router.push('/history');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Không thể đặt lịch. Vui lòng thử lại.';
       setIsReviewVisible(false);
