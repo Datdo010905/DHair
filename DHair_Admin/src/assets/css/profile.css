@@ -1,0 +1,478 @@
+/* Giới hạn selector trong .dh-profile để không ảnh hưởng các trang khác. */
+﻿.dh-profile {
+  background: #f5f7fb;
+  color: #20314d;
+  padding: 44px 0 64px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.dh-profile .pf-wrap {
+  width: min(1200px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.dh-profile .pf-heading {
+  margin-bottom: 28px;
+}
+
+.dh-profile .pf-eyebrow {
+  color: #667a99;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.dh-profile h1 {
+  margin: 6px 0 8px;
+  /* Cỡ chữ co giãn theo màn hình, nhưng luôn nằm trong khoảng 26–34px. */
+  font-size: clamp(26px, 3vw, 34px);
+  line-height: 1.3;
+  letter-spacing: -0.8px;
+  color: #173568;
+}
+
+.dh-profile h2 {
+  font-size: 19px;
+  line-height: 1.4;
+  color: #173568;
+}
+
+.dh-profile h3 {
+  font-size: 16px;
+}
+
+.dh-profile p {
+  margin: 0;
+}
+
+.dh-profile .pf-heading p,
+.dh-profile .pf-section-heading p,
+.dh-profile .pf-empty p {
+  color: #69788f;
+}
+
+/* Cột trái cố định; minmax(0, 1fr) cho cột phải co lại mà không tràn ngang. */
+.dh-profile .pf-layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 26px;
+  align-items: start;
+}
+
+.dh-profile .pf-card {
+  background: #fff;
+  border: 1px solid #e3e9f2;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px #17356804;
+  overflow: hidden;
+}
+
+.dh-profile .pf-sidebar {
+  padding: 28px 16px 16px;
+}
+
+.dh-profile .pf-identity {
+  text-align: center;
+  padding: 0 8px 24px;
+  border-bottom: 1px solid #edf0f5;
+  overflow-wrap: anywhere;
+}
+
+.dh-profile .pf-avatar {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #eaf0fb;
+  color: #173568;
+  border: 5px solid #f6f8fc;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.dh-profile .pf-identity p {
+  color: #69788f;
+  margin-top: 5px;
+}
+
+.dh-profile .pf-member {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #42634e;
+  background: #f0f7f2;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.dh-profile button,
+.dh-profile input {
+  font: inherit;
+}
+
+.dh-profile button {
+  cursor: pointer;
+}
+
+.dh-profile button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.dh-profile .pf-nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.dh-profile .pf-nav a,
+.dh-profile .pf-nav button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #55647b;
+  text-align: left;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.dh-profile .pf-nav [aria-current='page'] {
+  background: #edf2fc;
+  color: #173568;
+  font-weight: 600;
+}
+
+.dh-profile .pf-nav a:hover,
+.dh-profile .pf-nav button:hover {
+  background: #f2f5fa;
+}
+
+.dh-profile .pf-nav .pf-logout {
+  color: #b34f54;
+  margin-top: 12px;
+}
+
+.dh-profile svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.dh-profile .pf-content {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.dh-profile .pf-editor,
+.dh-profile .pf-appointment {
+  padding: 28px;
+}
+
+.dh-profile .pf-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.dh-profile .pf-section-heading p {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.dh-profile .pf-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f0f4fb;
+  color: #173568;
+  flex-shrink: 0;
+}
+
+.dh-profile .pf-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.dh-profile .pf-field {
+  min-width: 0;
+}
+
+/* Đi từ đường lưới đầu tiên đến cuối cùng: ô email chiếm trọn hàng. */
+.dh-profile .pf-wide {
+  grid-column: 1 / -1;
+}
+
+.dh-profile label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dh-profile label span {
+  color: #b34f54;
+}
+
+.dh-profile input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 11px 13px;
+  border: 1px solid #dce3ed;
+  border-radius: 9px;
+  background: #fff;
+  color: #20314d;
+}
+
+.dh-profile input::placeholder {
+  color: #8793a4;
+}
+
+.dh-profile input[readonly] {
+  background: #f5f7fa;
+  color: #69788f;
+}
+
+.dh-profile input[aria-invalid='true'] {
+  border-color: #b34f54;
+}
+
+/* Viền focus giúp người dùng bàn phím biết đang chọn ô hoặc nút nào. */
+.dh-profile input:focus,
+.dh-profile button:focus-visible,
+.dh-profile a:focus-visible {
+  outline: 3px solid #abc3ef;
+  outline-offset: 3px;
+}
+
+.dh-profile .pf-hint {
+  font-size: 12px;
+  color: #69788f;
+}
+
+.dh-profile .pf-field .pf-hint,
+.dh-profile .pf-error {
+  margin-top: 7px;
+}
+
+.dh-profile .pf-error {
+  color: #b23845;
+  font-size: 12px;
+}
+
+.dh-profile .pf-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  border-top: 1px solid #edf0f5;
+  padding-top: 24px;
+  margin-top: 28px;
+}
+
+.dh-profile .pf-primary,
+.dh-profile .pf-secondary {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 11px 18px;
+  border-radius: 9px;
+  border: 1px solid #173568;
+  background: #173568;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dh-profile .pf-primary:hover:not(:disabled) {
+  background: #244981;
+}
+
+.dh-profile .pf-secondary {
+  background: #fff;
+  color: #173568;
+  margin-top: 12px;
+}
+
+/* relative làm mốc cho nút mắt absolute nằm bên trong ô mật khẩu. */
+.dh-profile .pf-password {
+  position: relative;
+}
+
+.dh-profile .pf-password input {
+  padding-right: 48px;
+}
+
+.dh-profile .pf-password button {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  height: 44px;
+  width: 44px;
+  border: 0;
+  background: transparent;
+  color: #69788f;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+}
+
+.dh-profile .pf-feedback {
+  padding: 18px 0;
+  color: #69788f;
+}
+
+.dh-profile .pf-empty {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 22px;
+  background: #f7f9fc;
+  border-radius: 12px;
+}
+
+.dh-profile .pf-empty p {
+  margin-top: 6px;
+  font-size: 13px;
+  max-width: 390px;
+}
+
+.dh-profile .pf-empty a {
+  flex-shrink: 0;
+}
+
+.dh-profile .pf-booking {
+  padding: 20px;
+  border-radius: 12px;
+  background: #f7f9fc;
+}
+
+.dh-profile .pf-status {
+  display: inline-block;
+  color: #386248;
+  background: #e7f2eb;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.dh-profile .pf-booking-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin: 12px 0 18px;
+  color: #69788f;
+}
+
+.dh-profile .pf-booking-meta span,
+.dh-profile .pf-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dh-profile .pf-text-link {
+  color: #173568;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Màn hình vừa: thu gọn menu và đưa các ô nhập về một cột. */
+@media (max-width: 900px) {
+  .dh-profile .pf-layout {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .dh-profile .pf-editor,
+  .dh-profile .pf-appointment {
+    padding: 22px;
+  }
+
+  .dh-profile .pf-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .dh-profile .pf-empty {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Điện thoại: xếp menu lên trên nội dung, nút lưu rộng theo vùng chứa. */
+@media (max-width: 640px) {
+  .dh-profile {
+    padding: 28px 0 36px;
+  }
+
+  .dh-profile .pf-wrap {
+    width: calc(100% - 28px);
+  }
+
+  .dh-profile .pf-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dh-profile .pf-sidebar {
+    padding-top: 22px;
+  }
+
+  .dh-profile .pf-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dh-profile .pf-nav a,
+  .dh-profile .pf-nav button {
+    padding: 10px;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .dh-profile .pf-nav .pf-logout {
+    margin-top: 0;
+  }
+
+  .dh-profile .pf-editor,
+  .dh-profile .pf-appointment {
+    padding: 20px 16px;
+  }
+
+  .dh-profile .pf-section-heading {
+    align-items: flex-start;
+  }
+
+  .dh-profile .pf-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .dh-profile .pf-empty {
+    padding: 16px;
+  }
+}

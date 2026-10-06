@@ -7,10 +7,11 @@ import customerApi, { Customer } from '../../api/customerApi';
 import dichVuApi, { DichVu } from '../../api/dichvuApi';
 import '../../assets/css/booking-admin.css';
 
-const statuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ'];
+const statuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ', 'Đã đến'];
 const transitions: Record<string, string[]> = {
-    'Đã đặt': ['Đang chờ', 'Đã huỷ'],
-    'Đang chờ': ['Đang thực hiện', 'Đã huỷ'],
+    'Đã đặt': ['Đang chờ', 'Đã đến', 'Đã huỷ'],
+    'Đang chờ': ['Đã đến', 'Đang thực hiện', 'Đã huỷ'],
+    'Đã đến': ['Đang thực hiện', 'Đã huỷ'],
     'Đang thực hiện': ['Hoàn thành'],
 };
 const normalizeStatus = (value: string) => value.trim() === 'Đã hủy' ? 'Đã huỷ' : value.trim();
@@ -233,7 +234,7 @@ export default function BookingPage() {
                                 <td><div className="ba-row-actions">
                                     <button onClick={() => openAction('view', row)}>Chi tiết</button>
                                     {canUpdate && transitions[status] && <button onClick={() => openAction('edit', row)}>Cập nhật</button>}
-                                    {canCreate && ['Đã đặt', 'Đang chờ'].includes(status) && <button onClick={() => openAction('details', row)}>+ Dịch vụ</button>}
+                                    {canCreate && ['Đã đặt', 'Đang chờ', 'Đã đến'].includes(status) && <button onClick={() => openAction('details', row)}>+ Dịch vụ</button>}
                                     {canDelete && status === 'Đã huỷ' && <button className="ba-danger" onClick={() => openAction('delete', row)}>Xóa</button>}
                                 </div></td>
                             </tr>;
@@ -269,7 +270,7 @@ export default function BookingPage() {
                         </>}
                         <label>Ghi chú<textarea name="note" maxLength={200} value={form.note} onChange={changeForm} /></label>
                     </>}
-                    {action === 'edit' && <><p>Lịch {selected?.MALICH} hiện đang: <strong>{selectedStatus}</strong></p><label>Chuyển trạng thái<select name="status" required value={form.status} onChange={changeForm}>{(transitions[selectedStatus] || []).map(status => <option key={status}>{status}</option>)}</select></label></>}
+                    {action === 'edit' && <><p>Lịch {selected?.MALICH} hiện đang: <strong>{selectedStatus}</strong></p><p>Khi khách có mặt, chọn “Đã đến”. Lịch chưa đến sẽ tự hủy nếu quá giờ hẹn 10 phút.</p><label>Chuyển trạng thái<select name="status" required value={form.status} onChange={changeForm}>{(transitions[selectedStatus] || []).map(status => <option key={status}>{status}</option>)}</select></label></>}
                     {action === 'delete' && <p>Xóa lịch đã hủy <strong>{selected?.MALICH}</strong> và các chi tiết của lịch này?</p>}
                     {formError && <p role="alert" className="ba-error">{formError}</p>}
                     <div className="ba-actions"><button type="button" className="ba-button" disabled={saving} onClick={closeModal}>Đóng</button><button className="ba-button ba-primary" disabled={saving || formLoading || (action === 'add' && hoursLoading)}>{saving ? 'Đang lưu…' : action === 'delete' ? 'Xác nhận xóa' : 'Lưu thay đổi'}</button></div>

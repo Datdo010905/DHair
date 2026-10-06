@@ -9,7 +9,7 @@ const getHoaDonByID = async (ma) => await prisma.hOADON.findUnique({ where: { MA
 const createHoaDon = async (model) => {
     return await prisma.hOADON.create({
         data: {
-            MAHD: model.MAHD || model.mahd,
+            MAHD: model.MAHD || model.mahd || `HD${randomUUID().replace(/-/g, '').slice(0, 18)}`,
             // Nếu rỗng thì gán null để không vi phạm khóa ngoại
             MAKH: model.MAKH || model.makh || null,
             MAKM: model.MAKM || model.makm || null,

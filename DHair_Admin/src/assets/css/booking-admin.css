@@ -327,6 +327,11 @@
   background: #eef2f7;
 }
 
+:is(.booking-admin, .invoice-admin, .admin-page) .ba-status-5 {
+  color: #087e8b;
+  background: #e6f7f9;
+}
+
 :is(.booking-admin, .invoice-admin, .admin-page) .ba-status-0 {
   background: #eaf3ff;
   color: #2764a5;

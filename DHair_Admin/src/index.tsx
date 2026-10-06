@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext';
 import { Slide, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './assets/css/typography.css';
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -15,10 +16,10 @@ root.render(
       <AuthProvider>
         <SearchProvider>
           <App />
-          {/* đóng sau 1,5 giây */}
+          {/* đóng sau 1 giây */}
           <ToastContainer
             position="top-right"
-            autoClose={1500}    
+            autoClose={1000}    
             newestOnTop={true}      // Thông báo mới nhất sẽ hiện lên trên cùng
             closeOnClick            // Tắt ngay khi người dùng click vào
             rtl={false}             
