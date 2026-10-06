@@ -78,8 +78,9 @@ const updateTrangThai = async (ma, trangthai) => {
     if (!booking) throw Object.assign(new Error('Không tìm thấy lịch hẹn.'), { status: 404 });
     const nextStatus = typeof trangthai === 'string' ? trangthai.trim() : '';
     const transitions = {
-        'Đã đặt': ['Đang chờ', 'Đã huỷ'],
-        'Đang chờ': ['Đang thực hiện', 'Đã huỷ'],
+        'Đã đặt': ['Đang chờ', 'Đã đến', 'Đã huỷ'],
+        'Đang chờ': ['Đã đến', 'Đang thực hiện', 'Đã huỷ'],
+        'Đã đến': ['Đang thực hiện', 'Đã huỷ'],
         'Đang thực hiện': ['Hoàn thành'],
     };
     if (!transitions[booking.TRANGTHAI?.trim()]?.includes(nextStatus)) {
@@ -152,7 +153,7 @@ const deleteCT = async (ma) => {
 };
 
 const { getDateWindow, bookingError } = require('./bookingAvailability');
-const adminStatuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ'];
+const adminStatuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ', 'Đã đến'];
 
 function parseAdminDate(value) {
     if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw bookingError('Ngày không hợp lệ.');

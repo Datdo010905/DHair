@@ -14,6 +14,7 @@ const filters: { value: HistoryFilter; label: string }[] = [
   ...appointmentStatuses.map(status => ({ value: status, label: status })),
 ];
 const statusStyles: Record<AppointmentStatus, { label: string; color: string; background: string }> = {
+  'Đã đến': { label: 'Đã đến', color: '#087e8b', background: '#e6f7f9' },
   'Đã đặt': { label: 'Đã đặt', color: '#2458a6', background: '#edf3ff' },
   'Đang chờ': { label: 'Đang chờ', color: '#722ed1', background: '#f9f0ff' },
   'Đang thực hiện': { label: 'Đang thực hiện', color: '#ad6800', background: '#fff7e6' },

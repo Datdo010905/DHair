@@ -1,7 +1,7 @@
 import { API_BASE_URL } from '@/services/apiClient';
 import { endpoints } from '@/services/endpoints';
 
-export const appointmentStatuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ'] as const;
+export const appointmentStatuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ', 'Đã đến'] as const;
 export type AppointmentStatus = typeof appointmentStatuses[number];
 
 export interface Appointment {

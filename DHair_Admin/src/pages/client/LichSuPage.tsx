@@ -34,7 +34,7 @@ const LichSuPage = () => {
     const saveLock = useRef(false);
     const detailVersion = useRef(0);
     const [detailsLoading, setDetailsLoading] = useState(false);
-    const statuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ'];
+    const statuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ', 'Đã đến'];
     const normalizeStatus = (value: string) => value?.trim() === 'Đã hủy' ? 'Đã huỷ' : value?.trim() === 'Đã hoàn thành' ? 'Hoàn thành' : value?.trim();
     const matching = bookingList.filter(row => {
         const date = row.NGAYHEN?.slice(0, 10) || '';
