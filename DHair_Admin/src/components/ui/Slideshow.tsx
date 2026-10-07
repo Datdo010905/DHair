@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import '../../assets/css/slideshow.css';
 
 const slides = Array.from({ length: 9 }, (_, index) => `/img/SLIDE/slideshow_${index + 1}.jpg`);
@@ -9,9 +9,9 @@ const SlideShow = () => {
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setPosition(current => current.index === slides.length
-        ? current
-        : { index: current.index + 1, animate: true });
+      setPosition((current) =>
+        current.index === slides.length ? current : { index: current.index + 1, animate: true },
+      );
     }, 2567);
     return () => {
       window.clearInterval(interval);
@@ -30,14 +30,20 @@ const SlideShow = () => {
   return (
     <div className="product">
       <div id="slideshow" aria-label="Banner giới thiệu dịch vụ">
-        <div className="dh-slideshow-track" style={{
-          transform: `translateX(-${position.index * 100}%)`,
-          transitionDuration: position.animate ? `${slideDuration}ms` : '0ms',
-        }}>
+        <div
+          className="dh-slideshow-track"
+          style={{
+            transform: `translateX(-${position.index * 100}%)`,
+            transitionDuration: position.animate ? `${slideDuration}ms` : '0ms',
+          }}
+        >
           {[...slides, slides[0]].map((src, index) => (
-            <div className="dh-slideshow-slide" key={index}
-              aria-hidden={index !== position.index}>
-              <img src={src} alt={`Banner dịch vụ ${index % slides.length + 1}`} draggable={false} />
+            <div className="dh-slideshow-slide" key={index} aria-hidden={index !== position.index}>
+              <img
+                src={src}
+                alt={`Banner dịch vụ ${(index % slides.length) + 1}`}
+                draggable={false}
+              />
             </div>
           ))}
         </div>

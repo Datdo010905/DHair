@@ -1,16 +1,16 @@
 import React from 'react';
 // Định nghĩa cấu trúc của một Cột
 export interface Column<T> {
-  tieude: string; 
+  tieude: string;
   cotnhandulieu: keyof T;
   //custom cách hiển thị
-  render?: (row: T) => React.ReactNode; 
+  render?: (row: T) => React.ReactNode;
 }
 
 interface DataTableProps<T> {
   columns: Column<T>[]; // Danh sách các cột
-  data: T[];            // Mảng dữ liệu từ API
-  isLoading?: boolean;  // Trạng thái đang tải
+  data: T[]; // Mảng dữ liệu từ API
+  isLoading?: boolean; // Trạng thái đang tải
 }
 
 //Component DataTable sử dụng Generic <T>
@@ -20,18 +20,15 @@ const DataTable = <T extends object>({ columns, data, isLoading }: DataTableProp
   }
   if (!data || data.length === 0) {
     return <div style={{ padding: '20px', textAlign: 'center' }}>Không có dữ liệu.</div>;
-    
   }
   return (
     <>
-      <table className='table'>  
+      <table className="table">
         <thead>
           <tr>
             {/* duyệt các cột để tạo tiêu đề bảng */}
             {columns.map((col, index) => (
-              <th key={index}>
-                {col.tieude}
-              </th>
+              <th key={index}>{col.tieude}</th>
             ))}
           </tr>
         </thead>
@@ -56,4 +53,3 @@ const DataTable = <T extends object>({ columns, data, isLoading }: DataTableProp
 };
 
 export default DataTable;
-

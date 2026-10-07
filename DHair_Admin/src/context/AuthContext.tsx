@@ -23,7 +23,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('phanquyen');
     const username = localStorage.getItem('username'); // Lấy tên đã lưu
-    
+
     if (token && role && username) {
       setUser({ username, role });
     }
@@ -46,11 +46,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('tenkhach');
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
 };
 
 //Tạo một Custom Hook để các file khác gọi cho nhanh

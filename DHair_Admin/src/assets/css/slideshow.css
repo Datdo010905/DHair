@@ -2,7 +2,7 @@
   display: flex;
   width: 100%;
   transition-property: transform;
-  transition-timing-function: cubic-bezier(.22, .61, .36, 1);
+  transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 #slideshow .dh-slideshow-slide {

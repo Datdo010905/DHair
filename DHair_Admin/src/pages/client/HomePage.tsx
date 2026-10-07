@@ -8,11 +8,10 @@ const HomePage = () => {
     <div id="container" className="dh-home-content">
       <Slideshow />
       <div className="clear"></div>
-    
-      
+
       <Datlich />
       <div className="clear"></div>
-      
+
       <Product />
     </div>
   );

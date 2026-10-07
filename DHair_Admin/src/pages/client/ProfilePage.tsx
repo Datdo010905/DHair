@@ -45,9 +45,7 @@ function getBookingTime(value: string): string {
 
 function findNextBooking(bookings: Booking[]): Booking | null {
   const upcomingBookings = bookings.filter((booking) => {
-    const isPending = ['Đã đặt', 'Đang chờ'].includes(
-      booking.TRANGTHAI?.trim(),
-    );
+    const isPending = ['Đã đặt', 'Đang chờ'].includes(booking.TRANGTHAI?.trim());
     const date = booking.NGAYHEN.slice(0, 10);
     const time = getBookingTime(booking.GIOHEN);
 
@@ -60,9 +58,7 @@ function findNextBooking(bookings: Booking[]): Booking | null {
   upcomingBookings.sort((first, second) => {
     const dateOrder = first.NGAYHEN.localeCompare(second.NGAYHEN);
     if (dateOrder !== 0) return dateOrder;
-    return getBookingTime(first.GIOHEN).localeCompare(
-      getBookingTime(second.GIOHEN),
-    );
+    return getBookingTime(first.GIOHEN).localeCompare(getBookingTime(second.GIOHEN));
   });
 
   return upcomingBookings[0] || null;
@@ -108,9 +104,7 @@ const ProfilePage = () => {
     CustomerApi.getById(username)
       .then((response) => {
         // API hiện có thể trả một đối tượng hoặc mảng chứa khách hàng.
-        const data = Array.isArray(response.data.data)
-          ? response.data.data[0]
-          : response.data.data;
+        const data = Array.isArray(response.data.data) ? response.data.data[0] : response.data.data;
         if (!response.data.success || !data) throw new Error();
         if (isActive) {
           const value = { name: data.HOTEN || '', email: data.EMAIL || '' };
@@ -119,10 +113,7 @@ const ProfilePage = () => {
         }
       })
       .catch(() => {
-        if (isActive)
-          setProfileLoadError(
-            'Không thể tải thông tin cá nhân. Vui lòng thử lại.',
-          );
+        if (isActive) setProfileLoadError('Không thể tải thông tin cá nhân. Vui lòng thử lại.');
       })
       .finally(() => {
         if (isActive) setIsProfileLoading(false);
@@ -174,8 +165,7 @@ const ProfilePage = () => {
       .join('')
       .toUpperCase() || 'DH';
 
-  let submitButtonLabel =
-    section === 'info' ? 'Lưu thay đổi' : 'Cập nhật mật khẩu';
+  let submitButtonLabel = section === 'info' ? 'Lưu thay đổi' : 'Cập nhật mật khẩu';
   if (isSaving) {
     submitButtonLabel = 'Đang lưu…';
   } else if (remainingSeconds > 0) {
@@ -205,15 +195,11 @@ const ProfilePage = () => {
     const nextErrors: Record<string, string> = {};
     if (section === 'info') {
       if (!profile.name.trim()) nextErrors.name = 'Vui lòng nhập họ và tên.';
-      if (
-        profile.email.trim() &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email.trim())
-      )
+      if (profile.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email.trim()))
         nextErrors.email = 'Email chưa đúng định dạng.';
     } else {
       if (!password.trim()) nextErrors.password = 'Vui lòng nhập mật khẩu mới.';
-      if (password !== confirmPassword)
-        nextErrors.confirm = 'Mật khẩu xác nhận chưa trùng khớp.';
+      if (password !== confirmPassword) nextErrors.confirm = 'Mật khẩu xác nhận chưa trùng khớp.';
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
@@ -231,8 +217,7 @@ const ProfilePage = () => {
         // undefined được bỏ qua khi gửi JSON: chỉ gửi mật khẩu ở mục đổi mật khẩu.
         accountData: section === 'password' ? { PASS: password } : undefined,
       });
-      if (!response.data.success)
-        throw new Error(response.data.message || 'Cập nhật thất bại.');
+      if (!response.data.success) throw new Error(response.data.message || 'Cập nhật thất bại.');
       if (section === 'info') {
         setSavedProfile(profileToSave);
         setProfile(profileToSave);
@@ -240,16 +225,10 @@ const ProfilePage = () => {
       setPassword('');
       setConfirmPassword('');
       startCooldown();
-      toast.success(
-        section === 'info'
-          ? 'Đã lưu thông tin cá nhân.'
-          : 'Đổi mật khẩu thành công.',
-      );
+      toast.success(section === 'info' ? 'Đã lưu thông tin cá nhân.' : 'Đổi mật khẩu thành công.');
     } catch (error: any) {
       toast.error(
-        error.response?.data?.message ||
-          error.message ||
-          'Không thể cập nhật. Vui lòng thử lại.',
+        error.response?.data?.message || error.message || 'Không thể cập nhật. Vui lòng thử lại.',
       );
     } finally {
       setIsSaving(false);
@@ -263,9 +242,7 @@ const ProfilePage = () => {
         <header className="pf-heading">
           <span className="pf-eyebrow">TÀI KHOẢN DHAIR</span>
           <h1>Không gian của bạn</h1>
-          <p>
-            Quản lý thông tin và sẵn sàng cho lần làm mới phong cách tiếp theo.
-          </p>
+          <p>Quản lý thông tin và sẵn sàng cho lần làm mới phong cách tiếp theo.</p>
         </header>
         <div className="pf-layout">
           <aside className="pf-sidebar pf-card">
@@ -321,16 +298,10 @@ const ProfilePage = () => {
             >
               <div className="pf-section-heading">
                 <span className="pf-icon">
-                  {section === 'info' ? (
-                    <AdminIcon icon={FiUser} />
-                  ) : (
-                    <AdminIcon icon={FiLock} />
-                  )}
+                  {section === 'info' ? <AdminIcon icon={FiUser} /> : <AdminIcon icon={FiLock} />}
                 </span>
                 <div>
-                  <h2 id="pf-title">
-                    {section === 'info' ? 'Thông tin cá nhân' : 'Đổi mật khẩu'}
-                  </h2>
+                  <h2 id="pf-title">{section === 'info' ? 'Thông tin cá nhân' : 'Đổi mật khẩu'}</h2>
                   <p>
                     {section === 'info'
                       ? 'Thông tin chính xác giúp DHair phục vụ bạn tốt hơn.'
@@ -370,13 +341,9 @@ const ProfilePage = () => {
                             autoComplete="name"
                             maxLength={100}
                             value={profile.name}
-                            onChange={(e) =>
-                              setProfile({ ...profile, name: e.target.value })
-                            }
+                            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                             aria-invalid={!!errors.name}
-                            aria-describedby={
-                              errors.name ? 'pf-name-error' : undefined
-                            }
+                            aria-describedby={errors.name ? 'pf-name-error' : undefined}
                           />
                           {errors.name && (
                             <p className="pf-error" id="pf-name-error">
@@ -407,13 +374,9 @@ const ProfilePage = () => {
                             maxLength={100}
                             placeholder="Nhập địa chỉ email của bạn"
                             value={profile.email}
-                            onChange={(e) =>
-                              setProfile({ ...profile, email: e.target.value })
-                            }
+                            onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                             aria-invalid={!!errors.email}
-                            aria-describedby={
-                              errors.email ? 'pf-email-error' : undefined
-                            }
+                            aria-describedby={errors.email ? 'pf-email-error' : undefined}
                           />
                           {errors.email && (
                             <p className="pf-error" id="pf-email-error">
@@ -436,18 +399,12 @@ const ProfilePage = () => {
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               aria-invalid={!!errors.password}
-                              aria-describedby={
-                                errors.password
-                                  ? 'pf-password-error'
-                                  : undefined
-                              }
+                              aria-describedby={errors.password ? 'pf-password-error' : undefined}
                             />
                             <button
                               type="button"
                               onClick={() => setShowPassword((value) => !value)}
-                              aria-label={
-                                showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'
-                              }
+                              aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                               aria-pressed={showPassword}
                             >
                               {showPassword ? (
@@ -474,9 +431,7 @@ const ProfilePage = () => {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             aria-invalid={!!errors.confirm}
-                            aria-describedby={
-                              errors.confirm ? 'pf-confirm-error' : undefined
-                            }
+                            aria-describedby={errors.confirm ? 'pf-confirm-error' : undefined}
                           />
                           {errors.confirm && (
                             <p className="pf-error" id="pf-confirm-error">
@@ -496,23 +451,16 @@ const ProfilePage = () => {
                     <button
                       className="pf-primary"
                       type="submit"
-                      disabled={
-                        !hasUnsavedChanges || isSaving || remainingSeconds > 0
-                      }
+                      disabled={!hasUnsavedChanges || isSaving || remainingSeconds > 0}
                     >
                       {submitButtonLabel}
-                      {!isSaving && (
-                        <AdminIcon icon={FiCheck} aria-hidden="true" />
-                      )}
+                      {!isSaving && <AdminIcon icon={FiCheck} aria-hidden="true" />}
                     </button>
                   </div>
                 </form>
               )}
             </section>
-            <section
-              className="pf-card pf-appointment"
-              aria-labelledby="pf-appointment-title"
-            >
+            <section className="pf-card pf-appointment" aria-labelledby="pf-appointment-title">
               <div className="pf-section-heading">
                 <span className="pf-icon">
                   <AdminIcon icon={FiCalendar} />
@@ -545,10 +493,7 @@ const ProfilePage = () => {
                   <div className="pf-booking-meta">
                     <span>
                       <AdminIcon icon={FiCalendar} />
-                      {upcomingBooking.NGAYHEN.slice(0, 10)
-                        .split('-')
-                        .reverse()
-                        .join('/')}
+                      {upcomingBooking.NGAYHEN.slice(0, 10).split('-').reverse().join('/')}
                     </span>
                     <span>
                       <AdminIcon icon={FiClock} />
@@ -556,13 +501,11 @@ const ProfilePage = () => {
                     </span>
                     <span>
                       <AdminIcon icon={FiMapPin} />
-                      {branchNames[upcomingBooking.MACHINHANH.trim()] ||
-                        upcomingBooking.MACHINHANH}
+                      {branchNames[upcomingBooking.MACHINHANH.trim()] || upcomingBooking.MACHINHANH}
                     </span>
                   </div>
                   <Link className="pf-text-link" to="/lichsu">
-                    Xem lịch sử và chi tiết lịch hẹn{' '}
-                    <AdminIcon icon={FiArrowRight} />
+                    Xem lịch sử và chi tiết lịch hẹn <AdminIcon icon={FiArrowRight} />
                   </Link>
                 </div>
               )}
@@ -570,14 +513,10 @@ const ProfilePage = () => {
                 <div className="pf-empty">
                   <div>
                     <h3>Bạn chưa có lịch hẹn sắp tới</h3>
-                    <p>
-                      Chọn thời gian phù hợp và để DHair chăm sóc mái tóc của
-                      bạn.
-                    </p>
+                    <p>Chọn thời gian phù hợp và để DHair chăm sóc mái tóc của bạn.</p>
                   </div>
                   <Link className="pf-primary" to="/datlich">
-                    Đặt lịch mới{' '}
-                    <AdminIcon icon={FiArrowRight} aria-hidden="true" />
+                    Đặt lịch mới <AdminIcon icon={FiArrowRight} aria-hidden="true" />
                   </Link>
                 </div>
               )}

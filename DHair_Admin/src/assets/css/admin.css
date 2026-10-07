@@ -279,7 +279,6 @@
   background: #014b13c0;
 }
 
-
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .sidebar {
@@ -301,7 +300,6 @@
   #toggleSidebar {
     display: inline-block;
   }
-  
 }
 
 .accounts {
@@ -441,7 +439,6 @@
 
 .btn.primary:hover {
   background-color: #0056b3;
-
 }
 
 .btn.secondary {
@@ -551,5 +548,5 @@ textarea {
 }
 
 .reportDate input {
-  padding: 8px
+  padding: 8px;
 }

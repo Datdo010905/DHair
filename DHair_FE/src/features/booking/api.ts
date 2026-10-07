@@ -23,21 +23,25 @@ export interface Availability {
 
 export function getBookingOptions(branchId: string, signal?: AbortSignal) {
   return apiGet<BookingOptions>(
-    `${endpoints.booking.options}?branchId=${encodeURIComponent(branchId)}`, signal,
+    `${endpoints.booking.options}?branchId=${encodeURIComponent(branchId)}`,
+    signal,
   );
 }
 
 export function getAvailability(input: AvailabilityInput, signal?: AbortSignal) {
   const query = Object.entries(input)
-    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
   return apiGet<Availability>(`${endpoints.booking.availability}?${query}`, signal);
 }
 
-export async function createBooking(input: AvailabilityInput & {
-  accountId: string;
-  time: string;
-  note: string;
-}): Promise<{ MALICH: string }> {
+export async function createBooking(
+  input: AvailabilityInput & {
+    accountId: string;
+    time: string;
+    note: string;
+  },
+): Promise<{ MALICH: string }> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
@@ -51,18 +55,24 @@ export async function createBooking(input: AvailabilityInput & {
     try {
       result = await response.json();
     } catch {
-      throw new Error('Chưa xác nhận được kết quả đặt lịch. Vui lòng kiểm tra với salon trước khi đặt lại.');
+      throw new Error(
+        'Chưa xác nhận được kết quả đặt lịch. Vui lòng kiểm tra với salon trước khi đặt lại.',
+      );
     }
     if (!response.ok || !result.success) {
       throw new Error(result.message || 'Không thể đặt lịch. Vui lòng thử lại.');
     }
     if (typeof result.data?.MALICH !== 'string') {
-      throw new Error('Máy chủ chưa trả mã lịch hẹn. Vui lòng kiểm tra với salon trước khi đặt lại.');
+      throw new Error(
+        'Máy chủ chưa trả mã lịch hẹn. Vui lòng kiểm tra với salon trước khi đặt lại.',
+      );
     }
     return result.data;
   } catch (error) {
     if (controller.signal.aborted || error instanceof TypeError) {
-      throw new Error('Chưa xác nhận được kết quả đặt lịch. Vui lòng kiểm tra với salon trước khi đặt lại.');
+      throw new Error(
+        'Chưa xác nhận được kết quả đặt lịch. Vui lòng kiểm tra với salon trước khi đặt lại.',
+      );
     }
     throw error;
   } finally {

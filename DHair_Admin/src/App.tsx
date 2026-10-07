@@ -1,9 +1,8 @@
-import React, { Profiler } from 'react';
+import React from 'react';
 import { Route, Routes, Outlet } from 'react-router-dom';
 //import css
 import './assets/css/style.css';
 import './assets/css/admin.css';
-
 
 //import layout
 import TopBar from './components/layout/TopBar';
@@ -42,7 +41,6 @@ import ReportPage from './pages/admin/ReportPage';
 //check auth
 import PrivateRoute from './components/ui/PrivateRoute';
 
-
 const MainLayout = ({ menus }: { menus: any[] }) => {
   return (
     <>
@@ -55,16 +53,15 @@ const MainLayout = ({ menus }: { menus: any[] }) => {
       <Footer />
       <Chatbot1 />
       <Chatbot2 />
-
     </>
   );
 };
 
 class App extends React.Component<any, any> {
   menus = [
-    { url: "/home", name: "Trang chủ" },
-    { url: "/toptho", name: "Top thợ" },
-    { url: "/about", name: "Về DHair" },
+    { url: '/home', name: 'Trang chủ' },
+    { url: '/toptho', name: 'Top thợ' },
+    { url: '/about', name: 'Về DHair' },
     //{ url: "#timmap", name: "DHair gần nhất", href: "#timmap" },
     //{ url: "#nucuoidv", name: "Nụ cười dịch vụ", href: "#nucuoidv" },
     // { url: "#cuocthi", name: "Cuộc thi DHair", href: "#cuocthi" },
@@ -77,18 +74,15 @@ class App extends React.Component<any, any> {
         <Route path="/forgot" element={<Forgot />} />
         <Route path="/signup" element={<Signup />} />
 
-
         {/* === ROUTE CHO KHU VỰC ADMIN === */}
         <Route element={<PrivateRoute allowedRoles={[1, 2, 3, 4, 5]} />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<DashboardPage />} />
 
-
             <Route element={<PrivateRoute allowedRoles={[1]} />}>
               <Route path="accounts" element={<AccountsPage />} />
               <Route path="promotions" element={<KhuyenMaiPage />} />
             </Route>
-
 
             <Route element={<PrivateRoute allowedRoles={[1, 2]} />}>
               <Route path="services" element={<DichVuPage />} />
@@ -97,16 +91,13 @@ class App extends React.Component<any, any> {
               <Route path="reports" element={<ReportPage />} />
             </Route>
 
-
             <Route element={<PrivateRoute allowedRoles={[1, 2, 3, 5]} />}>
               <Route path="bookings" element={<BookingPage />} />
             </Route>
 
-
             <Route element={<PrivateRoute allowedRoles={[1, 2, 4]} />}>
               <Route path="invoices" element={<HoaDonPage />} />
             </Route>
-
           </Route>
         </Route>
         {/* === ROUTE CHO KHU VỰC CLIENT === */}
@@ -120,10 +111,9 @@ class App extends React.Component<any, any> {
           <Route path="/dichvuchitiet/:madv" element={<DichVuDetailsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
-
       </Routes>
     );
-  };
-};
+  }
+}
 
 export default App;

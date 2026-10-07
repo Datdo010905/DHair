@@ -1,4 +1,5 @@
-﻿import { Ionicons } from '@expo/vector-icons';
+// Màn hình đặt lịch: tải lựa chọn, kiểm tra giờ trống và gửi giá trị lựa chọn cho backend.
+import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import {
@@ -96,7 +97,9 @@ function BookingContent() {
   const { user } = useAuth();
   const hairServices = useServices('hair');
   const skinCareServices = useServices('skinCare');
-  const [bookingValues, setBookingValues] = useState<Partial<Record<BookingField, BookingOption>>>({});
+  const [bookingValues, setBookingValues] = useState<Partial<Record<BookingField, BookingOption>>>(
+    {},
+  );
   const [activeField, setActiveField] = useState<BookingField | null>(null);
   const [note, setNote] = useState('');
   const [validationError, setValidationError] = useState('');
@@ -120,43 +123,54 @@ function BookingContent() {
   const canLoadTimes = !!(branchId && staffId && serviceId && date);
   const queryKey = JSON.stringify([branchId, staffId, serviceId, date, reloadVersion]);
 
-  useFocusEffect(useCallback(() => {
-    // Tải lại khi quay về tab và khi người dùng để màn hình mở lâu.
-    setReloadVersion(value => value + 1);
-    const timer = setInterval(() => setReloadVersion(value => value + 1), 60000);
-    return () => clearInterval(timer);
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      // Tải lại khi quay về tab và khi người dùng để màn hình mở lâu.
+      setReloadVersion((value) => value + 1);
+      const timer = setInterval(() => setReloadVersion((value) => value + 1), 60000);
+      return () => clearInterval(timer);
+    }, []),
+  );
 
   useEffect(() => {
     const controller = new AbortController();
     setCatalogLoading(true);
     setCatalogError('');
-    getBookingOptions(branchId, controller.signal).then(result => {
-      if (controller.signal.aborted) return;
-      setCatalog(result);
-      setCatalogBranch(branchId);
-      setBookingValues(previous => {
-        const next = { ...previous };
-        if (next.salon && !result.branches.some(item => item.MACHINHANH.trim() === next.salon?.value)) {
-          next.salon = undefined;
-          next.stylist = undefined;
-          next.time = undefined;
-        }
-        if (next.stylist && !result.stylists.some(item => item.MANV.trim() === next.stylist?.value)) {
-          next.stylist = undefined;
-          next.time = undefined;
-        }
-        if (next.date && (next.date.value < result.today || next.date.value > result.lastDay)) {
-          next.date = undefined;
-          next.time = undefined;
-        }
-        return next;
+    getBookingOptions(branchId, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        setCatalog(result);
+        setCatalogBranch(branchId);
+        setBookingValues((previous) => {
+          const next = { ...previous };
+          if (
+            next.salon &&
+            !result.branches.some((item) => item.MACHINHANH.trim() === next.salon?.value)
+          ) {
+            next.salon = undefined;
+            next.stylist = undefined;
+            next.time = undefined;
+          }
+          if (
+            next.stylist &&
+            !result.stylists.some((item) => item.MANV.trim() === next.stylist?.value)
+          ) {
+            next.stylist = undefined;
+            next.time = undefined;
+          }
+          if (next.date && (next.date.value < result.today || next.date.value > result.lastDay)) {
+            next.date = undefined;
+            next.time = undefined;
+          }
+          return next;
+        });
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setCatalogError(error.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCatalogLoading(false);
       });
-    }).catch(error => {
-      if (!controller.signal.aborted) setCatalogError(error.message);
-    }).finally(() => {
-      if (!controller.signal.aborted) setCatalogLoading(false);
-    });
     return () => controller.abort();
   }, [branchId, reloadVersion]);
 
@@ -167,62 +181,81 @@ function BookingContent() {
     setTimesError('');
     setTimesLoading(canLoadTimes);
     if (!canLoadTimes) return () => controller.abort();
-    getAvailability({ branchId, staffId, serviceId, date }, controller.signal).then(result => {
-      if (controller.signal.aborted) return;
-      setAvailability(result);
-      setLoadedKey(queryKey);
-      setBookingValues(previous => {
-        if (!previous.time || result.slots.some(slot => slot.time === previous.time?.value)) return previous;
-        return { ...previous, time: undefined };
+    getAvailability({ branchId, staffId, serviceId, date }, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        setAvailability(result);
+        setLoadedKey(queryKey);
+        setBookingValues((previous) => {
+          if (!previous.time || result.slots.some((slot) => slot.time === previous.time?.value))
+            return previous;
+          return { ...previous, time: undefined };
+        });
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setTimesError(error.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setTimesLoading(false);
       });
-    }).catch(error => {
-      if (!controller.signal.aborted) setTimesError(error.message);
-    }).finally(() => {
-      if (!controller.signal.aborted) setTimesLoading(false);
-    });
     return () => controller.abort();
   }, [branchId, staffId, serviceId, date, canLoadTimes, queryKey]);
 
-  useFocusEffect(useCallback(() => {
-    let isActive = true;
-    const version = selectionVersion.current;
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+      const version = selectionVersion.current;
 
-    async function restoreService() {
-      try {
-        const savedService = await getBookingService();
-        // Không ghi đè nếu người dùng vừa chọn thủ công trong lúc đọc local.
-        if (!isActive || !savedService || version !== selectionVersion.current) return;
-        const selectedService: BookingOption = {
-          value: savedService.MADV.trim(),
-          label: savedService.TENDV,
-          detail: `${savedService.GIADV.toLocaleString('vi-VN')} đ • ${savedService.THOIGIAN} phút`,
-        };
-        setBookingValues((previous) => {
-          if (previous.service?.value === selectedService.value) return previous;
-          return { ...previous, service: selectedService, time: undefined };
-        });
-        setValidationError('');
-      } catch {
-        if (isActive) setValidationError('Không thể đọc dịch vụ đã lưu. Bạn có thể chọn dịch vụ bên dưới.');
+      async function restoreService() {
+        try {
+          const savedService = await getBookingService();
+          // Không ghi đè nếu người dùng vừa chọn thủ công trong lúc đọc local.
+          if (!isActive || !savedService || version !== selectionVersion.current) return;
+          const selectedService: BookingOption = {
+            value: savedService.MADV.trim(),
+            label: savedService.TENDV,
+            detail: `${savedService.GIADV.toLocaleString('vi-VN')} đ • ${savedService.THOIGIAN} phút`,
+          };
+          setBookingValues((previous) => {
+            if (previous.service?.value === selectedService.value) return previous;
+            return { ...previous, service: selectedService, time: undefined };
+          });
+          setValidationError('');
+        } catch {
+          if (isActive)
+            setValidationError('Không thể đọc dịch vụ đã lưu. Bạn có thể chọn dịch vụ bên dưới.');
+        }
       }
-    }
 
-    restoreService();
-    return () => { isActive = false; };
-  }, []));
+      restoreService();
+      return () => {
+        isActive = false;
+      };
+    }, []),
+  );
 
   // Chuẩn bị danh sách lựa chọn cho từng bước của form.
   const dateOptions = createDateOptions(catalog?.today || '', catalog?.lastDay || '');
-  const salons = (catalog?.branches || []).map(item => ({
-    value: item.MACHINHANH.trim(), label: item.TENCHINHANH?.trim() || item.MACHINHANH.trim(),
+  const salons = (catalog?.branches || []).map((item) => ({
+    value: item.MACHINHANH.trim(),
+    label: item.TENCHINHANH?.trim() || item.MACHINHANH.trim(),
     detail: item.DIACHI?.trim() || undefined,
   }));
-  const stylists = catalogBranch === branchId ? (catalog?.stylists || []).map(item => ({
-    value: item.MANV.trim(), label: item.HOTEN.trim(),
-  })) : [];
-  const timeOptions = loadedKey === queryKey ? (availability?.slots || []).map(slot => ({
-    value: slot.time, label: `${slot.time} – ${slot.endTime}`, detail: `${availability?.duration} phút`,
-  })) : [];
+  const stylists =
+    catalogBranch === branchId
+      ? (catalog?.stylists || []).map((item) => ({
+          value: item.MANV.trim(),
+          label: item.HOTEN.trim(),
+        }))
+      : [];
+  const timeOptions =
+    loadedKey === queryKey
+      ? (availability?.slots || []).map((slot) => ({
+          value: slot.time,
+          label: `${slot.time} – ${slot.endTime}`,
+          detail: `${availability?.duration} phút`,
+        }))
+      : [];
   // Trang đặt lịch gộp kết quả từ hai API tóc và chăm sóc da.
   const serviceOptions = createServiceOptions([
     ...hairServices.services,
@@ -247,7 +280,7 @@ function BookingContent() {
   }
 
   function reloadServices() {
-    setReloadVersion(value => value + 1);
+    setReloadVersion((value) => value + 1);
     hairServices.reload();
     skinCareServices.reload();
   }
@@ -256,8 +289,9 @@ function BookingContent() {
     if (!activeField) return;
     if (activeField === 'service') {
       selectionVersion.current += 1;
-      const service = [...hairServices.services, ...skinCareServices.services]
-        .find((item) => item.MADV.trim() === option.value);
+      const service = [...hairServices.services, ...skinCareServices.services].find(
+        (item) => item.MADV.trim() === option.value,
+      );
       // Ghi nhớ lựa chọn thủ công để lần mở tab sau không quay về dịch vụ cũ.
       if (service) {
         saveBookingService(service).catch(() => {
@@ -296,12 +330,15 @@ function BookingContent() {
       return;
     }
     setValidationError('');
-    if (!dateOptions.some(option => option.value === selectedDate.value) ||
-        timesLoading || loadedKey !== queryKey ||
-        !timeOptions.some(option => option.value === selectedTime.value)) {
+    if (
+      !dateOptions.some((option) => option.value === selectedDate.value) ||
+      timesLoading ||
+      loadedKey !== queryKey ||
+      !timeOptions.some((option) => option.value === selectedTime.value)
+    ) {
       setValidationError('Vui lòng tải và chọn lại giờ trống.');
-      setBookingValues(previous => ({ ...previous, time: undefined }));
-      setReloadVersion(value => value + 1);
+      setBookingValues((previous) => ({ ...previous, time: undefined }));
+      setReloadVersion((value) => value + 1);
       return;
     }
     setIsReviewVisible(true);
@@ -313,33 +350,43 @@ function BookingContent() {
     setSubmitting(true);
     try {
       const result = await createBooking({
-        branchId, staffId, serviceId, date,
-        time: bookingValues.time.value, note, accountId: user.accountId,
+        branchId,
+        staffId,
+        serviceId,
+        date,
+        time: bookingValues.time.value,
+        note,
+        accountId: user.accountId,
       });
       setIsReviewVisible(false);
-      setBookingValues(previous => ({ ...previous, date: undefined, time: undefined }));
+      setBookingValues((previous) => ({ ...previous, date: undefined, time: undefined }));
       setNote('');
       setValidationError('');
       Alert.alert('Đặt lịch thành công', `Mã lịch hẹn: ${result.MALICH.trim()}`);
       router.push('/history');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Không thể đặt lịch. Vui lòng thử lại.';
+      const message =
+        error instanceof Error ? error.message : 'Không thể đặt lịch. Vui lòng thử lại.';
       setIsReviewVisible(false);
       setValidationError(message);
-      setBookingValues(previous => ({ ...previous, time: undefined }));
+      setBookingValues((previous) => ({ ...previous, time: undefined }));
       Alert.alert('Chưa xác nhận được lịch hẹn', message);
     } finally {
       submitLock.current = false;
       setSubmitting(false);
-      setReloadVersion(value => value + 1);
+      setReloadVersion((value) => value + 1);
     }
   }
 
-  const isCatalogField = activeField === 'salon' || activeField === 'stylist' || activeField === 'date';
-  const loading = isServiceLoading || (isCatalogField && catalogLoading) ||
-    (activeField === 'time' && (timesLoading || (canLoadTimes && loadedKey !== queryKey && !timesError)));
-  const loadError = serviceLoadError || (isCatalogField && catalogError) ||
-    (activeField === 'time' && timesError);
+  const isCatalogField =
+    activeField === 'salon' || activeField === 'stylist' || activeField === 'date';
+  const loading =
+    isServiceLoading ||
+    (isCatalogField && catalogLoading) ||
+    (activeField === 'time' &&
+      (timesLoading || (canLoadTimes && loadedKey !== queryKey && !timesError)));
+  const loadError =
+    serviceLoadError || (isCatalogField && catalogError) || (activeField === 'time' && timesError);
 
   let modalTitle = '';
   if (activeField) modalTitle = labels[activeField];
@@ -361,7 +408,10 @@ function BookingContent() {
               ĐẶT LỊCH DHAIR
             </Text>
             <View className="mt-2 flex-row items-center justify-between gap-3">
-              <Text accessibilityRole="header" className="flex-1 text-[28px] font-bold text-[#172b4d]">
+              <Text
+                accessibilityRole="header"
+                className="flex-1 text-[28px] font-bold text-[#172b4d]"
+              >
                 Đặt lịch hẹn
               </Text>
               <View className="h-12 w-12 items-center justify-center rounded-2xl bg-[#e8eef9]">
@@ -374,7 +424,8 @@ function BookingContent() {
           </View>
           <View>
             {fields.map((field, index) => {
-              const isDisabled = (field === 'stylist' && !branchId) || (field === 'time' && !canLoadTimes);
+              const isDisabled =
+                (field === 'stylist' && !branchId) || (field === 'time' && !canLoadTimes);
               return (
                 <View key={field} className="min-h-[94px] flex-row">
                   <View className="w-7 items-center">
@@ -502,33 +553,46 @@ function BookingContent() {
                     </Text>
                   )}
                   <Text className="my-[10px] rounded-lg bg-[#e7f1fc] p-[14px] leading-[22px] text-[#173c75]">
-                    Thời gian: {availability?.duration ?? '…'} phút. Giá dự kiến: {availability?.price.toLocaleString('vi-VN') ?? '…'} đ.
+                    Thời gian: {availability?.duration ?? '…'} phút. Giá dự kiến:{' '}
+                    {availability?.price.toLocaleString('vi-VN') ?? '…'} đ.
                   </Text>
                   {timesLoading && <ActivityIndicator color={NAVY} />}
                   {!!timesError && (
                     <Pressable accessibilityRole="button" onPress={reloadServices}>
-                      <Text className="py-3 text-sm text-[#b42318]">{timesError} Nhấn để thử lại.</Text>
+                      <Text className="py-3 text-sm text-[#b42318]">
+                        {timesError} Nhấn để thử lại.
+                      </Text>
                     </Pressable>
                   )}
                   {!bookingValues.time && (
-                    <Text className="py-3 text-sm text-[#b42318]">Giờ đã chọn không còn trống. Đóng bảng này để chọn lại.</Text>
+                    <Text className="py-3 text-sm text-[#b42318]">
+                      Giờ đã chọn không còn trống. Đóng bảng này để chọn lại.
+                    </Text>
                   )}
                   <Pressable
                     accessibilityRole="button"
                     className="min-h-[50px] items-center justify-center rounded-[30px] bg-[#173c75] px-4"
                     onPress={submitBooking}
-                    disabled={submitting || !bookingValues.time || timesLoading || loadedKey !== queryKey}
-                    style={(submitting || !bookingValues.time || timesLoading || loadedKey !== queryKey) && styles.disabled}
+                    disabled={
+                      submitting || !bookingValues.time || timesLoading || loadedKey !== queryKey
+                    }
+                    style={
+                      (submitting ||
+                        !bookingValues.time ||
+                        timesLoading ||
+                        loadedKey !== queryKey) &&
+                      styles.disabled
+                    }
                   >
-                    <Text className="text-[16px] font-bold text-white">{submitting ? 'ĐANG ĐẶT LỊCH...' : 'XÁC NHẬN ĐẶT LỊCH'}</Text>
+                    <Text className="text-[16px] font-bold text-white">
+                      {submitting ? 'ĐANG ĐẶT LỊCH...' : 'XÁC NHẬN ĐẶT LỊCH'}
+                    </Text>
                   </Pressable>
                 </>
               ) : (
                 activeField && (
                   <>
-                    {loading && (
-                      <ActivityIndicator color={NAVY} className="items-center p-4" />
-                    )}
+                    {loading && <ActivityIndicator color={NAVY} className="items-center p-4" />}
                     {!!loadError && (
                       <View className="items-center p-4">
                         <Text className="mt-[10px] text-[13px] leading-5 text-[#b42318]">
@@ -539,7 +603,8 @@ function BookingContent() {
                         </Pressable>
                       </View>
                     )}
-                    {!loading && !loadError &&
+                    {!loading &&
+                      !loadError &&
                       options[activeField].map((option) => (
                         <Pressable
                           key={option.value}
@@ -565,15 +630,13 @@ function BookingContent() {
                           )}
                         </Pressable>
                       ))}
-                    {!loading &&
-                      !loadError &&
-                      options[activeField].length === 0 && (
-                        <Text className="py-5 leading-[22px] text-[#777e87]">
-                          {activeField === 'time'
-                            ? 'Không còn khoảng trống đủ thời lượng. Vui lòng chọn ngày hoặc stylist khác.'
-                            : 'Chưa có lựa chọn khả dụng.'}
-                        </Text>
-                      )}
+                    {!loading && !loadError && options[activeField].length === 0 && (
+                      <Text className="py-5 leading-[22px] text-[#777e87]">
+                        {activeField === 'time'
+                          ? 'Không còn khoảng trống đủ thời lượng. Vui lòng chọn ngày hoặc stylist khác.'
+                          : 'Chưa có lựa chọn khả dụng.'}
+                      </Text>
+                    )}
                   </>
                 )
               )}

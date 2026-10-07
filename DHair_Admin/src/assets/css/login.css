@@ -1,5 +1,4 @@
 * {
-
   box-sizing: border-box;
 }
 
@@ -150,7 +149,6 @@
   border-color: #222;
 }
 
-
 .password-container {
   position: relative;
 }
@@ -292,4 +290,3 @@
     font-size: 12px;
   }
 }
-

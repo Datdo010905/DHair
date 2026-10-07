@@ -87,7 +87,9 @@ export default function ServiceSection({
             accessibilityRole="button"
             accessibilityLabel={`Xem chi tiết ${service.TENDV}`}
             activeOpacity={0.75}
-            onPress={() => router.push({ pathname: '/services/[id]', params: { id: service.MADV } })}
+            onPress={() =>
+              router.push({ pathname: '/services/[id]', params: { id: service.MADV } })
+            }
             className="mr-4 overflow-hidden rounded-xl bg-white"
             style={styles.card}
           >
@@ -99,7 +101,9 @@ export default function ServiceSection({
               <Text className="mt-1 text-[#1a3673] font-bold text-sm">
                 {service.GIADV.toLocaleString('vi-VN')} đ
               </Text>
-              <Text className="mt-1 text-gray-500 text-md font-semibold">{service.THOIGIAN} phút</Text>
+              <Text className="mt-1 text-gray-500 text-md font-semibold">
+                {service.THOIGIAN} phút
+              </Text>
             </View>
           </TouchableOpacity>
         ))}

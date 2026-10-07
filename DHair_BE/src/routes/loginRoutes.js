@@ -4,5 +4,4 @@ const loginController = require('../controllers/loginController');
 
 router.post('/login-taikhoan', loginController.dangNhap);
 
-
 module.exports = router;

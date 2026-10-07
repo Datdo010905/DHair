@@ -14,13 +14,13 @@ axiosClient.interceptors.request.use(
     const token = localStorage.getItem('token');
 
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`; 
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 axiosClient.interceptors.response.use(
@@ -29,14 +29,14 @@ axiosClient.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      console.error("Token hết hạn hoặc không hợp lệ!");
+      console.error('Token hết hạn hoặc không hợp lệ!');
       localStorage.removeItem('token');
       localStorage.removeItem('phanquyen');
       localStorage.removeItem('username');
       localStorage.removeItem('tenkhach');
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosClient;

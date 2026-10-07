@@ -7,9 +7,7 @@ import AdminIcon from '../../components/ui/AdminIcon';
 import '../../assets/css/service-details.css';
 
 const formatPrice = (price: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-    price,
-  );
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 // Chỉ tách bước theo dòng, dấu gạch hoặc dấu gạch có khoảng trắng.
 // Giữ dấu phẩy trong câu để không chia một bước thành nhiều phần vụn.
@@ -26,11 +24,7 @@ function ServiceImage({ src, name }: { src: string; name: string }) {
 
   if (!src || failed) {
     return (
-      <div
-        className="sd-image-fallback"
-        role="img"
-        aria-label={`Chưa có ảnh ${name}`}
-      >
+      <div className="sd-image-fallback" role="img" aria-label={`Chưa có ảnh ${name}`}>
         <AdminIcon icon={FiScissors} />
         <span>DHair · Dịch vụ của bạn</span>
       </div>
@@ -83,8 +77,7 @@ export default function DichVuDetailsPage() {
     dichVuApi
       .getAllDichVuClient()
       .then((response) => {
-        if (active && response.data.success)
-          setServices(response.data.data || []);
+        if (active && response.data.success) setServices(response.data.data || []);
       })
       .catch(() => {
         if (active) setServices([]);
@@ -99,9 +92,7 @@ export default function DichVuDetailsPage() {
     // DatLichPage đọc khóa này để chọn sẵn dịch vụ trong biểu mẫu.
     localStorage.setItem('madvCanXem', service.MADV.trim());
     if (!localStorage.getItem('username') || !localStorage.getItem('token')) {
-      toast.info(
-        'Vui lòng đăng nhập để tiếp tục đặt lịch. Dịch vụ đã được ghi nhớ.',
-      );
+      toast.info('Vui lòng đăng nhập để tiếp tục đặt lịch. Dịch vụ đã được ghi nhớ.');
       navigate('/login');
       return;
     }
@@ -112,15 +103,10 @@ export default function DichVuDetailsPage() {
     return (
       <div className="dh-service-details">
         <div className="sd-feedback" role={loading ? 'status' : 'alert'}>
-          <h1>
-            {loading ? 'Đang tải dịch vụ…' : error || 'Không tìm thấy dịch vụ.'}
-          </h1>
+          <h1>{loading ? 'Đang tải dịch vụ…' : error || 'Không tìm thấy dịch vụ.'}</h1>
           {!loading && (
             <>
-              <button
-                className="sd-primary"
-                onClick={() => setRetryCount((count) => count + 1)}
-              >
+              <button className="sd-primary" onClick={() => setRetryCount((count) => count + 1)}>
                 Thử lại
               </button>
               <Link to="/home">Về trang chủ</Link>
@@ -136,13 +122,10 @@ export default function DichVuDetailsPage() {
   const relatedServices = services
     .filter(
       (item) =>
-        item.MADV.trim() !== service.MADV.trim() &&
-        item.LOAI?.trim() === service.LOAI?.trim(),
+        item.MADV.trim() !== service.MADV.trim() && item.LOAI?.trim() === service.LOAI?.trim(),
     )
     .slice(0, 4);
-  const bookingLabel = available
-    ? 'Đặt lịch dịch vụ này'
-    : 'Tạm ngừng cung cấp';
+  const bookingLabel = available ? 'Đặt lịch dịch vụ này' : 'Tạm ngừng cung cấp';
 
   return (
     <div className="dh-service-details">
@@ -167,9 +150,7 @@ export default function DichVuDetailsPage() {
             <div className="sd-price-row">
               <div>
                 <span className="sd-label">Giá dịch vụ</span>
-                <strong className="sd-price">
-                  {formatPrice(service.GIADV)}
-                </strong>
+                <strong className="sd-price">{formatPrice(service.GIADV)}</strong>
               </div>
               <span className="sd-duration">
                 <AdminIcon icon={FiClock} aria-hidden="true" />
@@ -186,9 +167,7 @@ export default function DichVuDetailsPage() {
               {bookingLabel}
               <AdminIcon icon={FiArrowRight} aria-hidden="true" />
             </button>
-            <p className="sd-note">
-              Chọn chi nhánh, stylist và giờ hẹn ở bước tiếp theo.
-            </p>
+            <p className="sd-note">Chọn chi nhánh, stylist và giờ hẹn ở bước tiếp theo.</p>
           </div>
         </section>
 
@@ -239,8 +218,7 @@ export default function DichVuDetailsPage() {
                     <div className="sd-card-bottom">
                       <strong>{formatPrice(item.GIADV)}</strong>
                       <span>
-                        Xem chi tiết{' '}
-                        <AdminIcon icon={FiArrowRight} aria-hidden="true" />
+                        Xem chi tiết <AdminIcon icon={FiArrowRight} aria-hidden="true" />
                       </span>
                     </div>
                   </div>
@@ -256,11 +234,7 @@ export default function DichVuDetailsPage() {
           <span className="sd-label">Giá dịch vụ</span>
           <strong>{formatPrice(service.GIADV)}</strong>
         </div>
-        <button
-          className="sd-primary"
-          disabled={!available}
-          onClick={handleBooking}
-        >
+        <button className="sd-primary" disabled={!available} onClick={handleBooking}>
           {available ? 'Đặt lịch ngay' : bookingLabel}
         </button>
       </div>

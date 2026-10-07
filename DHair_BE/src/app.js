@@ -1,3 +1,4 @@
+// Ghép middleware, ảnh tĩnh và các nhóm API. Không mở cổng tại đây để test có thể nạp app.
 require('dotenv').config();
 
 const express = require('express');
@@ -15,7 +16,7 @@ const app = express();
 
 // Middleware
 app.use(cors()); //không bị lỗi domain
-app.use(express.json()); 
+app.use(express.json());
 
 //CẤU HÌNH STATIC FILE CHO ẢNH
 app.use('/img/product', express.static('uploads'));
@@ -32,7 +33,7 @@ app.use('/api/hoadon', hoaDonRoutes);
 app.use('/api/baocao', thongKeRoutes);
 // Xử lý lỗi 404 cho các route không tồn tại
 app.use((req, res, next) => {
-    res.status(404).json({ success: false, message: "Route không tồn tại!" });
+  res.status(404).json({ success: false, message: 'Route không tồn tại!' });
 });
 
 module.exports = app;
