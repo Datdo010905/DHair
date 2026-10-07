@@ -19,8 +19,9 @@ async function cancelOverdueBookings(db, now = new Date()) {
     // Dấu < nghĩa là đúng 10 phút chưa hủy; phải quá 10 phút mới hủy.
     const count = await db.$executeRaw`
         UPDATE LICHHEN
-        SET TRANGTHAI = 'Đã huỷ'
+        SET TRANGTHAI = 'Đã huỷ', LYDOHUY = 'Tự hủy: quá giờ hẹn 10 phút, khách chưa đến'
         WHERE TRANGTHAI IN ('Đã đặt', 'Đang chờ')
+          AND THOIGIANDEN IS NULL
           AND TIMESTAMP(NGAYHEN, GIOHEN) < ${cutoffLocalTime}
     `;
     return { count };

@@ -364,7 +364,7 @@
   /* căn giữa theo chiều dọc */
   padding: 0;
   border-radius: 8px;
-  width: 400px;
+  width: 600px;
   max-width: 90%;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   animation: slideDown 0.3s ease-out;

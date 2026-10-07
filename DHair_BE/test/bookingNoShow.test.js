@@ -11,11 +11,12 @@ function fakeDatabase(rows, beforeUpdate = () => {}) {
     return { $executeRaw: async (sql, cutoff) => {
         assert.match(sql.join('?'), /TIMESTAMP\(NGAYHEN, GIOHEN\) < \?/);
         assert.match(sql.join('?'), /WHERE TRANGTHAI IN \('Đã đặt', 'Đang chờ'\)/);
+        assert.match(sql.join('?'), /THOIGIANDEN IS NULL/);
         beforeUpdate();
         let count = 0;
         for (const row of rows) {
             const appointment = `${row.NGAYHEN.toISOString().slice(0, 10)} ${row.GIOHEN.toISOString().slice(11, -1)}`;
-            if (['Đã đặt', 'Đang chờ'].includes(row.TRANGTHAI) && appointment < cutoff) {
+            if (['Đã đặt', 'Đang chờ'].includes(row.TRANGTHAI) && !row.THOIGIANDEN && appointment < cutoff) {
                 row.TRANGTHAI = 'Đã huỷ';
                 count++;
             }
@@ -74,4 +75,9 @@ test('Tác vụ chạy ngay lúc khởi động, lỗi DB được bắt và có
 
 test('Không gửi truy vấn khi mốc thời gian không hợp lệ', async () => {
     await assert.rejects(cancelOverdueBookings({}, new Date('invalid')));
+});
+
+test('Có giờ khách đến thì không tự hủy ngay cả khi trạng thái cũ chưa đồng bộ', async () => {
+    const row = { ...booking('arrived', '08:00:00'), THOIGIANDEN: new Date('2026-10-06T08:05:00+07:00') };
+    assert.equal((await cancelOverdueBookings(fakeDatabase([row]), new Date('2026-10-06T09:00:00+07:00'))).count, 0);
 });

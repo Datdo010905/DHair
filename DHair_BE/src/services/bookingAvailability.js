@@ -1,6 +1,7 @@
 const OPEN_MINUTES = 8 * 60;
 const CLOSE_MINUTES = 22 * 60;
 const MAX_DAYS_AHEAD = 4;
+const { interval, overlaps, inQueue } = require('./salonTime');
 
 function bookingError(message, status = 400) {
     return Object.assign(new Error(message), { status });
@@ -44,11 +45,14 @@ function isCancelled(status) {
 function calculateSlots(date, duration, bookings, staffId, now = new Date()) {
     validateDate(date, now);
     if (!Number.isInteger(duration) || duration <= 0) throw bookingError('Thời lượng dịch vụ không hợp lệ.');
-    const busy = bookings.filter(booking => !isCancelled(booking.TRANGTHAI)).map(booking => {
+    const busy = bookings.filter(booking => !isCancelled(booking.TRANGTHAI) && !inQueue(booking)).map(booking => {
+        if (booking.NGAYHEN && (booking.KETTHUCDUKIEN || booking.BATDAUTHUCTE || booking.TRANGTHAI === 'Đang thực hiện')) {
+            return { absolute: interval(booking, now) };
+        }
         const start = timeToMinutes(booking.GIOHEN);
         const minutes = booking.CHITIETLICHHEN
             .filter(detail => detail.MANV?.trim() === staffId)
-            .reduce((total, detail) => total + Number(detail.DICHVU?.THOIGIAN) * Number(detail.SOLUONG ?? 1), 0);
+            .reduce((total, detail) => total + Number(detail.THOILUONG ?? detail.DICHVU?.THOIGIAN) * Number(detail.SOLUONG ?? 1), 0);
         // Không mở giờ khi dữ liệu lịch cũ thiếu thời lượng hoặc giờ bắt đầu.
         if (!Number.isFinite(start) || !Number.isFinite(minutes) || minutes <= 0) {
             throw bookingError('Không thể xác định thời lượng lịch của stylist. Vui lòng liên hệ salon.', 409);
@@ -60,7 +64,9 @@ function calculateSlots(date, duration, bookings, staffId, now = new Date()) {
         const time = formatMinutes(start);
         if (new Date(`${date}T${time}:00+07:00`) <= now) continue;
         // Hai lịch có thể nối tiếp nhau; chỉ loại khi khoảng thực hiện giao nhau.
-        if (busy.some(interval => start < interval.end && start + duration > interval.start)) continue;
+        const slotStart = new Date(`${date}T${time}:00+07:00`);
+        const slotEnd = new Date(slotStart.getTime() + duration * 60000);
+        if (busy.some(item => item.absolute ? overlaps({ start: slotStart, end: slotEnd }, item.absolute) : start < item.end && start + duration > item.start)) continue;
         slots.push({ time, endTime: formatMinutes(start + duration) });
     }
     return slots;

@@ -37,6 +37,8 @@ model CHITIETLICHHEN {
   GHICHU     String?   @db.VarChar(200)
   MANV       String?   @db.Char(20)
   GIA_DUKIEN Int?
+  THOILUONG Int?
+  PHATSINH  Boolean @default(false)
 
   LICHHEN  LICHHEN   @relation(fields: [MALICH], references: [MALICH], onUpdate: NoAction)
   DICHVU   DICHVU    @relation(fields: [MADV], references: [MADV], onUpdate: NoAction)
@@ -111,6 +113,14 @@ model LICHHEN {
   TRANGTHAI  String?   @db.VarChar(50)
   MACHINHANH String?   @db.Char(20)
   MAKH       String?   @db.Char(20)
+  LOAILICH   String    @default("DAT_TRUOC") @db.VarChar(20)
+  THOIGIANDEN DateTime? @db.DateTime(3)
+  BATDAUTHUCTE DateTime? @db.DateTime(3)
+  KETTHUCDUKIEN DateTime? @db.DateTime(3)
+  KETTHUCTHUCTE DateTime? @db.DateTime(3)
+  LYDOHUY String? @db.VarChar(200)
+  HANGDOI HANGDOI?
+  LICHSU LICHSULICH[]
 
   CHITIETLICHHEN CHITIETLICHHEN[]
   HOADON         HOADON[]
@@ -131,9 +141,38 @@ model NHANVIEN {
 
   CHITIETLICHHEN CHITIETLICHHEN[]
   HOADON         HOADON[]
+  LICHNGHI       LICHNGHI[]
 
   CHINHANH CHINHANH? @relation(fields: [MACHINHANH], references: [MACHINHANH], onDelete: NoAction, onUpdate: NoAction)
   TAIKHOAN TAIKHOAN? @relation(fields: [MATK], references: [MATK], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model HANGDOI {
+  MALICH String @id @db.Char(20)
+  VAOLUC DateTime @default(now()) @db.DateTime(3)
+  GOILUC DateTime? @db.DateTime(3)
+  TRANGTHAI String @default("CHO") @db.VarChar(20)
+  LICHHEN LICHHEN @relation(fields: [MALICH], references: [MALICH], onDelete: Cascade)
+}
+
+model LICHNGHI {
+  ID String @id @db.Char(20)
+  MANV String @db.Char(20)
+  BATDAU DateTime @db.DateTime(3)
+  KETTHUC DateTime @db.DateTime(3)
+  LYDO String @db.VarChar(200)
+  NHANVIEN NHANVIEN @relation(fields: [MANV], references: [MANV])
+  @@index([MANV, BATDAU])
+}
+
+model LICHSULICH {
+  ID String @id @db.Char(20)
+  MALICH String @db.Char(20)
+  NGUOISUA String @db.Char(20)
+  THOIDIEM DateTime @default(now()) @db.DateTime(3)
+  NOIDUNG String @db.Text
+  LICHHEN LICHHEN @relation(fields: [MALICH], references: [MALICH], onDelete: Cascade)
+  @@index([MALICH, THOIDIEM])
 }
 
 model TAIKHOAN {

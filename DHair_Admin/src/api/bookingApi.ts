@@ -7,6 +7,12 @@ export interface Booking {
     TRANGTHAI: string;
     MACHINHANH: string;
     MAKH: string;
+    LOAILICH?: string;
+    THOIGIANDEN?: string | null;
+    BATDAUTHUCTE?: string | null;
+    KETTHUCDUKIEN?: string | null;
+    KETTHUCTHUCTE?: string | null;
+    LYDOHUY?: string | null;
 }
 export interface BookingDetails {
     MALICH: string;
@@ -15,6 +21,8 @@ export interface BookingDetails {
     SOLUONG: number;
     GIA_DUKIEN: number;
     GHICHU: string;
+    PHATSINH?: boolean;
+    THOILUONG?: number | null;
 }
 
 export interface AdminBooking extends Booking {
@@ -67,9 +75,9 @@ const BookingApi = {
         return axiosClient.post('/api/lichhen/insert-lichhen', data);
     },
 
-    update(id: string, trangthai: string) {
+    update(id: string, trangthai: string, reason?: string) {
         return axiosClient.put(`/api/lichhen/update-lichhen/${id}`, {
-            TRANGTHAI: trangthai
+            TRANGTHAI: trangthai, reason,
         });
     },
 
