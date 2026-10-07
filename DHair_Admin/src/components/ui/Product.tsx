@@ -364,7 +364,6 @@ const Product = () => {
               <span className="sao-mota">Số báo danh: 12822</span>
             </div>
           </div>
-          
         </div>
         <div className="clear"></div>
         <h2 id="6" className="product-title">
