@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Modal from '../../components/ui/Modal';
+import SalonOperationsPanel from '../../components/ui/SalonOperationsPanel';
+import axiosClient from '../../api/axiosClient';
 import { useSearch } from '../../context/SearchContext';
 import { toast } from 'react-toastify';
 import bookingApi, { AdminBooking, AdminBookingQuery, AdminBookingResult } from '../../api/bookingApi';
@@ -41,6 +43,7 @@ export default function BookingPage() {
     const [rangeError, setRangeError] = useState('');
     const [action, setAction] = useState<Action>(null);
     const [selected, setSelected] = useState<AdminBooking | null>(null);
+    const [rescheduleBooking, setRescheduleBooking] = useState<AdminBooking | null>(null);
     const [form, setForm] = useState(emptyForm);
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [services, setServices] = useState<DichVu[]>([]);
@@ -51,6 +54,22 @@ export default function BookingPage() {
     const [hours, setHours] = useState<string[]>([]);
     const [hoursLoading, setHoursLoading] = useState(false);
     const [hoursError, setHoursError] = useState('');
+    const [audit, setAudit] = useState<{ ID: string; NGUOISUA: string; THOIDIEM: string; NOIDUNG: string }[]>([]);
+    const [auditError, setAuditError] = useState('');
+
+    useEffect(() => {
+        const timer = setInterval(() => setReload(value => value + 1), 30000);
+        return () => clearInterval(timer);
+    }, []);
+    useEffect(() => {
+        setAudit([]); setAuditError('');
+        if (action !== 'view' || !selected || !canCreate) return;
+        const controller = new AbortController();
+        axiosClient.get(`/api/lichhen/operations/${selected.MALICH}/history`, { signal: controller.signal })
+            .then(response => { if (!controller.signal.aborted) setAudit(response.data.data); })
+            .catch(err => { if (!controller.signal.aborted) setAuditError(errorMessage(err)); });
+        return () => controller.abort();
+    }, [action, selected, canCreate]);
 
     // Tìm ở server trên toàn bộ kết quả, không chỉ trong trang đang hiển thị.
     useEffect(() => {
@@ -152,7 +171,7 @@ export default function BookingPage() {
         setFormError('');
         try {
             if (action === 'edit' && selected) {
-                await bookingApi.update(selected.MALICH.trim(), form.status);
+                await bookingApi.update(selected.MALICH.trim(), form.status, form.note);
             } else if (action === 'delete' && selected) {
                 await bookingApi.deleteFull(selected.MALICH.trim());
             } else if (action === 'add' || action === 'details') {
@@ -188,6 +207,7 @@ export default function BookingPage() {
                     {canCreate && <button className="ba-button ba-primary" disabled={!result} onClick={() => openAction('add')}>+ Thêm lịch hẹn</button>}
                 </div>
             </header>
+            {canCreate && <SalonOperationsPanel branches={result?.branches || []} revision={reload} requestedBooking={rescheduleBooking} onChanged={() => setReload(value => value + 1)} />}
             <div className="ba-modes" aria-label="Chế độ xem">
                 <button aria-pressed={query.mode === 'days'} onClick={() => changeMode('days')}>5 ngày đặt lịch</button>
                 <button aria-pressed={query.mode === 'archive'} onClick={() => changeMode('archive')}>Tra cứu theo khoảng ngày</button>
@@ -233,8 +253,9 @@ export default function BookingPage() {
                                 <td><span className={`ba-status ba-status-${statuses.indexOf(status)}`}>{status}</span></td>
                                 <td><div className="ba-row-actions">
                                     <button onClick={() => openAction('view', row)}>Chi tiết</button>
+                                    {canCreate && ['Đã đặt', 'Đang chờ', 'Đã đến'].includes(status) && <button disabled={saving} onClick={() => setRescheduleBooking({ ...row })}>Đổi giờ</button>}
                                     {canUpdate && transitions[status] && <button onClick={() => openAction('edit', row)}>Cập nhật</button>}
-                                    {canCreate && ['Đã đặt', 'Đang chờ', 'Đã đến'].includes(status) && <button onClick={() => openAction('details', row)}>+ Dịch vụ</button>}
+                                    {canCreate && ['Đã đặt', 'Đang chờ', 'Đã đến', 'Đang thực hiện'].includes(status) && <button onClick={() => openAction('details', row)}>+ Dịch vụ</button>}
                                     {canDelete && status === 'Đã huỷ' && <button className="ba-danger" onClick={() => openAction('delete', row)}>Xóa</button>}
                                 </div></td>
                             </tr>;
@@ -250,8 +271,12 @@ export default function BookingPage() {
                 {action === 'view' && selected ? <div className="ba-detail">
                     <p><strong>{selected.MALICH.trim()}</strong> · {timeLabel(selected.GIOHEN)} · {dateLabel(selected.NGAYHEN)}</p>
                     <p>{selected.KHACHHANG?.HOTEN} · {selected.KHACHHANG?.SDT}</p><p>{selected.CHINHANH?.TENCHINHANH} · {selectedStatus}</p>
+                    <p>Loại lịch: {selected.LOAILICH === 'WALK_IN' ? 'Khách trực tiếp' : 'Đặt trước'}</p>
+                    {([['Khách đến', selected.THOIGIANDEN], ['Bắt đầu thực tế', selected.BATDAUTHUCTE], ['Kết thúc dự kiến', selected.KETTHUCDUKIEN], ['Hoàn thành', selected.KETTHUCTHUCTE]] as const).map(([label, value]) => <p key={label}>{label}: {value ? new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) : 'Chưa ghi nhận'}</p>)}
+                    {selected.LYDOHUY && <p>Lý do hủy: {selected.LYDOHUY}</p>}
                     {selected.CHITIETLICHHEN.map(detail => <div className="ba-detail-item" key={detail.MADV}><strong>{detail.DICHVU?.TENDV || detail.MADV}</strong><p>{detail.NHANVIEN?.HOTEN || 'Chưa phân công'} · Số lượng: {detail.SOLUONG || 1} · {(detail.GIA_DUKIEN || 0).toLocaleString('vi-VN')} đ</p><p>Ghi chú: {detail.GHICHU || 'Không có'}</p></div>)}
                     {!selected.CHITIETLICHHEN.length && <p>Chưa có chi tiết dịch vụ.</p>}
+                    {canCreate && <><h4>Lịch sử xử lý</h4>{auditError && <p role="alert">{auditError}</p>}{audit.map(item => <p key={item.ID}>{new Date(item.THOIDIEM).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })} · {item.NGUOISUA}: {item.NOIDUNG}</p>)}</>}
                 </div> : <form className="ba-form" onSubmit={submit}>
                     {formLoading && <p role="status">Đang tải dữ liệu form…</p>}
                     {(action === 'add' || action === 'details') && <>
@@ -271,6 +296,7 @@ export default function BookingPage() {
                         <label>Ghi chú<textarea name="note" maxLength={200} value={form.note} onChange={changeForm} /></label>
                     </>}
                     {action === 'edit' && <><p>Lịch {selected?.MALICH} hiện đang: <strong>{selectedStatus}</strong></p><p>Khi khách có mặt, chọn “Đã đến”. Lịch chưa đến sẽ tự hủy nếu quá giờ hẹn 10 phút.</p><label>Chuyển trạng thái<select name="status" required value={form.status} onChange={changeForm}>{(transitions[selectedStatus] || []).map(status => <option key={status}>{status}</option>)}</select></label></>}
+                    {action === 'edit' && form.status === 'Đã huỷ' && <label>Lý do hủy<textarea name="note" required maxLength={200} value={form.note} onChange={changeForm} /></label>}
                     {action === 'delete' && <p>Xóa lịch đã hủy <strong>{selected?.MALICH}</strong> và các chi tiết của lịch này?</p>}
                     {formError && <p role="alert" className="ba-error">{formError}</p>}
                     <div className="ba-actions"><button type="button" className="ba-button" disabled={saving} onClick={closeModal}>Đóng</button><button className="ba-button ba-primary" disabled={saving || formLoading || (action === 'add' && hoursLoading)}>{saving ? 'Đang lưu…' : action === 'delete' ? 'Xác nhận xóa' : 'Lưu thay đổi'}</button></div>

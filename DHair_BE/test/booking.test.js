@@ -73,6 +73,7 @@ test('Không mở giờ khi thời lượng mới hoặc dữ liệu lịch cũ 
 function fakeDatabase() {
     const calls = [];
     const db = {
+        lICHNGHI: { findMany: async () => [] },
         cHINHANH: { findMany: async () => [{ MACHINHANH: 'CN01' }] },
         nHANVIEN: {
             findUnique: async () => ({ MANV: 'NV01', MACHINHANH: 'CN01 ', CHUCVU: 'Stylist ' }),
@@ -102,6 +103,18 @@ test('Danh sách stylist chỉ chứa nhân viên đúng vai trò', async () => 
     const result = await getOptions(db, 'CN01');
     assert.equal(result.stylists.length, 1);
     assert.equal(result.stylists[0].MANV, 'NV01');
+});
+
+test('API giờ trống giữ 30 phút đệm sau lịch nghỉ, mở lại đúng 13:00', async () => {
+    const { db } = fakeDatabase();
+    const request = input();
+    db.lICHNGHI.findMany = async () => [{ BATDAU: new Date(`${request.date}T11:00:00+07:00`), KETTHUC: new Date(`${request.date}T12:30:00+07:00`) }];
+    const result = await getAvailability(db, request);
+    const hours = result.slots.map(slot => slot.time);
+    assert.ok(!hours.includes('12:30'));
+    assert.ok(hours.includes('13:00'));
+    assert.ok(!hours.includes('10:00')); // Dịch vụ 90 phút giao với giờ bắt đầu nghỉ.
+    assert.ok(hours.includes('09:30'));
 });
 
 test('Backend từ chối nhân viên khác chi nhánh, dịch vụ ngừng cung cấp và số lượng sai', async () => {

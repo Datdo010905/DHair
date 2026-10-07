@@ -2,6 +2,7 @@ const lichHenService = require('../services/lichHenService');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { sendBookingPendingEmail } = require('../services/mailService');
+const salonOperations = require('../services/salonOperationsService');
 
 const getAdminBookings = async (req, res) => {
     try {
@@ -138,7 +139,8 @@ const updateStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: "Không tìm thấy lịch hẹn!" });
         }
 
-        const updatedData = await lichHenService.updateTrangThai(id, trangThai);
+        const result = await salonOperations.changeStatus(prisma, id, trangThai, req.bookingAccountId, req.body.reason);
+        const updatedData = result.booking;
 
 
         const oldStatus = oldBooking.TRANGTHAI.trim();
@@ -250,9 +252,11 @@ const createCT = async (req, res) => {
         });
 
         if (existingDetail) {
-            throw new Error("Dịch vụ này đã được thêm vào lịch hẹn trước đó rồi!");
+            throw Object.assign(new Error("Dịch vụ này đã được thêm vào lịch hẹn trước đó rồi!"), { status: 409 });
         } else {
-            const newData = await lichHenService.createCT(req.body);
+            const newData = await salonOperations.addService(prisma, MALICH, {
+                serviceId: MADV, staffId: req.body.MANV, quantity: req.body.SOLUONG, note: req.body.GHICHU,
+            }, req.bookingAccountId);
             return res.status(201).json({
                 success: true,
                 message: "Thêm chi tiết thành công!",
@@ -261,9 +265,10 @@ const createCT = async (req, res) => {
         }
 
     } catch (error) {
-        return res.status(500).json({
+        return res.status(error.status || 500).json({
             success: false,
-            message: error.message
+            message: error.message,
+            conflicts: error.conflicts || [],
         });
     }
 };

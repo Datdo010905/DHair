@@ -36,7 +36,7 @@ function formatAppointment(booking) {
         service: detail.DICHVU?.TENDV?.trim() || detail.MADV.trim(),
         stylist: detail.NHANVIEN?.HOTEN?.trim() || 'Chưa phân công',
         quantity: detail.SOLUONG ?? 1,
-        duration: (detail.DICHVU?.THOIGIAN || 0) * (detail.SOLUONG ?? 1),
+        duration: (detail.THOILUONG ?? detail.DICHVU?.THOIGIAN ?? 0) * (detail.SOLUONG ?? 1),
         // GIA_DUKIEN đã là giá của cả số lượng, không nhân thêm lần nữa.
         price: detail.GIA_DUKIEN ?? 0,
         note: detail.GHICHU?.trim() || '',
@@ -86,7 +86,7 @@ async function cancelBooking(db, accountId, bookingId, input) {
         // Điều kiện nằm ngay trong UPDATE: lịch đổi trạng thái thì không được hủy.
         const updated = await tx.lICHHEN.updateMany({
             where: { ...where, TRANGTHAI: 'Đã đặt' },
-            data: { TRANGTHAI: 'Đã huỷ' },
+            data: { TRANGTHAI: 'Đã huỷ', LYDOHUY: `Khách hủy: ${note}`.slice(0, 200) },
         });
         if (updated.count !== 1) {
             const existing = await tx.lICHHEN.findFirst({ where, select: { MALICH: true } });

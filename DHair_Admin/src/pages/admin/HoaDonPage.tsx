@@ -36,6 +36,8 @@ const HoaDonPage = () => {
     const [nhanVienList, setNhanVienList] = useState<NhanVien[]>([]);
     const [khuyenMaiList, setKhuyenMaiList] = useState<KhuyenMai[]>([]);
     const [viewDetailsList, setViewDetailsList] = useState<HoaDonDetails[]>([]);
+    const [editSubtotal, setEditSubtotal] = useState<number | null>(null);
+    const [editPriceError, setEditPriceError] = useState('');
     const [query, setQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [paymentFilter, setPaymentFilter] = useState("");
@@ -123,29 +125,6 @@ const HoaDonPage = () => {
         start: '',
         end: ''
     });
-    const handleOpenAdd = () => {
-        setFormData({
-            hoadonID: '',
-            khachhangID: '',
-            khuyenmaiID: '',
-            bookingID: '',
-            nhanvienID: '',
-            sum: '',
-            methodPayment: '',
-            status: '',
-            branchID: '',
-            dateThanhToan: today
-        });
-        setFormDataDetails({
-            hoadonID: '',
-            dichvuID: '',
-            soluongdung: '',
-            dongiadv: '',
-            thanhtiendv: '',
-        });
-        setFormErrors({}); // Xóa lỗi cũ
-        setModalType('add');
-    };
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { id, value } = e.target;
         setFormData((prev) => ({ ...prev, [id]: value }));
@@ -186,7 +165,7 @@ const HoaDonPage = () => {
                 setFormErrors(newErrors);
                 return;
             }
-        } else if (modalType === 'edit') {
+        } else if (modalType === 'edit' && formData.status === 'Đã thanh toán') {
             if (!formData.nhanvienID) {
                 setFormErrors({ nhanvienID: "Thu ngân không được để trống" });
                 return;
@@ -371,6 +350,24 @@ const HoaDonPage = () => {
         setFormErrors({}); // Xóa lỗi cũ
         setModalType('edit');
     };
+
+    // Hóa đơn gắn lịch lấy giá từ lịch; hóa đơn lẻ lấy chi tiết đã lưu.
+    useEffect(() => {
+        if (modalType !== 'edit') return;
+        let active = true;
+        setEditSubtotal(null); setEditPriceError('');
+        const request = formData.bookingID ? bookingApi.getByIdCT(formData.bookingID) : hoadonApi.getByIdCT(formData.hoadonID);
+        request.then(response => {
+            if (!active) return;
+            if (!response.data.success || !Array.isArray(response.data.data)) throw new Error();
+            const total = response.data.data.reduce((sum: number, item: any) => sum + Number(formData.bookingID ? item.GIA_DUKIEN : item.THANHTIEN), 0);
+            if (!Number.isFinite(total)) throw new Error();
+            setEditSubtotal(total);
+        }).catch(() => { if (active) setEditPriceError('Không tải được số tiền. Đóng và mở lại hóa đơn để thử lại.'); });
+        return () => { active = false; };
+    }, [modalType, formData.hoadonID, formData.bookingID]);
+    const selectedDiscount = Number(khuyenMaiList.find(item => item.MAKM.trim() === formData.khuyenmaiID)?.GIATRI || 0);
+    const previewTotal = editSubtotal === null ? null : Math.round(editSubtotal * (1 - selectedDiscount / 100));
     const handleAddDetailsClick = async (row: HoaDon) => {
         const thuNgan = nhanVienList.find(nv => nv.MANV.trim() === row.MANV.trim());
         const machiNhanh = thuNgan?.MACHINHANH?.trim() || '';
@@ -473,7 +470,7 @@ const HoaDonPage = () => {
 
             <div hidden={modalType === "addDetails"} className="form-group">
                 <label>Khuyến mại:</label>
-                <select disabled={modalType === "edit"} id="khuyenmaiID" value={formData.khuyenmaiID} onChange={handleChange}>
+                <select id="khuyenmaiID" value={formData.khuyenmaiID} onChange={handleChange}>
                     <option value="">-- Chọn khuyến mại --</option>
                     {khuyenMaiList.filter((km) => km.TRANGTHAI?.trim() === "Đang áp dụng" || km.MAKM?.trim() === formData.khuyenmaiID).map((km) =>
                     (
@@ -501,21 +498,17 @@ const HoaDonPage = () => {
             </div>
             <div hidden={modalType === "add" || modalType === "addDetails"} className="form-group">
                 <label>Tổng tiền:</label>
-                <input disabled={modalType === 'edit'} type="text" id="sum" placeholder="Tổng tiền..." value={formData.sum} onChange={handleChange} />
+                <input readOnly type="text" id="sum" value={previewTotal === null ? 'Đang tải…' : money(previewTotal)} />
+                {editSubtotal !== null && <small>Tiền dịch vụ: {money(editSubtotal)} · Giảm: {selectedDiscount}%</small>}
+                {editPriceError && <p role="alert">{editPriceError}</p>}
+                {formData.bookingID && <small>Dịch vụ và giá được lấy đầy đủ từ lịch hẹn.</small>}
                 {formErrors.sum && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.sum}</span>}
             </div>
 
 
             <div hidden={modalType === 'addDetails'} className="form-group">
                 <label>Ngày thanh toán:</label>
-                <input
-                    type="date"
-                    id="dateThanhToan"
-                    value={formData.dateThanhToan}
-                    onChange={handleChange}
-                    disabled={modalType === 'edit'}
-                    max={today}
-                />
+                <p>Tự ghi nhận khi xác nhận “Đã thanh toán”. Hóa đơn chưa thanh toán chưa có ngày thu tiền.</p>
             </div>
             <div hidden={modalType === "addDetails"} className="form-group">
                 <label>Hình thức thanh toán:</label>
@@ -538,7 +531,7 @@ const HoaDonPage = () => {
                 </select>
                 {formErrors.status && <span style={{ color: 'red', fontSize: '0.85rem' }}>{formErrors.status}</span>}
             </div>
-            <button disabled={saving} type="submit" className="ba-button ba-primary">{saving ? 'Đang lưu…' : modalType === 'add' ? 'Lưu mới' : 'Cập nhật'}</button>
+            <button disabled={saving || (modalType === 'edit' && formData.status !== 'Đã huỷ' && editSubtotal === null)} type="submit" className="ba-button ba-primary">{saving ? 'Đang lưu…' : modalType === 'add' ? 'Lưu mới' : formData.status === 'Đã thanh toán' ? 'Xác nhận thanh toán' : 'Cập nhật'}</button>
         </>
     );
 
@@ -584,7 +577,7 @@ const HoaDonPage = () => {
                 <div className="ba-row-actions">
                     <button onClick={() => handleViewClick(row)}>Chi tiết</button>
                     {row.TRANGTHAI?.trim() === "Chưa thanh toán" && <>
-                        <button onClick={() => handleAddDetailsClick(row)}>Thêm dịch vụ</button>
+                        {!row.MALICH && <button onClick={() => handleAddDetailsClick(row)}>Thêm dịch vụ</button>}
                         <button onClick={() => handleEditClick(row)}>Cập nhật</button>
                     </>}
                     {row.TRANGTHAI?.trim() === "Đã huỷ" && ['1', '2'].includes(String(quyenHientai)) &&
@@ -635,7 +628,6 @@ const HoaDonPage = () => {
                     <div><p className="ba-eyebrow">QUẢN LÝ SALON</p><h2>Hóa đơn</h2><p>Tra cứu hóa đơn, theo dõi thanh toán và dịch vụ của khách hàng.</p></div>
                     <div className="ba-actions">
                         <button className="ba-button" disabled={isLoading} onClick={fetchData}>Làm mới</button>
-                        <button className="ba-button ba-primary" disabled={isLoading || !!error} onClick={handleOpenAdd}>+ Thêm hóa đơn</button>
                     </div>
                 </header>
                 <div className="invoice-summary" aria-label="Thống kê hóa đơn">
