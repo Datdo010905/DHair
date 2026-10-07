@@ -589,3 +589,72 @@ SELECT H.MAHD, H.TONGTIEN, H.TRANGTHAI, H.MAKM, L.MACHINHANH, H.MAKH
 FROM HOADON H
 LEFT JOIN LICHHEN L ON L.MALICH = H.MALICH
 ORDER BY H.NGAYTHANHTOAN IS NULL, H.NGAYTHANHTOAN;
+
+
+-- ============================================================
+-- DHair - THÊM 60 DỊCH VỤ
+-- CT: DV011 -> DV040 (30 dịch vụ)
+-- CSD: DV041 -> DV070 (30 dịch vụ)
+-- ============================================================
+
+INSERT INTO DICHVU (MADV, LOAI, TENDV, MOTA, THOIGIAN, GIADV, TRANGTHAI, HINH, QUYTRINH) VALUES
+('DV011', 'CT', 'Cắt tóc nam cơ bản', 'Cắt tóc nam kiểu đơn giản, gọn gàng và phù hợp khuôn mặt.', 30, 70000, 'Đang cung cấp', '/img/product/dv011.png', 'Tư vấn kiểu tóc-Cắt tóc-Gội đầu-Sấy khô-Tạo kiểu'),
+('DV012', 'CT', 'Cắt tóc nam cao cấp', 'Cắt tóc nam kết hợp tư vấn kiểu tóc, chăm sóc và tạo kiểu chuyên nghiệp.', 45, 120000, 'Đang cung cấp', '/img/product/dv012.png', 'Tư vấn kiểu tóc-Gội đầu-Cắt tóc-Sấy khô-Tạo kiểu'),
+('DV013', 'CT', 'Cắt undercut', 'Cắt kiểu undercut với phần mai và gáy được tạo form gọn gàng.', 45, 100000, 'Đang cung cấp', '/img/product/dv013.png', 'Tư vấn kiểu tóc-Cắt mai và gáy-Cắt phần trên-Sấy khô-Tạo kiểu'),
+('DV014', 'CT', 'Cắt layer nam', 'Tạo kiểu layer nam giúp tóc có độ phồng và form tự nhiên.', 45, 110000, 'Đang cung cấp', '/img/product/dv014.png', 'Tư vấn kiểu tóc-Cắt layer-Gội đầu-Sấy tạo form-Hoàn thiện'),
+('DV015', 'CT', 'Cắt textured crop', 'Tạo kiểu textured crop trẻ trung với phần tóc trên được tạo texture.', 45, 110000, 'Đang cung cấp', '/img/product/dv015.png', 'Tư vấn kiểu tóc-Cắt tóc-Tạo texture-Sấy khô-Tạo kiểu'),
+('DV016', 'CT', 'Cắt side part', 'Cắt và tạo kiểu side part lịch sự, phù hợp môi trường học tập và công sở.', 45, 120000, 'Đang cung cấp', '/img/product/dv016.png', 'Tư vấn kiểu tóc-Cắt tóc-Chia ngôi-Sấy tạo form-Tạo kiểu'),
+('DV017', 'CT', 'Cắt mohican', 'Tạo kiểu mohican gọn gàng và cá tính.', 40, 100000, 'Đang cung cấp', '/img/product/dv017.png', 'Tư vấn kiểu tóc-Cắt tóc-Tạo form-Sấy khô-Tạo kiểu'),
+('DV018', 'CT', 'Cắt mullet', 'Tạo kiểu mullet với phần tóc sau được giữ độ dài và tạo form.', 50, 130000, 'Đang cung cấp', '/img/product/dv018.png', 'Tư vấn kiểu tóc-Cắt tóc-Gội đầu-Sấy tạo form-Tạo kiểu'),
+('DV019', 'CT', 'Cắt fade', 'Cắt fade chuyển tầng từ ngắn đến dài tạo hiệu ứng gọn gàng.', 45, 120000, 'Đang cung cấp', '/img/product/dv019.png', 'Tư vấn kiểu tóc-Cắt fade-Cắt phần trên-Sấy khô-Tạo kiểu'),
+('DV020', 'CT', 'Cắt buzz cut', 'Cắt tóc buzz cut ngắn gọn, dễ chăm sóc và phù hợp phong cách năng động.', 30, 80000, 'Đang cung cấp', '/img/product/dv020.png', 'Tư vấn kiểu tóc-Cắt tóc-Viền tóc-Gội đầu-Sấy khô'),
+('DV021', 'CT', 'Cắt tóc trẻ em', 'Cắt tóc dành cho trẻ em với quy trình nhanh và nhẹ nhàng.', 30, 70000, 'Đang cung cấp', '/img/product/dv021.png', 'Tư vấn kiểu tóc-Cắt tóc-Gội đầu-Sấy khô'),
+('DV022', 'CT', 'Cắt tóc học sinh', 'Cắt tóc gọn gàng phù hợp học sinh và sinh viên.', 30, 60000, 'Đang cung cấp', '/img/product/dv022.png', 'Tư vấn kiểu tóc-Cắt tóc-Gội đầu-Sấy khô-Tạo kiểu'),
+('DV023', 'CT', 'Cắt tóc công sở', 'Cắt kiểu tóc lịch sự, gọn gàng phù hợp môi trường công sở.', 40, 90000, 'Đang cung cấp', '/img/product/dv023.png', 'Tư vấn kiểu tóc-Cắt tóc-Gội đầu-Sấy khô-Tạo kiểu'),
+('DV024', 'CT', 'Cắt tóc kết hợp cạo mặt', 'Cắt tóc kết hợp cạo mặt và chăm sóc da cơ bản.', 50, 130000, 'Đang cung cấp', '/img/product/dv024.png', 'Tư vấn kiểu tóc-Cắt tóc-Cạo mặt-Rửa mặt-Sấy khô-Tạo kiểu'),
+('DV025', 'CT', 'Cắt tóc và tạo kiểu sáp', 'Cắt tóc và tạo kiểu hoàn thiện bằng sáp phù hợp chất tóc.', 45, 110000, 'Đang cung cấp', '/img/product/dv025.png', 'Tư vấn kiểu tóc-Cắt tóc-Gội đầu-Sấy khô-Tạo kiểu bằng sáp'),
+('DV026', 'CT', 'Gội và sấy tạo kiểu', 'Gội sạch tóc và sấy tạo kiểu theo yêu cầu của khách hàng.', 30, 90000, 'Đang cung cấp', '/img/product/dv026.png', 'Gội đầu-Massage đầu-Xả tóc-Sấy tạo kiểu'),
+('DV027', 'CT', 'Tạo kiểu tóc dự tiệc', 'Tạo kiểu tóc phù hợp các buổi tiệc và sự kiện.', 45, 150000, 'Đang cung cấp', '/img/product/dv027.png', 'Tư vấn kiểu tóc-Gội đầu-Sấy tạo form-Tạo kiểu-Hoàn thiện'),
+('DV028', 'CT', 'Sấy phồng tóc', 'Sấy tạo độ phồng và form tóc tự nhiên.', 25, 70000, 'Đang cung cấp', '/img/product/dv028.png', 'Gội đầu-Sấy phồng-Tạo form-Hoàn thiện'),
+('DV029', 'CT', 'Tạo kiểu tóc nhanh', 'Tạo kiểu tóc nhanh theo kiểu dáng có sẵn của khách hàng.', 20, 60000, 'Đang cung cấp', '/img/product/dv029.png', 'Tư vấn kiểu tóc-Sấy tạo form-Tạo kiểu-Hoàn thiện'),
+('DV030', 'CT', 'Uốn phồng chân tóc', 'Uốn phồng phần chân tóc giúp tóc có độ bồng và giữ form tốt hơn.', 90, 300000, 'Đang cung cấp', '/img/product/dv030.png', 'Tư vấn-Gội đầu-Chia tóc-Vào thuốc-Định hình-Xả thuốc-Sấy tạo kiểu'),
+('DV031', 'CT', 'Uốn xoăn nhẹ', 'Uốn xoăn nhẹ tạo độ tự nhiên và mềm mại cho mái tóc.', 120, 400000, 'Đang cung cấp', '/img/product/dv031.png', 'Tư vấn-Gội đầu-Cắt chỉnh-Vào thuốc-Định hình-Xả thuốc-Dưỡng tóc'),
+('DV032', 'CT', 'Uốn xoăn Hàn Quốc', 'Tạo kiểu xoăn phong cách Hàn Quốc với độ xoăn vừa phải.', 150, 500000, 'Đang cung cấp', '/img/product/dv032.png', 'Tư vấn-Gội đầu-Cắt chỉnh-Vào thuốc-Định hình-Xả thuốc-Dưỡng tóc-Sấy tạo kiểu'),
+('DV033', 'CT', 'Uốn con sâu', 'Uốn tạo texture con sâu giúp tóc có độ phồng và cá tính.', 150, 500000, 'Đang cung cấp', '/img/product/dv033.png', 'Tư vấn-Gội đầu-Chia tóc-Vào thuốc-Uốn định hình-Xả thuốc-Sấy tạo kiểu'),
+('DV034', 'CT', 'Uốn layer', 'Uốn kết hợp layer giúp tóc có độ phồng và chuyển tầng tự nhiên.', 150, 520000, 'Đang cung cấp', '/img/product/dv034.png', 'Tư vấn-Cắt layer-Vào thuốc-Uốn định hình-Xả thuốc-Dưỡng tóc-Tạo kiểu'),
+('DV035', 'CT', 'Nhuộm đen tự nhiên', 'Nhuộm tóc màu đen tự nhiên giúp mái tóc đều màu và bóng hơn.', 90, 250000, 'Đang cung cấp', '/img/product/dv035.png', 'Tư vấn màu-Kiểm tra tóc-Pha thuốc-Nhuộm-Ủ màu-Xả sạch-Dưỡng tóc'),
+('DV036', 'CT', 'Nhuộm nâu cơ bản', 'Nhuộm màu nâu tự nhiên phù hợp nhiều phong cách.', 120, 350000, 'Đang cung cấp', '/img/product/dv036.png', 'Tư vấn màu-Kiểm tra nền tóc-Pha thuốc-Nhuộm-Ủ màu-Xả sạch-Dưỡng tóc'),
+('DV037', 'CT', 'Nhuộm nâu khói', 'Nhuộm màu nâu khói hiện đại với độ sáng vừa phải.', 150, 500000, 'Đang cung cấp', '/img/product/dv037.png', 'Tư vấn màu-Kiểm tra nền tóc-Tẩy nền nếu cần-Pha thuốc-Nhuộm-Xả-Dưỡng tóc'),
+('DV038', 'CT', 'Nhuộm highlight', 'Tạo các lọn highlight nổi bật giúp mái tóc có chiều sâu.', 150, 550000, 'Đang cung cấp', '/img/product/dv038.png', 'Tư vấn màu-Chia tóc-Tẩy lọn-Pha màu-Nhuộm-Xả sạch-Dưỡng tóc'),
+('DV039', 'CT', 'Tẩy tóc cơ bản', 'Tẩy nền tóc theo mức độ phù hợp để chuẩn bị cho màu nhuộm.', 120, 400000, 'Đang cung cấp', '/img/product/dv039.png', 'Kiểm tra tóc-Bảo vệ da đầu-Pha thuốc-Tẩy tóc-Kiểm tra nền-Xả sạch-Dưỡng tóc'),
+('DV040', 'CT', 'Phục hồi tóc khô xơ', 'Chăm sóc và phục hồi tóc khô xơ sau các dịch vụ hóa chất.', 75, 300000, 'Đang cung cấp', '/img/product/dv040.png', 'Kiểm tra tóc-Gội sạch-Thoa dưỡng-Ủ tóc-Xả tóc-Sấy hoàn thiện'),
+('DV041', 'CSD', 'Gội đầu thư giãn', 'Gội đầu kết hợp massage nhẹ giúp khách hàng thư giãn.', 45, 150000, 'Đang cung cấp', '/img/product/dv041.png', 'Làm ướt tóc-Gội đầu-Massage đầu-Xả tóc-Sấy khô'),
+('DV042', 'CSD', 'Gội đầu thảo dược', 'Gội đầu bằng sản phẩm thảo dược kết hợp massage da đầu.', 60, 200000, 'Đang cung cấp', '/img/product/dv042.png', 'Rửa mặt-Gội thảo dược-Massage đầu-Bấm huyệt-Xả tóc-Sấy khô'),
+('DV043', 'CSD', 'Massage đầu', 'Massage da đầu giúp thư giãn và giảm cảm giác căng thẳng.', 30, 100000, 'Đang cung cấp', '/img/product/dv043.png', 'Khởi động-Massage da đầu-Bấm huyệt-Kết thúc'),
+('DV044', 'CSD', 'Massage cổ vai gáy cơ bản', 'Massage vùng cổ vai gáy giúp thư giãn cơ bắp.', 30, 120000, 'Đang cung cấp', '/img/product/dv044.png', 'Khởi động-Thả lỏng vai-Massage cổ vai gáy-Kết thúc'),
+('DV045', 'CSD', 'Massage cổ vai gáy chuyên sâu', 'Massage chuyên sâu vùng cổ, vai và gáy kết hợp bấm huyệt.', 60, 250000, 'Đang cung cấp', '/img/product/dv045.png', 'Khởi động-Ấn huyệt-Massage cổ vai gáy-Chườm ấm-Thả lỏng'),
+('DV046', 'CSD', 'Chăm sóc da mặt cơ bản', 'Làm sạch và cấp ẩm cho da mặt theo quy trình cơ bản.', 45, 180000, 'Đang cung cấp', '/img/product/dv046.png', 'Tẩy trang-Rửa mặt-Tẩy tế bào chết-Massage-Đắp mặt nạ-Thoa dưỡng'),
+('DV047', 'CSD', 'Chăm sóc da mặt chuyên sâu', 'Chăm sóc da mặt chuyên sâu kết hợp làm sạch, massage và dưỡng da.', 75, 300000, 'Đang cung cấp', '/img/product/dv047.png', 'Tẩy trang-Rửa mặt-Tẩy tế bào chết-Xông hơi-Massage-Đắp mặt nạ-Dưỡng da'),
+('DV048', 'CSD', 'Làm sạch da mặt', 'Làm sạch bụi bẩn và dầu thừa trên da mặt.', 30, 120000, 'Đang cung cấp', '/img/product/dv048.png', 'Tẩy trang-Rửa mặt-Xông hơi-Làm sạch da-Thoa dưỡng'),
+('DV049', 'CSD', 'Tẩy tế bào chết da mặt', 'Loại bỏ tế bào chết giúp da sạch và thông thoáng hơn.', 30, 120000, 'Đang cung cấp', '/img/product/dv049.png', 'Rửa mặt-Tẩy tế bào chết-Làm sạch-Đắp mặt nạ-Dưỡng da'),
+('DV050', 'CSD', 'Xông hơi da mặt', 'Xông hơi giúp làm mềm da và hỗ trợ làm sạch lỗ chân lông.', 25, 100000, 'Đang cung cấp', '/img/product/dv050.png', 'Làm sạch da-Xông hơi-Làm sạch sâu-Thoa dưỡng'),
+('DV051', 'CSD', 'Đắp mặt nạ dưỡng ẩm', 'Đắp mặt nạ giúp bổ sung độ ẩm và làm dịu da.', 30, 120000, 'Đang cung cấp', '/img/product/dv051.png', 'Rửa mặt-Làm sạch da-Đắp mặt nạ-Tháo mặt nạ-Thoa dưỡng'),
+('DV052', 'CSD', 'Đắp mặt nạ làm dịu', 'Chăm sóc và làm dịu da sau khi tiếp xúc với môi trường hoặc nắng.', 30, 130000, 'Đang cung cấp', '/img/product/dv052.png', 'Rửa mặt-Làm sạch da-Đắp mặt nạ-Làm dịu da-Thoa dưỡng'),
+('DV053', 'CSD', 'Lấy mụn cơ bản', 'Làm sạch da và xử lý mụn cơ bản bằng dụng cụ vệ sinh.', 50, 220000, 'Đang cung cấp', '/img/product/dv053.png', 'Tẩy trang-Rửa mặt-Xông hơi-Lấy mụn-Sát khuẩn-Đắp mặt nạ-Dưỡng da'),
+('DV054', 'CSD', 'Lấy mụn chuyên sâu', 'Xử lý mụn chuyên sâu kết hợp làm dịu và chăm sóc da sau khi lấy mụn.', 70, 350000, 'Đang cung cấp', '/img/product/dv054.png', 'Tẩy trang-Rửa mặt-Xông hơi-Lấy mụn-Sát khuẩn-Điện tím-Đắp mặt nạ-Chiếu đèn-Dưỡng da'),
+('DV055', 'CSD', 'Chăm sóc da dầu', 'Làm sạch và chăm sóc da dầu, hỗ trợ kiểm soát dầu trên da.', 60, 250000, 'Đang cung cấp', '/img/product/dv055.png', 'Tẩy trang-Rửa mặt-Tẩy tế bào chết-Xông hơi-Đắp mặt nạ-Dưỡng da'),
+('DV056', 'CSD', 'Chăm sóc da khô', 'Cấp ẩm và chăm sóc làn da khô, giúp da mềm mại hơn.', 60, 250000, 'Đang cung cấp', '/img/product/dv056.png', 'Tẩy trang-Rửa mặt-Tẩy tế bào chết-Massage-Đắp mặt nạ-Cấp ẩm'),
+('DV057', 'CSD', 'Chăm sóc da nhạy cảm', 'Quy trình chăm sóc nhẹ nhàng dành cho làn da nhạy cảm.', 60, 280000, 'Đang cung cấp', '/img/product/dv057.png', 'Làm sạch da-Xông hơi nhẹ-Massage nhẹ-Đắp mặt nạ-Làm dịu-Dưỡng da'),
+('DV058', 'CSD', 'Massage mặt thư giãn', 'Massage mặt nhẹ nhàng giúp thư giãn cơ mặt.', 30, 120000, 'Đang cung cấp', '/img/product/dv058.png', 'Làm sạch da-Massage mặt-Bấm huyệt-Thoa dưỡng'),
+('DV059', 'CSD', 'Massage mặt nâng cơ', 'Massage kết hợp kỹ thuật nâng cơ giúp khuôn mặt thư giãn và săn chắc hơn.', 45, 180000, 'Đang cung cấp', '/img/product/dv059.png', 'Làm sạch da-Massage nâng cơ-Bấm huyệt-Đắp mặt nạ-Thoa dưỡng'),
+('DV060', 'CSD', 'Chăm sóc vùng mắt', 'Chăm sóc vùng da quanh mắt và cung cấp độ ẩm.', 30, 150000, 'Đang cung cấp', '/img/product/dv060.png', 'Làm sạch vùng mắt-Massage nhẹ-Đắp mặt nạ mắt-Thoa dưỡng'),
+('DV061', 'CSD', 'Chăm sóc môi', 'Làm sạch và dưỡng ẩm vùng môi.', 20, 80000, 'Đang cung cấp', '/img/product/dv061.png', 'Làm sạch môi-Tẩy tế bào chết-Dưỡng môi-Massage nhẹ'),
+('DV062', 'CSD', 'Tẩy tế bào chết body', 'Tẩy tế bào chết toàn thân giúp da sạch và mềm mại hơn.', 60, 250000, 'Đang cung cấp', '/img/product/dv062.png', 'Làm sạch body-Tẩy tế bào chết-Massage-Xả sạch-Dưỡng da'),
+('DV063', 'CSD', 'Massage body thư giãn', 'Massage toàn thân nhẹ nhàng giúp thư giãn cơ thể.', 60, 300000, 'Đang cung cấp', '/img/product/dv063.png', 'Khởi động-Massage lưng-Massage tay chân-Massage vai gáy-Kết thúc'),
+('DV064', 'CSD', 'Massage body chuyên sâu', 'Massage toàn thân chuyên sâu kết hợp các động tác bấm huyệt.', 90, 450000, 'Đang cung cấp', '/img/product/dv064.png', 'Khởi động-Bấm huyệt-Massage lưng-Massage tay chân-Massage vai gáy-Thả lỏng'),
+('DV065', 'CSD', 'Chườm ấm thư giãn', 'Chườm ấm kết hợp massage nhẹ giúp cơ thể thư giãn.', 30, 150000, 'Đang cung cấp', '/img/product/dv065.png', 'Khởi động-Chườm ấm-Massage nhẹ-Thả lỏng'),
+('DV066', 'CSD', 'Chăm sóc da sau lấy mụn', 'Làm dịu và phục hồi da sau quá trình xử lý mụn.', 45, 200000, 'Đang cung cấp', '/img/product/dv066.png', 'Làm sạch-Sát khuẩn-Làm dịu-Đắp mặt nạ-Chiếu đèn-Dưỡng da'),
+('DV067', 'CSD', 'Điện tím chăm sóc da', 'Hỗ trợ làm sạch và chăm sóc da sau quá trình xử lý mụn.', 20, 100000, 'Đang cung cấp', '/img/product/dv067.png', 'Làm sạch da-Sát khuẩn-Điện tím-Làm dịu-Dưỡng da'),
+('DV068', 'CSD', 'Chiếu đèn sinh học', 'Chiếu đèn kết hợp chăm sóc da nhằm làm dịu da sau quy trình.', 20, 100000, 'Đang cung cấp', '/img/product/dv068.png', 'Làm sạch da-Đắp mặt nạ-Chiếu đèn-Thoa dưỡng'),
+('DV069', 'CSD', 'Combo chăm sóc da thư giãn', 'Kết hợp làm sạch da, massage mặt và đắp mặt nạ thư giãn.', 75, 300000, 'Đang cung cấp', '/img/product/dv069.png', 'Tẩy trang-Rửa mặt-Tẩy tế bào chết-Massage mặt-Đắp mặt nạ-Thoa dưỡng'),
+('DV070', 'CSD', 'Combo chăm sóc da toàn diện', 'Quy trình chăm sóc da toàn diện kết hợp làm sạch, xử lý da và dưỡng ẩm.', 90, 400000, 'Đang cung cấp', '/img/product/dv070.png', 'Tẩy trang-Rửa mặt-Tẩy tế bào chết-Xông hơi-Làm sạch sâu-Massage-Đắp mặt nạ-Chiếu đèn-Dưỡng da');
