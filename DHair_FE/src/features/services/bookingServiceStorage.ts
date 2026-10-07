@@ -24,10 +24,13 @@ export async function getBookingService(): Promise<BookingService | null> {
     const service = JSON.parse(storedValue);
     if (
       !service ||
-      typeof service.MADV !== 'string' || !service.MADV ||
+      typeof service.MADV !== 'string' ||
+      !service.MADV ||
       typeof service.TENDV !== 'string' ||
-      typeof service.GIADV !== 'number' || !Number.isFinite(service.GIADV) ||
-      typeof service.THOIGIAN !== 'number' || !Number.isFinite(service.THOIGIAN)
+      typeof service.GIADV !== 'number' ||
+      !Number.isFinite(service.GIADV) ||
+      typeof service.THOIGIAN !== 'number' ||
+      !Number.isFinite(service.THOIGIAN)
     ) {
       return null;
     }

@@ -1,4 +1,3 @@
-
 import axiosClient from './axiosClient';
 
 export interface LoginPayload {
@@ -23,12 +22,11 @@ export interface LoginResponse {
 }
 const authApi = {
   login(data: LoginPayload) {
-    //const url = '/api-common/Login_/login-taikhoan';
     const url = '/api/login/login-taikhoan';
     // Truyền interface vào để TypeScript biết response trả về có cấu trúc như thế nào
     return axiosClient.post<LoginResponse>(url, {
       username: data.username,
-      pass: data.password 
+      pass: data.password,
     });
   },
 };

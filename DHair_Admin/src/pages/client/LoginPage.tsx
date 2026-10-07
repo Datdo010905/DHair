@@ -1,23 +1,22 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "../../assets/css/login.css";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import '../../assets/css/login.css';
 import authApi, { LoginPayload } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
-import LogoForm from "../../components/ui/LogoForm";
+import LogoForm from '../../components/ui/LogoForm';
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState(""); // Thêm state để lưu giá trị input
-  const [password, setPassword] = useState(""); // Thêm state để lưu giá trị input
+  const [username, setUsername] = useState(''); // Thêm state để lưu giá trị input
+  const [password, setPassword] = useState(''); // Thêm state để lưu giá trị input
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const { login, logout } = useAuth(); // Lấy hàm login và logout từ context
-
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -36,36 +35,35 @@ const Login: React.FC = () => {
 
         // GỌI HÀM LƯU VÀO VÙNG NHỚ CHUNG TẠI ĐÂY
         login({ username, role: phanquyen.toString() }, token);
-        if (trangthai === "Hoạt động") {
-          if (phanquyen === 1 || phanquyen === 2 || phanquyen === 3 || phanquyen === 4 || phanquyen === 5) {
+        if (trangthai === 'Hoạt động') {
+          if (
+            phanquyen === 1 ||
+            phanquyen === 2 ||
+            phanquyen === 3 ||
+            phanquyen === 4 ||
+            phanquyen === 5
+          ) {
             navigate('/admin/dashboard');
             toast.success('Đăng nhập thành công! Chào mừng bạn đến với trang quản trị.');
-          }
-          else if (phanquyen === 0) {
+          } else if (phanquyen === 0) {
             navigate('/home');
             toast.success('Đăng nhập thành công! Chào mừng bạn đến với trang chủ.');
-          }
-          else {
+          } else {
             toast.error('Quyền truy cập không hợp lệ. Vui lòng liên hệ quản trị viên.');
             logout(); // Đảm bảo xóa dữ liệu nếu quyền không hợp lệ
-          };
-        }
-        else{
+          }
+        } else {
           toast.error('Tài khoản đã bị khoá! Không thể truy cập.');
           logout(); // Đảm bảo xóa dữ liệu nếu tài khoản bị khoá
         }
-      }
-      else {
+      } else {
         //sai username hoặc password
         toast.error(response.data.message);
       }
-
-    }
-    catch (err: any) {
+    } catch (err: any) {
       if (err.response && err.response.data && err.response.data.message) {
         toast.error(err.response.data.message);
-      } 
-      else {
+      } else {
         toast.error('Lỗi kết nối đến máy chủ. Vui lòng thử lại sau.');
       }
       console.error('Lỗi đăng nhập:', err);
@@ -83,7 +81,15 @@ const Login: React.FC = () => {
           <h1>ĐĂNG NHẬP</h1>
 
           {error && (
-            <div style={{ color: 'red', backgroundColor: '#ffe6e6', padding: '10px', marginBottom: '15px', borderRadius: '4px' }}>
+            <div
+              style={{
+                color: 'red',
+                backgroundColor: '#ffe6e6',
+                padding: '10px',
+                marginBottom: '15px',
+                borderRadius: '4px',
+              }}
+            >
               {error}
             </div>
           )}
@@ -107,16 +113,16 @@ const Login: React.FC = () => {
             <div className="password-container">
               <input
                 id="password"
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Mật khẩu"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
               <i
-                className={`fa ${showPassword ? "fa-eye-slash" : "fa-eye"}`}
+                className={`fa ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: 'pointer' }}
               ></i>
             </div>
 
@@ -125,8 +131,7 @@ const Login: React.FC = () => {
             </button>
 
             <div className="extra-links">
-              <Link to="/forgot">Quên mật khẩu?</Link> |{" "}
-              <Link to="/signup">Đăng ký ngay</Link>
+              <Link to="/forgot">Quên mật khẩu?</Link> | <Link to="/signup">Đăng ký ngay</Link>
             </div>
           </form>
         </div>

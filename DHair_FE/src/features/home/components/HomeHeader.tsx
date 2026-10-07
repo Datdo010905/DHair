@@ -20,36 +20,49 @@ export default function HomeHeader() {
   };
 
   return (
-    <View className="bg-[#1a3673] pt-1 pb-1 px-4 rounded-b-[15px] flex-row items-center justify-between">
-      {/* Cụm Avatar + Thông tin */}
-      <View className="flex-1 flex-row items-center gap-3 mr-3">
+    <View className="bg-[#1a3673] rounded-b-[15px]">
+      {/* Logo dùng ảnh cục bộ để luôn hiển thị, kể cả khi chưa có mạng. */}
+      <View className="items-center pt-2 pb-1">
         <Image
-          source={require('../../../../assets/img/userProfile.jpg')}
-          resizeMode="cover"
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 25,
-            borderWidth: 2,
-            borderColor: 'green',
-          }}
+          source={require('../../../../assets/img/logoDHair.png')}
+          resizeMode="contain"
+          style={{ width: 120, height: 60 }}
+          accessibilityLabel="DHair"
         />
-        <View className="flex-1">
-          <Text className="text-white font-bold text-lg" numberOfLines={1}>{displayName}</Text>
-          <Text className="text-gray-300 text-xs">Chưa có hạng thành viên</Text>
-        </View>
       </View>
+      <View className="bg-[#1a3673] pt-1 pb-1 px-4 rounded-b-[15px] flex-row items-center justify-between">
+        {/* Cụm Avatar + Thông tin */}
+        <View className="flex-1 flex-row items-center gap-3 mr-3">
+          <Image
+            source={require('../../../../assets/img/userProfile.jpg')}
+            resizeMode="cover"
+            style={{
+              width: 50,
+              height: 50,
+              borderRadius: 25,
+              borderWidth: 2,
+              borderColor: 'green',
+            }}
+          />
+          <View className="flex-1">
+            <Text className="text-white font-bold text-lg" numberOfLines={1}>
+              {displayName}
+            </Text>
+            <Text className="text-gray-300 text-xs">Chưa có hạng thành viên</Text>
+          </View>
+        </View>
 
-      {/* Đổi nút theo trạng thái đăng nhập hiện tại. */}
-      <TouchableOpacity
-        onPress={handleAuthPress}
-        accessibilityRole="button"
-        accessibilityLabel={authButtonLabel}
-        className="items-center py-2"
-      >
-        <Ionicons name={authButtonIcon} size={28} color="white" />
-        <Text className="text-white text-xs mt-1">{authButtonLabel}</Text>
-      </TouchableOpacity>
+        {/* Đổi nút theo trạng thái đăng nhập hiện tại. */}
+        <TouchableOpacity
+          onPress={handleAuthPress}
+          accessibilityRole="button"
+          accessibilityLabel={authButtonLabel}
+          className="items-center py-2"
+        >
+          <Ionicons name={authButtonIcon} size={28} color="white" />
+          <Text className="text-white text-xs mt-1">{authButtonLabel}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

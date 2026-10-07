@@ -4,8 +4,9 @@ import { Platform } from 'react-native';
 export const API_BASE_URL = (
   process.env.EXPO_PUBLIC_API_URL ||
   (Platform.OS === 'android' ? 'http://192.168.90.101:5000' : 'http://localhost:5000')
-  //(Platform.OS === 'android' ? 'http://192.168.137.1:5000' : 'http://localhost:5000')
-).replace(/\/+$/, '');
+)
+  //(Platform.OS === 'android' ? 'http://10.237.75.204:5000' : 'http://localhost:5000')
+  .replace(/\/+$/, '');
 
 interface ApiResponse<T> {
   success: boolean;

@@ -18,11 +18,24 @@ export default function TopBar() {
       <div className="dh-shell-width dh-topbar-row">
         <div className="dh-topbar-contact">
           <span className="dh-topbar-message">DHair — Chăm sóc tóc, định hình phong cách</span>
-          <a href="tel:0352512556"><FiPhone aria-hidden="true" />0352 512 556</a>
+          <a href="tel:0352512556">
+            <FiPhone aria-hidden="true" />
+            0352 512 556
+          </a>
         </div>
         <div className="dh-topbar-account">
-          <Link to={user ? '/profile' : '/login'}><FiUser aria-hidden="true" /><span>{user ? user.username : 'Đăng nhập'}</span></Link>
-          {user ? <button type="button" onClick={handleLogout}><FiLogOut aria-hidden="true" /><span>Đăng xuất</span></button> : <Link to="/signup">Đăng ký</Link>}
+          <Link to={user ? '/profile' : '/login'}>
+            <FiUser aria-hidden="true" />
+            <span>{user ? user.username : 'Đăng nhập'}</span>
+          </Link>
+          {user ? (
+            <button type="button" onClick={handleLogout}>
+              <FiLogOut aria-hidden="true" />
+              <span>Đăng xuất</span>
+            </button>
+          ) : (
+            <Link to="/signup">Đăng ký</Link>
+          )}
         </div>
       </div>
     </div>

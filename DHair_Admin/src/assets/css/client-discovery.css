@@ -90,7 +90,7 @@
 .dh-discovery h2 {
   font-size: clamp(25px, 2.6vw, 34px);
   line-height: 1.3;
-  letter-spacing: -.7px;
+  letter-spacing: -0.7px;
 }
 
 .dh-discovery h3 {
@@ -174,7 +174,7 @@
 
 .dh-discovery .dd-team-portraits img {
   width: calc((100% - 24px) / 3);
-  aspect-ratio: .57;
+  aspect-ratio: 0.57;
   border-radius: 10px;
 }
 
@@ -203,7 +203,7 @@
   margin-bottom: 28px;
 }
 
-.dh-discovery .dd-section-heading>p {
+.dh-discovery .dd-section-heading > p {
   font-size: 13px;
   color: var(--dd-muted);
 }
@@ -289,11 +289,11 @@
 
 .dh-discovery .dd-stylist-photo img {
   width: 100%;
-  aspect-ratio: .66;
+  aspect-ratio: 0.66;
   object-position: center;
 }
 
-.dh-discovery .dd-stylist-photo>span {
+.dh-discovery .dd-stylist-photo > span {
   position: absolute;
   bottom: 12px;
   left: 12px;
@@ -326,7 +326,7 @@
   min-height: 63px;
 }
 
-.dh-discovery .dd-stylist-info>a {
+.dh-discovery .dd-stylist-info > a {
   border-top: 1px solid #e5ebf3;
   padding-top: 14px;
   display: flex;
@@ -336,7 +336,7 @@
   font-size: 12px;
 }
 
-.dh-discovery .dd-stylist-info>a:hover {
+.dh-discovery .dd-stylist-info > a:hover {
   text-decoration: underline;
 }
 
@@ -369,7 +369,7 @@
   margin-bottom: 12px;
 }
 
-.dh-discovery .dd-care-section>p {
+.dh-discovery .dd-care-section > p {
   color: var(--dd-muted);
   font-size: 13px;
 }
@@ -383,7 +383,7 @@
 
 .dh-discovery .dd-care-grid img {
   width: 100%;
-  aspect-ratio: .8;
+  aspect-ratio: 0.8;
   border-radius: 10px;
 }
 
@@ -453,11 +453,11 @@
 
 .dh-discovery .dd-story {
   display: grid;
-  grid-template-columns: .9fr 1.1fr;
+  grid-template-columns: 0.9fr 1.1fr;
   gap: 70px;
 }
 
-.dh-discovery .dd-story>div>p:not(.dd-eyebrow) {
+.dh-discovery .dd-story > div > p:not(.dd-eyebrow) {
   color: var(--dd-muted);
   margin-bottom: 20px;
 }
@@ -474,7 +474,7 @@
   gap: 32px;
 }
 
-.dh-discovery .dd-values-grid article>span {
+.dh-discovery .dd-values-grid article > span {
   display: block;
   font-size: 34px;
   color: #8fa5c2;
@@ -599,7 +599,7 @@
   }
 
   .dh-discovery .dd-team-portraits img {
-    aspect-ratio: .66;
+    aspect-ratio: 0.66;
   }
 
   .dh-discovery .dd-section {
@@ -642,7 +642,7 @@
     font-size: 17px;
   }
 
-  .dh-discovery .dd-stylist-photo>span {
+  .dh-discovery .dd-stylist-photo > span {
     left: 8px;
     bottom: 8px;
     font-size: 9px;
@@ -681,12 +681,12 @@
     grid-template-columns: 1fr;
   }
 
-  .dh-discovery .dd-values-grid article+article {
+  .dh-discovery .dd-values-grid article + article {
     padding-top: 24px;
     border-top: 1px solid #dae3f0;
   }
 
-  .dh-discovery .dd-values-grid article>span {
+  .dh-discovery .dd-values-grid article > span {
     font-size: 26px;
     margin-bottom: 14px;
   }
@@ -698,6 +698,6 @@
   }
 
   .dh-discovery .dd-stylist-photo img {
-    aspect-ratio: .75;
+    aspect-ratio: 0.75;
   }
 }

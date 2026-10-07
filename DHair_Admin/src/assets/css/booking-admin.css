@@ -44,7 +44,7 @@
 }
 
 :is(.booking-admin, .invoice-admin, .admin-page) button:disabled {
-  opacity: .5;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -98,7 +98,7 @@
   font-weight: 600;
 }
 
-:is(.booking-admin, .invoice-admin, .admin-page) .ba-modes button[aria-pressed="true"] {
+:is(.booking-admin, .invoice-admin, .admin-page) .ba-modes button[aria-pressed='true'] {
   background: #e6edfb;
   color: #173691;
 }
@@ -135,14 +135,14 @@
   font-size: 12px;
 }
 
-:is(.booking-admin, .invoice-admin, .admin-page) .ba-days button[aria-pressed="true"] {
+:is(.booking-admin, .invoice-admin, .admin-page) .ba-days button[aria-pressed='true'] {
   background: #173691;
   border-color: #173691;
   color: #dce6ff;
   box-shadow: 0 5px 15px #17369120;
 }
 
-:is(.booking-admin, .invoice-admin, .admin-page) .ba-days button[aria-pressed="true"] strong {
+:is(.booking-admin, .invoice-admin, .admin-page) .ba-days button[aria-pressed='true'] strong {
   color: white;
 }
 
@@ -209,7 +209,7 @@
   font-size: 12px;
 }
 
-:is(.booking-admin, .invoice-admin, .admin-page) .ba-status-filters button[aria-pressed="true"] {
+:is(.booking-admin, .invoice-admin, .admin-page) .ba-status-filters button[aria-pressed='true'] {
   border-color: #8ea8de;
   color: #173691;
   background: #eef3ff;
@@ -284,7 +284,7 @@
   color: #6d7c91;
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
 }
 
 :is(.booking-admin, .invoice-admin, .admin-page) .ba-table td {
@@ -314,7 +314,7 @@
   color: #173691;
 }
 
-:is(.booking-admin, .invoice-admin, .admin-page) .ba-service+.ba-service {
+:is(.booking-admin, .invoice-admin, .admin-page) .ba-service + .ba-service {
   margin-top: 10px;
 }
 
@@ -463,7 +463,7 @@
     font-size: 17px;
   }
 
-  :is(.booking-admin, .invoice-admin, .admin-page) .ba-filters>label {
+  :is(.booking-admin, .invoice-admin, .admin-page) .ba-filters > label {
     flex: 1 1 180px;
   }
 
@@ -471,51 +471,223 @@
     font-size: 25px;
   }
 }
-.salon-operations { margin: 20px 0; padding: 20px; }
-.salon-operations > .ba-actions { flex-wrap: wrap; margin: 16px 0; }
-.salon-operations select { max-width: 100%; padding: 8px; border: 1px solid #d4dce5; border-radius: 8px; background: white; }
-.salon-queue-item { padding: 16px 0; border-top: 1px solid #e2e8f0; display: flex; gap: 16px; justify-content: space-between; flex-wrap: wrap; }
-.salon-queue-item p { margin: 6px 0; }
-.salon-queue-item .ba-actions { flex-wrap: wrap; }
-.salon-warnings { background: #fff7e6; padding: 14px; margin: 16px 0; border-radius: 10px; color: #784700; }
+.salon-operations {
+  margin: 20px 0;
+  padding: 20px;
+}
+.salon-operations > .ba-actions {
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.salon-operations select {
+  max-width: 100%;
+  padding: 8px;
+  border: 1px solid #d4dce5;
+  border-radius: 8px;
+  background: white;
+}
+.salon-queue-item {
+  padding: 16px 0;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.salon-queue-item p {
+  margin: 6px 0;
+}
+.salon-queue-item .ba-actions {
+  flex-wrap: wrap;
+}
+.salon-warnings {
+  background: #fff7e6;
+  padding: 14px;
+  margin: 16px 0;
+  border-radius: 10px;
+  color: #784700;
+}
 
-.booking-admin .salon-operations { padding: 24px; border-radius: 18px; box-shadow: 0 4px 20px #24324b05; }
-.booking-admin .salon-command-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
-.booking-admin .salon-command-title { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.booking-admin .salon-command-title h3 { margin: 4px 0 6px; color: #223b62; font-size: 23px; letter-spacing: -.5px; }
-.booking-admin .salon-command-title p { margin: 0; color: #77859a; font-size: 13px; line-height: 1.6; }
-.booking-admin .salon-command-title .salon-eyebrow { color: #647b9f; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
-.booking-admin .salon-command-icon { display: grid; place-items: center; flex-shrink: 0; width: 54px; height: 54px; color: #315aa4; background: #edf3ff; border: 1px solid #e1e9f8; border-radius: 15px; }
-.booking-admin .salon-command-icon svg { width: 26px; height: 26px; }
-.booking-admin .salon-branch-picker { min-width: 235px; }
-.booking-admin .salon-branch-picker select { min-height: 44px; border-radius: 10px; background: #f9fbfe; }
-.booking-admin .salon-command-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 20px; margin: 18px 0 22px; color: #7a889d; font-size: 11px; }
-.booking-admin .salon-command-meta > span { display: inline-flex; align-items: center; gap: 7px; }
-.booking-admin .salon-command-meta svg { width: 14px; height: 14px; }
-.booking-admin .salon-sync-dot { width: 6px; height: 6px; background: #32a480; border-radius: 50%; }
-.booking-admin .salon-sync-dot.has-error { background: #ca5867; }
-.booking-admin .salon-command-actions { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
-.booking-admin .salon-command-button { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; min-width: 0; min-height: 130px; border: 1px solid #e1e8f2; border-radius: 12px; background: #fff; color: #36537a; text-align: left; transition: background .15s, border-color .15s; }
-.booking-admin .salon-command-button:hover:not(:disabled) { background: #f5f8fd; border-color: #9eb6de; }
-.booking-admin .salon-action-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: #f0f4fa; }
-.booking-admin .salon-action-icon svg { width: 19px; height: 19px; }
-.booking-admin .salon-action-copy { display: grid; gap: 5px; }
-.booking-admin .salon-action-copy strong { font-size: 13px; font-weight: 650; line-height: 1.5; }
-.booking-admin .salon-action-copy small { color: #78869b; font-size: 11px; line-height: 1.6; }
-.booking-admin .salon-command-button.is-primary { background: #173691; color: #fff; border-color: #173691; }
-.booking-admin .salon-command-button.is-primary:hover:not(:disabled) { background: #244aab; }
-.booking-admin .is-primary .salon-action-icon { background: #ffffff1a; }
-.booking-admin .is-primary .salon-action-copy small { color: #d1dfff; }
+.booking-admin .salon-operations {
+  padding: 24px;
+  border-radius: 18px;
+  box-shadow: 0 4px 20px #24324b05;
+}
+.booking-admin .salon-command-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.booking-admin .salon-command-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.booking-admin .salon-command-title h3 {
+  margin: 4px 0 6px;
+  color: #223b62;
+  font-size: 23px;
+  letter-spacing: -0.5px;
+}
+.booking-admin .salon-command-title p {
+  margin: 0;
+  color: #77859a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.booking-admin .salon-command-title .salon-eyebrow {
+  color: #647b9f;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+.booking-admin .salon-command-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 54px;
+  height: 54px;
+  color: #315aa4;
+  background: #edf3ff;
+  border: 1px solid #e1e9f8;
+  border-radius: 15px;
+}
+.booking-admin .salon-command-icon svg {
+  width: 26px;
+  height: 26px;
+}
+.booking-admin .salon-branch-picker {
+  min-width: 235px;
+}
+.booking-admin .salon-branch-picker select {
+  min-height: 44px;
+  border-radius: 10px;
+  background: #f9fbfe;
+}
+.booking-admin .salon-command-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 18px 0 22px;
+  color: #7a889d;
+  font-size: 11px;
+}
+.booking-admin .salon-command-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.booking-admin .salon-command-meta svg {
+  width: 14px;
+  height: 14px;
+}
+.booking-admin .salon-sync-dot {
+  width: 6px;
+  height: 6px;
+  background: #32a480;
+  border-radius: 50%;
+}
+.booking-admin .salon-sync-dot.has-error {
+  background: #ca5867;
+}
+.booking-admin .salon-command-actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+.booking-admin .salon-command-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  min-width: 0;
+  min-height: 130px;
+  border: 1px solid #e1e8f2;
+  border-radius: 12px;
+  background: #fff;
+  color: #36537a;
+  text-align: left;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.booking-admin .salon-command-button:hover:not(:disabled) {
+  background: #f5f8fd;
+  border-color: #9eb6de;
+}
+.booking-admin .salon-action-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #f0f4fa;
+}
+.booking-admin .salon-action-icon svg {
+  width: 19px;
+  height: 19px;
+}
+.booking-admin .salon-action-copy {
+  display: grid;
+  gap: 5px;
+}
+.booking-admin .salon-action-copy strong {
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+.booking-admin .salon-action-copy small {
+  color: #78869b;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.booking-admin .salon-command-button.is-primary {
+  background: #173691;
+  color: #fff;
+  border-color: #173691;
+}
+.booking-admin .salon-command-button.is-primary:hover:not(:disabled) {
+  background: #244aab;
+}
+.booking-admin .is-primary .salon-action-icon {
+  background: #ffffff1a;
+}
+.booking-admin .is-primary .salon-action-copy small {
+  color: #d1dfff;
+}
 @media (max-width: 1200px) {
-  .booking-admin .salon-command-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .booking-admin .salon-command-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 @media (max-width: 650px) {
-  .booking-admin .salon-operations { padding: 16px; }
-  .booking-admin .salon-command-title h3 { font-size: 20px; }
-  .booking-admin .salon-branch-picker { width: 100%; min-width: 0; }
-  .booking-admin .salon-command-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .booking-admin .salon-command-button { padding: 12px; }
-  .booking-admin .salon-command-button.is-primary { grid-column: 1 / -1; flex-direction: row; align-items: center; min-height: 80px; }
+  .booking-admin .salon-operations {
+    padding: 16px;
+  }
+  .booking-admin .salon-command-title h3 {
+    font-size: 20px;
+  }
+  .booking-admin .salon-branch-picker {
+    width: 100%;
+    min-width: 0;
+  }
+  .booking-admin .salon-command-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .booking-admin .salon-command-button {
+    padding: 12px;
+  }
+  .booking-admin .salon-command-button.is-primary {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    min-height: 80px;
+  }
 }
 
 /* Chỉ áp dụng cho hàng đợi và lịch nghỉ trong khối điều phối. */
@@ -567,7 +739,10 @@
   color: #315aa4;
   background: #eef3fc;
 }
-.booking-admin .salon-leaves .salon-section-icon { color: #9a651b; background: #fff5e6; }
+.booking-admin .salon-leaves .salon-section-icon {
+  color: #9a651b;
+  background: #fff5e6;
+}
 .booking-admin .salon-count {
   padding: 3px 9px;
   border-radius: 20px;
@@ -585,14 +760,39 @@
   text-align: center;
   gap: 12px;
 }
-.booking-admin .salon-empty-icon { width: 58px; height: 58px; border-radius: 18px; background: #eef2f7; color: #8495ae; }
-.booking-admin .salon-empty-icon svg { width: 28px; height: 28px; }
-.booking-admin .salon-empty-state strong { font-size: 14px; color: #40536f; }
+.booking-admin .salon-empty-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  background: #eef2f7;
+  color: #8495ae;
+}
+.booking-admin .salon-empty-icon svg {
+  width: 28px;
+  height: 28px;
+}
+.booking-admin .salon-empty-state strong {
+  font-size: 14px;
+  color: #40536f;
+}
 .booking-admin .salon-empty-state p,
-.booking-admin .salon-placeholder { margin: 0; font-size: 13px; line-height: 1.7; color: #728198; }
-.booking-admin .salon-placeholder { padding: 28px 20px; }
-.booking-admin .salon-leave-list { display: grid; gap: 12px; padding: 16px; }
-.booking-admin .salon-leave-list:empty { display: none; }
+.booking-admin .salon-placeholder {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #728198;
+}
+.booking-admin .salon-placeholder {
+  padding: 28px 20px;
+}
+.booking-admin .salon-leave-list {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+.booking-admin .salon-leave-list:empty {
+  display: none;
+}
 .booking-admin .salon-leave-card {
   padding: 16px;
   background: #fff;
@@ -600,11 +800,24 @@
   border-radius: 12px;
 }
 .booking-admin .salon-leave-person,
-.booking-admin .salon-customer { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.booking-admin .salon-customer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
 .booking-admin .salon-leave-person strong,
-.booking-admin .salon-customer strong { font-size: 14px; color: #2d405c; overflow-wrap: anywhere; }
+.booking-admin .salon-customer strong {
+  font-size: 14px;
+  color: #2d405c;
+  overflow-wrap: anywhere;
+}
 .booking-admin .salon-leave-person p,
-.booking-admin .salon-customer p { margin: 4px 0 0; color: #728198; font-size: 12px; }
+.booking-admin .salon-customer p {
+  margin: 4px 0 0;
+  color: #728198;
+  font-size: 12px;
+}
 .booking-admin .salon-avatar,
 .booking-admin .salon-position {
   display: grid;
@@ -618,40 +831,159 @@
   font-size: 12px;
   font-weight: 700;
 }
-.booking-admin .salon-leave-times { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
-.booking-admin .salon-leave-times > div { display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 12px; border-radius: 9px; background: #f7f9fc; }
-.booking-admin .salon-leave-times span { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #728198; }
-.booking-admin .salon-leave-times strong { font-size: 17px; font-variant-numeric: tabular-nums; color: #344967; }
-.booking-admin .salon-leave-times small { font-size: 11px; color: #728198; }
-.booking-admin .salon-leave-times .salon-resume { background: #eaf6f2; }
+.booking-admin .salon-leave-times {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+.booking-admin .salon-leave-times > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 9px;
+  background: #f7f9fc;
+}
+.booking-admin .salon-leave-times span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #728198;
+}
+.booking-admin .salon-leave-times strong {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  color: #344967;
+}
+.booking-admin .salon-leave-times small {
+  font-size: 11px;
+  color: #728198;
+}
+.booking-admin .salon-leave-times .salon-resume {
+  background: #eaf6f2;
+}
 .booking-admin .salon-resume span,
-.booking-admin .salon-resume strong { color: #18735b; }
-.booking-admin .salon-resume svg { width: 14px; height: 14px; }
-.booking-admin .salon-leave-reason { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; font-size: 12px; line-height: 1.6; color: #455873; overflow-wrap: anywhere; }
-.booking-admin .salon-leave-reason > span { color: #8491a4; }
-.booking-admin .salon-queue-item { display: block; margin: 16px; padding: 16px; border: 1px solid #e5ebf3; border-radius: 12px; background: #fff; }
-.booking-admin .salon-position { border-radius: 10px; background: #eef3fc; color: #315aa4; }
-.booking-admin .salon-queue-status { margin-left: auto; padding: 5px 8px; border-radius: 6px; background: #fff5e2; color: #916319; font-size: 11px; white-space: nowrap; }
-.booking-admin .salon-queue-status.is-called { background: #eaf6f2; color: #18735b; }
-.booking-admin .salon-queue-item .salon-services { margin: 14px 0 10px; font-size: 13px; line-height: 1.7; color: #425570; }
-.booking-admin .salon-queue-meta { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; color: #7a889d; font-size: 12px; }
-.booking-admin .salon-queue-meta span { display: flex; align-items: center; gap: 6px; color: #9a651b; }
-.booking-admin .salon-queue-meta svg { width: 15px; height: 15px; }
-.booking-admin .salon-queue-meta small { overflow-wrap: anywhere; }
-.booking-admin .salon-queue-actions { margin-top: 14px; padding-top: 14px; border-top: 1px solid #edf1f6; gap: 8px; }
-.booking-admin .salon-queue-actions select { width: 100%; }
-.booking-admin .salon-queue-actions .ba-button { font-size: 12px; padding: 8px 10px; }
+.booking-admin .salon-resume strong {
+  color: #18735b;
+}
+.booking-admin .salon-resume svg {
+  width: 14px;
+  height: 14px;
+}
+.booking-admin .salon-leave-reason {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #455873;
+  overflow-wrap: anywhere;
+}
+.booking-admin .salon-leave-reason > span {
+  color: #8491a4;
+}
+.booking-admin .salon-queue-item {
+  display: block;
+  margin: 16px;
+  padding: 16px;
+  border: 1px solid #e5ebf3;
+  border-radius: 12px;
+  background: #fff;
+}
+.booking-admin .salon-position {
+  border-radius: 10px;
+  background: #eef3fc;
+  color: #315aa4;
+}
+.booking-admin .salon-queue-status {
+  margin-left: auto;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #fff5e2;
+  color: #916319;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.booking-admin .salon-queue-status.is-called {
+  background: #eaf6f2;
+  color: #18735b;
+}
+.booking-admin .salon-queue-item .salon-services {
+  margin: 14px 0 10px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #425570;
+}
+.booking-admin .salon-queue-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  color: #7a889d;
+  font-size: 12px;
+}
+.booking-admin .salon-queue-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #9a651b;
+}
+.booking-admin .salon-queue-meta svg {
+  width: 15px;
+  height: 15px;
+}
+.booking-admin .salon-queue-meta small {
+  overflow-wrap: anywhere;
+}
+.booking-admin .salon-queue-actions {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #edf1f6;
+  gap: 8px;
+}
+.booking-admin .salon-queue-actions select {
+  width: 100%;
+}
+.booking-admin .salon-queue-actions .ba-button {
+  font-size: 12px;
+  padding: 8px 10px;
+}
 @media (max-width: 1100px) {
-  .booking-admin .salon-overview { grid-template-columns: 1fr; }
-  .booking-admin .salon-empty-state { min-height: 200px; }
+  .booking-admin .salon-overview {
+    grid-template-columns: 1fr;
+  }
+  .booking-admin .salon-empty-state {
+    min-height: 200px;
+  }
 }
 @media (max-width: 480px) {
-  .booking-admin .salon-section-heading { padding: 14px; }
-  .booking-admin .salon-leave-list { padding: 10px; }
-  .booking-admin .salon-leave-card { padding: 12px; }
-  .booking-admin .salon-queue-item { margin: 10px; padding: 12px; }
-  .booking-admin .salon-customer { flex-wrap: wrap; }
-  .booking-admin .salon-queue-status { margin-left: 0; }
-  .booking-admin .salon-leave-times { gap: 8px; }
-  .booking-admin .salon-leave-times strong { font-size: 15px; }
+  .booking-admin .salon-section-heading {
+    padding: 14px;
+  }
+  .booking-admin .salon-leave-list {
+    padding: 10px;
+  }
+  .booking-admin .salon-leave-card {
+    padding: 12px;
+  }
+  .booking-admin .salon-queue-item {
+    margin: 10px;
+    padding: 12px;
+  }
+  .booking-admin .salon-customer {
+    flex-wrap: wrap;
+  }
+  .booking-admin .salon-queue-status {
+    margin-left: 0;
+  }
+  .booking-admin .salon-leave-times {
+    gap: 8px;
+  }
+  .booking-admin .salon-leave-times strong {
+    font-size: 15px;
+  }
 }

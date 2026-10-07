@@ -8,10 +8,7 @@ interface ProfileFormProps {
   phone: string;
   initialEmail: string;
   onSave: (fullName: string, email: string) => Promise<void>;
-  onChangePassword: (
-    currentPassword: string,
-    newPassword: string,
-  ) => Promise<void>;
+  onChangePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 interface PasswordFieldProps {
@@ -21,19 +18,12 @@ interface PasswordFieldProps {
   disabled: boolean;
 }
 
-function PasswordField({
-  label,
-  value,
-  onChangeText,
-  disabled,
-}: PasswordFieldProps) {
+function PasswordField({ label, value, onChangeText, disabled }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
 
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-sm font-semibold text-[#334155]">
-        {label}
-      </Text>
+      <Text className="mb-2 text-sm font-semibold text-[#334155]">{label}</Text>
 
       <View className="min-h-14 flex-row items-center rounded-xl border border-[#dfe6f0] bg-[#f8fafc] pl-4 pr-1">
         <TextInput
@@ -55,18 +45,21 @@ function PasswordField({
           onPress={() => setVisible(!visible)}
           className="h-12 w-12 items-center justify-center"
         >
-          <Ionicons
-            name={visible ? 'eye-off-outline' : 'eye-outline'}
-            size={20}
-            color="#6780a3"
-          />
+          <Ionicons name={visible ? 'eye-off-outline' : 'eye-outline'} size={20} color="#6780a3" />
         </Pressable>
       </View>
     </View>
   );
 }
 
-export default function ProfileForm({ mode, fullName, phone, initialEmail, onSave, onChangePassword }: ProfileFormProps) {
+export default function ProfileForm({
+  mode,
+  fullName,
+  phone,
+  initialEmail,
+  onSave,
+  onChangePassword,
+}: ProfileFormProps) {
   const [name, setName] = useState(fullName);
   const [email, setEmail] = useState(initialEmail);
   const [saving, setSaving] = useState(false);
@@ -89,12 +82,9 @@ export default function ProfileForm({ mode, fullName, phone, initialEmail, onSav
 
       if (
         cleanEmail.length > 100 ||
-        (cleanEmail &&
-          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail))
+        (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail))
       ) {
-        setError(
-          'Vui lòng nhập email đúng định dạng, tối đa 100 ký tự.',
-        );
+        setError('Vui lòng nhập email đúng định dạng, tối đa 100 ký tự.');
         return;
       }
 
@@ -105,11 +95,7 @@ export default function ProfileForm({ mode, fullName, phone, initialEmail, onSav
       try {
         await onSave(name.trim(), cleanEmail);
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : 'Không thể lưu thông tin.',
-        );
+        setError(err instanceof Error ? err.message : 'Không thể lưu thông tin.');
       } finally {
         saveLock.current = false;
         setSaving(false);
@@ -148,16 +134,9 @@ export default function ProfileForm({ mode, fullName, phone, initialEmail, onSav
     setError('');
 
     try {
-      await onChangePassword(
-        currentPassword,
-        newPassword,
-      );
+      await onChangePassword(currentPassword, newPassword);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Không thể đổi mật khẩu.',
-      );
+      setError(err instanceof Error ? err.message : 'Không thể đổi mật khẩu.');
     } finally {
       saveLock.current = false;
       setSaving(false);
@@ -166,22 +145,44 @@ export default function ProfileForm({ mode, fullName, phone, initialEmail, onSav
 
   return (
     <View>
-
-
       {mode === 'edit' ? (
         <>
           <Text className="mb-2 text-sm font-semibold text-[#334155]">Họ và tên</Text>
-          <TextInput accessibilityLabel="Họ và tên" value={name} onChangeText={setName} maxLength={100} editable={!saving} autoCapitalize="words" placeholder="Nhập họ và tên" placeholderTextColor="#94a3b8" className="mb-4 min-h-14 rounded-xl border border-[#dfe6f0] bg-[#f8fafc] px-4 py-3 text-sm text-[#172b4d]" />
+          <TextInput
+            accessibilityLabel="Họ và tên"
+            value={name}
+            onChangeText={setName}
+            maxLength={100}
+            editable={!saving}
+            autoCapitalize="words"
+            placeholder="Nhập họ và tên"
+            placeholderTextColor="#94a3b8"
+            className="mb-4 min-h-14 rounded-xl border border-[#dfe6f0] bg-[#f8fafc] px-4 py-3 text-sm text-[#172b4d]"
+          />
 
           <Text className="mb-2 text-sm font-semibold text-[#334155]">Số điện thoại</Text>
           <View className="mb-1 min-h-14 flex-row items-center justify-between rounded-xl bg-[#f0f3f8] px-4 py-3">
             <Text className="text-sm text-[#64748b]">{phone}</Text>
             <Ionicons name="lock-closed-outline" size={16} color="#8794a7" />
           </View>
-          <Text className="mb-4 text-xs leading-5 text-[#8794a7]">Số điện thoại dùng để đăng nhập.</Text>
+          <Text className="mb-4 text-xs leading-5 text-[#8794a7]">
+            Số điện thoại dùng để đăng nhập.
+          </Text>
 
           <Text className="mb-2 text-sm font-semibold text-[#334155]">Email (không bắt buộc)</Text>
-          <TextInput accessibilityLabel="Email" value={email} onChangeText={setEmail} maxLength={100} editable={!saving} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" placeholder="Nhập email của bạn" placeholderTextColor="#94a3b8" className="mb-4 min-h-14 rounded-xl border border-[#dfe6f0] bg-[#f8fafc] px-4 py-3 text-sm text-[#172b4d]" />
+          <TextInput
+            accessibilityLabel="Email"
+            value={email}
+            onChangeText={setEmail}
+            maxLength={100}
+            editable={!saving}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            placeholder="Nhập email của bạn"
+            placeholderTextColor="#94a3b8"
+            className="mb-4 min-h-14 rounded-xl border border-[#dfe6f0] bg-[#f8fafc] px-4 py-3 text-sm text-[#172b4d]"
+          />
         </>
       ) : (
         <>
@@ -208,10 +209,23 @@ export default function ProfileForm({ mode, fullName, phone, initialEmail, onSav
         </>
       )}
 
-      {!!error && <Text accessibilityRole="alert" className="mb-3 text-sm text-[#b42318]">{error}</Text>}
-      <Pressable accessibilityRole="button" accessibilityState={{ disabled: saving }} disabled={saving} onPress={save} className="mt-2 min-h-14 flex-row items-center justify-center gap-2 rounded-2xl bg-[#1a3673] p-4" style={{ opacity: saving ? 0.5 : 1 }}>
+      {!!error && (
+        <Text accessibilityRole="alert" className="mb-3 text-sm text-[#b42318]">
+          {error}
+        </Text>
+      )}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: saving }}
+        disabled={saving}
+        onPress={save}
+        className="mt-2 min-h-14 flex-row items-center justify-center gap-2 rounded-2xl bg-[#1a3673] p-4"
+        style={{ opacity: saving ? 0.5 : 1 }}
+      >
         {saving && <ActivityIndicator color="white" />}
-        <Text className="text-base font-bold text-white">{saving ? 'Đang lưu...' : mode === 'edit' ? 'Lưu thay đổi' : 'Đổi mật khẩu'}</Text>
+        <Text className="text-base font-bold text-white">
+          {saving ? 'Đang lưu...' : mode === 'edit' ? 'Lưu thay đổi' : 'Đổi mật khẩu'}
+        </Text>
       </Pressable>
     </View>
   );

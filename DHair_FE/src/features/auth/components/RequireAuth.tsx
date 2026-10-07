@@ -4,11 +4,11 @@ import { useAuth } from '@/features/auth/AuthContext';
 
 // Chặn cả khi bấm tab, mở liên kết trực tiếp hoặc quay lại màn hình cũ.
 export default function RequireAuth({ children }: { children: ReactNode }) {
-    const { user } = useAuth();
+  const { user } = useAuth();
 
-    if (!user) {
-        return <Redirect href="/(auth)/login" />;
-    }
+  if (!user) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
-    return <>{children}</>;
+  return <>{children}</>;
 }

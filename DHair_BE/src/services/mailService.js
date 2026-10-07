@@ -5,20 +5,19 @@ const mailPass = process.env.MAIL_PASS?.replace(/\s+/g, '');
 
 // CẤU HÌNH NGƯỜI GỬI EMAIL (SMTP)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: mailUser,
-        pass: mailPass
-    }
+  service: 'gmail',
+  auth: {
+    user: mailUser,
+    pass: mailPass,
+  },
 });
 
-
 const forgotPasswordEmail = async (customerEmail, newPassword, customerName) => {
-    const mailOptions = {
-        from: '"Hệ thống DHair (dotiendat01092005@gmail.com)" <dotiendat01092005@gmail.com>',
-        to: customerEmail,
-        subject: 'Cấp lại mật khẩu tài khoản Salon',
-        html: `
+  const mailOptions = {
+    from: '"Hệ thống DHair (dotiendat01092005@gmail.com)" <dotiendat01092005@gmail.com>',
+    to: customerEmail,
+    subject: 'Cấp lại mật khẩu tài khoản Salon',
+    html: `
             <div style="padding: 2rem 1rem; background-color: #f8fafc;">
   <div style="max-width: 560px; margin: auto; background: #ffffff; border-radius: 12px; border: 0.5px solid #e2e8f0; overflow: hidden; font-family: Arial, sans-serif;">
 
@@ -63,35 +62,33 @@ const forgotPasswordEmail = async (customerEmail, newPassword, customerName) => 
 
   </div>
 </div>
-        `
-    };
+        `,
+  };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log("Đã gửi mail thành công cho:", customerEmail);
-        return true;
-    } catch (error) {
-        console.error("Lỗi gửi mail:", error);
-        return false;
-    }
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Đã gửi mail thành công cho:', customerEmail);
+    return true;
+  } catch (error) {
+    console.error('Lỗi gửi mail:', error);
+    return false;
+  }
 };
 
-
-
 const sendBookingPendingEmail = async (customerEmail, bookingInfo) => {
-    // Cắt lấy Ngày/Tháng/Năm (DD/MM/YYYY)
-    const ngay = new Date(bookingInfo.NGAYHEN);
-    const ngayFormat = `${ngay.getUTCDate().toString().padStart(2, '0')}/${(ngay.getUTCMonth() + 1).toString().padStart(2, '0')}/${ngay.getUTCFullYear()}`;
+  // Cắt lấy Ngày/Tháng/Năm (DD/MM/YYYY)
+  const ngay = new Date(bookingInfo.NGAYHEN);
+  const ngayFormat = `${ngay.getUTCDate().toString().padStart(2, '0')}/${(ngay.getUTCMonth() + 1).toString().padStart(2, '0')}/${ngay.getUTCFullYear()}`;
 
-    // Ép lấy Giờ:Phút gốc
-    const gio = new Date(bookingInfo.GIOHEN);
-    const gioFormat = `${gio.getUTCHours().toString().padStart(2, '0')}:${gio.getUTCMinutes().toString().padStart(2, '0')}`;
+  // Ép lấy Giờ:Phút gốc
+  const gio = new Date(bookingInfo.GIOHEN);
+  const gioFormat = `${gio.getUTCHours().toString().padStart(2, '0')}:${gio.getUTCMinutes().toString().padStart(2, '0')}`;
 
-    const mailOptions = {
-        from: '"Hệ thống DHair (dotiendat01092005@gmail.com)" <dotiendat01092005@gmail.com>',
-        to: customerEmail,
-        subject: 'Lịch hẹn của bạn đã được duyệt',
-        html: `
+  const mailOptions = {
+    from: '"Hệ thống DHair (dotiendat01092005@gmail.com)" <dotiendat01092005@gmail.com>',
+    to: customerEmail,
+    subject: 'Lịch hẹn của bạn đã được duyệt',
+    html: `
     <div style="padding: 32px;">
 
         <div>
@@ -142,17 +139,17 @@ const sendBookingPendingEmail = async (customerEmail, bookingInfo) => {
     </div>
   </div>
 </div>
-`
-    };
+`,
+  };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log("Đã gửi mail thành công cho:", customerEmail);
-        return true;
-    } catch (error) {
-        console.error("Lỗi gửi mail:", error);
-        return false;
-    }
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Đã gửi mail thành công cho:', customerEmail);
+    return true;
+  } catch (error) {
+    console.error('Lỗi gửi mail:', error);
+    return false;
+  }
 };
 
 module.exports = { sendBookingPendingEmail, forgotPasswordEmail };

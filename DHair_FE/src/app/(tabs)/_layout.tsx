@@ -7,7 +7,6 @@ export default function TabLayout() {
   const { user } = useAuth();
 
   return (
-
     <Tabs
       initialRouteName="home"
       screenListeners={({ route }) => ({

@@ -1,30 +1,30 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import "../../assets/css/login.css";
-import { toast } from "react-toastify";
-import TaiKhoanApi from "../../api/taikhoanApi";
-import useCooldown from "../../hooks/useCooldown";
-import LogoForm from "../../components/ui/LogoForm";
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import '../../assets/css/login.css';
+import { toast } from 'react-toastify';
+import TaiKhoanApi from '../../api/taikhoanApi';
+import useCooldown from '../../hooks/useCooldown';
+import LogoForm from '../../components/ui/LogoForm';
 const Forgot = () => {
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const { remainingSeconds, startCooldown } = useCooldown();
 
-  const [isLoading, setIsLoading] = useState(false);//tránh đỏ màn hình khi submit
+  const [isLoading, setIsLoading] = useState(false); //tránh đỏ màn hình khi submit
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading || remainingSeconds > 0) return;
 
     if (!phone || !email) {
-      toast.warn("Vui lòng nhập đầy đủ Số điện thoại và Email!");
+      toast.warn('Vui lòng nhập đầy đủ Số điện thoại và Email!');
       return;
     }
 
     try {
       // Bật trạng thái loading khi bắt đầu gọi API
       setIsLoading(true);
-      const response = await TaiKhoanApi.forgotPassword({sdt: phone, email: email});
+      const response = await TaiKhoanApi.forgotPassword({ sdt: phone, email: email });
 
       if (response.data.success) {
         startCooldown();
@@ -32,13 +32,12 @@ const Forgot = () => {
         //toast.info("Mật khẩu đã được gửi đến email của bạn.");
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-    }finally {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra!');
+    } finally {
       // Tắt trạng thái loading dù thành công hay thất bại
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
-
 
   return (
     <div className="login-page">
@@ -59,7 +58,7 @@ const Forgot = () => {
               maxLength={10}
               placeholder="Nhập số điện thoại của bạn"
               value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+              onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
               required
             />
 
@@ -78,7 +77,11 @@ const Forgot = () => {
 
             {/* tránh spam click*/}
             <button type="submit" id="btn-login" disabled={isLoading || remainingSeconds > 0}>
-              {isLoading ? "ĐANG GỬI EMAIL..." : remainingSeconds > 0 ? `GỬI LẠI SAU ${remainingSeconds}s` : "GỬI YÊU CẦU"}
+              {isLoading
+                ? 'ĐANG GỬI EMAIL...'
+                : remainingSeconds > 0
+                  ? `GỬI LẠI SAU ${remainingSeconds}s`
+                  : 'GỬI YÊU CẦU'}
             </button>
 
             <div className="extra-links">

@@ -13,17 +13,36 @@ export default function Footer() {
     <footer className="dh-shell dh-footer">
       <div className="dh-shell-width">
         <div className="dh-footer-callout">
-          <div><p>DÀNH THỜI GIAN CHO CHÍNH BẠN</p><h2>Sẵn sàng cho một diện mạo mới?</h2></div>
-          <Link className="dh-book-button" to="/datlich">Đặt lịch cùng DHair <FiArrowUpRight aria-hidden="true" /></Link>
+          <div>
+            <p>DÀNH THỜI GIAN CHO CHÍNH BẠN</p>
+            <h2>Sẵn sàng cho một diện mạo mới?</h2>
+          </div>
+          <Link className="dh-book-button" to="/datlich">
+            Đặt lịch cùng DHair <FiArrowUpRight aria-hidden="true" />
+          </Link>
         </div>
         <div className="dh-footer-grid">
           <div className="dh-footer-brand">
-            <Link className="dh-logo" to="/" aria-label="DHair - Trang chủ"><img src="/img/logoDHair_V1.png" alt="DHair" loading="lazy" /></Link>
-            <p>Chăm sóc mái tóc, thể hiện phong cách.<br />Đồng hành cùng bạn trong mỗi lần thay đổi.</p>
+            <Link className="dh-logo" to="/" aria-label="DHair - Trang chủ">
+              <img src="/img/logoDHair_V1.png" alt="DHair" loading="lazy" />
+            </Link>
+            <p>
+              Chăm sóc mái tóc, thể hiện phong cách.
+              <br />
+              Đồng hành cùng bạn trong mỗi lần thay đổi.
+            </p>
             <div className="dh-socials">
-              {socials.map(social => <a key={social.name} href={social.url} target="_blank" rel="noopener noreferrer" aria-label={`${social.name} DHair (mở tab mới)`}>
-                <img src={`/img/social/${social.image}`} alt="" loading="lazy" />
-              </a>)}
+              {socials.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${social.name} DHair (mở tab mới)`}
+                >
+                  <img src={`/img/social/${social.image}`} alt="" loading="lazy" />
+                </a>
+              ))}
             </div>
           </div>
           <nav aria-label="Khám phá DHair">
@@ -42,12 +61,33 @@ export default function Footer() {
           </nav>
           <div className="dh-footer-contact" id="support">
             <h3>Liên hệ & hỗ trợ</h3>
-            <a href="tel:0352512556"><FiPhone aria-hidden="true" /><span>0352 512 556</span></a>
-            <a href="mailto:dotiendat092005@gmail.com"><FiMail aria-hidden="true" /><span>dotiendat092005@gmail.com</span></a>
+            <a href="tel:0352512556">
+              <FiPhone aria-hidden="true" />
+              <span>0352 512 556</span>
+            </a>
+            <a href="mailto:dotiendat092005@gmail.com">
+              <FiMail aria-hidden="true" />
+              <span>dotiendat092005@gmail.com</span>
+            </a>
             <p>Liên hệ để được tư vấn dịch vụ và hỗ trợ lịch hẹn của bạn.</p>
           </div>
         </div>
-        <div className="dh-footer-bottom"><span>© DHair. Chăm sóc tóc, định hình phong cách.</span><button type="button" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })}>Về đầu trang ↑</button></div>
+        <div className="dh-footer-bottom">
+          <span>© DHair. Chăm sóc tóc, định hình phong cách.</span>
+          <button
+            type="button"
+            onClick={() =>
+              window.scrollTo({
+                top: 0,
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                  ? 'auto'
+                  : 'smooth',
+              })
+            }
+          >
+            Về đầu trang ↑
+          </button>
+        </div>
       </div>
     </footer>
   );

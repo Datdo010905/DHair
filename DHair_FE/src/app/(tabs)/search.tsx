@@ -1,5 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ServiceSearchCard from '@/features/services/components/ServiceSearchCard';
 import type { ServiceCategory } from '@/features/services/types';
@@ -13,8 +21,15 @@ const categories: { value: ServiceCategory; label: string }[] = [
 
 export default function SearchScreen() {
   const {
-    results, isLoading, error, reload,
-    query, setQuery, category, setCategory, resetFilters,
+    results,
+    isLoading,
+    error,
+    reload,
+    query,
+    setQuery,
+    category,
+    setCategory,
+    resetFilters,
   } = useServiceSearch();
   const hasFilters = query.trim().length > 0 || category !== 'all';
 
@@ -33,10 +48,17 @@ export default function SearchScreen() {
         <View className="items-center rounded-2xl bg-white px-6 py-10">
           <Ionicons name="cloud-offline-outline" size={36} color="#8496b0" />
           <Text className="mt-4 text-base font-bold text-[#172b4d]">Chưa thể tải dịch vụ</Text>
-          <Text accessibilityRole="alert" className="mt-2 text-center text-sm leading-6 text-[#64748b]">
+          <Text
+            accessibilityRole="alert"
+            className="mt-2 text-center text-sm leading-6 text-[#64748b]"
+          >
             {error}
           </Text>
-          <Pressable accessibilityRole="button" onPress={reload} className="mt-5 rounded-full bg-[#1a3673] px-6 py-3">
+          <Pressable
+            accessibilityRole="button"
+            onPress={reload}
+            className="mt-5 rounded-full bg-[#1a3673] px-6 py-3"
+          >
             <Text className="font-semibold text-white">Thử lại</Text>
           </Pressable>
         </View>
@@ -52,10 +74,16 @@ export default function SearchScreen() {
           {hasFilters ? 'Không tìm thấy dịch vụ' : 'Chưa có dịch vụ'}
         </Text>
         <Text className="mt-2 text-center text-sm leading-6 text-[#64748b]">
-          {hasFilters ? 'Thử tên dịch vụ khác hoặc đổi nhóm dịch vụ nhé.' : 'Các dịch vụ mới sẽ được cập nhật tại đây.'}
+          {hasFilters
+            ? 'Thử tên dịch vụ khác hoặc đổi nhóm dịch vụ nhé.'
+            : 'Các dịch vụ mới sẽ được cập nhật tại đây.'}
         </Text>
         {hasFilters && (
-          <Pressable accessibilityRole="button" onPress={resetFilters} className="mt-5 rounded-full bg-[#1a3673] px-6 py-3">
+          <Pressable
+            accessibilityRole="button"
+            onPress={resetFilters}
+            className="mt-5 rounded-full bg-[#1a3673] px-6 py-3"
+          >
             <Text className="font-semibold text-white">Xóa bộ lọc</Text>
           </Pressable>
         )}
@@ -69,9 +97,13 @@ export default function SearchScreen() {
         <View className="px-5 pb-4 pt-5">
           <View className="mb-5 flex-row items-center justify-between">
             <View className="flex-1 pr-3">
-              <Text className="text-[11px] font-bold uppercase tracking-[3px] text-[#6780a3]">DHAIR SERVICES</Text>
+              <Text className="text-[11px] font-bold uppercase tracking-[3px] text-[#6780a3]">
+                DHAIR SERVICES
+              </Text>
               <Text className="mt-2 text-[28px] font-bold text-[#172b4d]">Tìm dịch vụ</Text>
-              <Text className="mt-1 text-sm leading-5 text-[#64748b]">Một chút chăm sóc, một diện mạo mới.</Text>
+              <Text className="mt-1 text-sm leading-5 text-[#64748b]">
+                Một chút chăm sóc, một diện mạo mới.
+              </Text>
             </View>
             <View className="h-12 w-12 items-center justify-center rounded-2xl bg-[#e8eef9]">
               <Ionicons name="cut-outline" size={25} color="#1a3673" />
@@ -91,7 +123,12 @@ export default function SearchScreen() {
               className="min-h-14 flex-1 px-3 py-3 text-sm text-[#172b4d]"
             />
             {query.length > 0 && (
-              <Pressable accessibilityRole="button" accessibilityLabel="Xóa từ khóa" onPress={() => setQuery('')} className="h-11 w-11 items-center justify-center">
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Xóa từ khóa"
+                onPress={() => setQuery('')}
+                className="h-11 w-11 items-center justify-center"
+              >
                 <Ionicons name="close-circle" size={20} color="#8b99ad" />
               </Pressable>
             )}
@@ -108,7 +145,9 @@ export default function SearchScreen() {
                   onPress={() => setCategory(item.value)}
                   className={`min-h-11 justify-center rounded-full border px-4 py-2 ${isSelected ? 'border-[#1a3673] bg-[#1a3673]' : 'border-[#e1e7f0] bg-white'}`}
                 >
-                  <Text className={`text-xs font-semibold ${isSelected ? 'text-white' : 'text-[#64748b]'}`}>
+                  <Text
+                    className={`text-xs font-semibold ${isSelected ? 'text-white' : 'text-[#64748b]'}`}
+                  >
                     {item.label}
                   </Text>
                 </Pressable>
@@ -133,7 +172,9 @@ export default function SearchScreen() {
                 {hasFilters ? 'Kết quả tìm kiếm' : 'Khám phá dịch vụ'}
               </Text>
               {!isLoading && !error && (
-                <Text accessibilityLiveRegion="polite" className="text-xs text-[#64748b]">{results.length} dịch vụ</Text>
+                <Text accessibilityLiveRegion="polite" className="text-xs text-[#64748b]">
+                  {results.length} dịch vụ
+                </Text>
               )}
             </View>
           }

@@ -4,6 +4,12 @@ const lichHenController = require('../controllers/lichHenController');
 const bookingController = require('../controllers/bookingController');
 const salon = require('../controllers/salonOperationsController');
 const staffSession = [bookingController.requireCustomerSession, salon.requireStaff];
+// Danh mục tĩnh dùng chung; quyền hủy vẫn được kiểm tra ở endpoint ghi dữ liệu.
+router.get(
+  '/cancellation-reasons',
+  bookingController.requireCustomerSession,
+  bookingController.cancellationReasons,
+);
 router.get('/operations/board', ...staffSession, salon.board);
 router.post('/operations/walk-in', ...staffSession, salon.walkIn);
 router.post('/operations/leave', ...staffSession, salon.leave);
@@ -12,7 +18,11 @@ router.post('/operations/:id/extend', ...staffSession, salon.extend);
 router.post('/operations/:id/reschedule', ...staffSession, salon.reschedule);
 router.get('/operations/:id/history', ...staffSession, salon.history);
 router.post('/operations/:id/invoice', ...staffSession, salon.invoice);
-router.get('/admin-list', bookingController.requireCustomerSession, lichHenController.getAdminBookings);
+router.get(
+  '/admin-list',
+  bookingController.requireCustomerSession,
+  lichHenController.getAdminBookings,
+);
 router.get('/history', bookingController.requireCustomerSession, bookingController.history);
 router.post('/:id/cancel', bookingController.requireCustomerSession, bookingController.cancel);
 
@@ -35,7 +45,6 @@ router.get('/get-byId-CTlichhen/:id', lichHenController.getCTByID);
 router.post('/insert-CTlichhen', ...staffSession, lichHenController.createCT);
 router.put('/update-CTlichhen/:id', lichHenController.updateCT);
 router.delete('/delete-CTlichhen/:id', lichHenController.removeCT);
-
 
 router.post('/create-full', bookingController.createFull);
 router.delete('/delete-full/:id', lichHenController.deleteFullBookingTransaction);
