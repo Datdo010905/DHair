@@ -21,6 +21,7 @@ import type { Service } from '@/features/services/types';
 import RequireAuth from '@/features/auth/components/RequireAuth';
 import { getBookingService, saveBookingService } from '@/features/services/bookingServiceStorage';
 import { useAuth } from '@/features/auth/AuthContext';
+import { loginAccount } from '@/features/auth/api';
 import { createBooking, getAvailability, getBookingOptions } from '@/features/booking/api';
 import type { Availability, BookingOptions } from '@/features/booking/api';
 
@@ -104,6 +105,8 @@ function BookingContent() {
   const [note, setNote] = useState('');
   const [validationError, setValidationError] = useState('');
   const [isReviewVisible, setIsReviewVisible] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const selectionVersion = useRef(0);
   const [catalog, setCatalog] = useState<BookingOptions | null>(null);
   const [catalogBranch, setCatalogBranch] = useState<string | null>(null);
@@ -277,6 +280,8 @@ function BookingContent() {
     if (submitLock.current) return;
     setActiveField(null);
     setIsReviewVisible(false);
+    setPassword('');
+    setPasswordError('');
   }
 
   function reloadServices() {
@@ -341,14 +346,35 @@ function BookingContent() {
       setReloadVersion((value) => value + 1);
       return;
     }
+    setPassword('');
+    setPasswordError('');
     setIsReviewVisible(true);
   }
 
   async function submitBooking() {
-    if (submitLock.current || !user || !bookingValues.time) return;
+    if (
+      submitLock.current ||
+      !user ||
+      !bookingValues.time ||
+      timesLoading ||
+      loadedKey !== queryKey
+    )
+      return;
+    if (!password) {
+      setPasswordError('Vui lòng nhập mật khẩu tài khoản để xác nhận.');
+      return;
+    }
     submitLock.current = true;
     setSubmitting(true);
+    setPasswordError('');
+    let passwordVerified = false;
     try {
+      // Giống web: xác minh mật khẩu trước khi tạo lịch, không lưu mật khẩu hoặc đổi phiên.
+      const account = await loginAccount({ phone: user.accountId, password });
+      if (account.accountId !== user.accountId) {
+        throw new Error('Tài khoản xác nhận không khớp với phiên hiện tại.');
+      }
+      passwordVerified = true;
       const result = await createBooking({
         branchId,
         staffId,
@@ -367,14 +393,20 @@ function BookingContent() {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Không thể đặt lịch. Vui lòng thử lại.';
+      if (!passwordVerified) {
+        // Sai mật khẩu vẫn giữ thông tin lịch để người dùng có thể nhập lại.
+        setPasswordError(message);
+        return;
+      }
       setIsReviewVisible(false);
       setValidationError(message);
       setBookingValues((previous) => ({ ...previous, time: undefined }));
       Alert.alert('Chưa xác nhận được lịch hẹn', message);
     } finally {
+      setPassword('');
       submitLock.current = false;
       setSubmitting(false);
-      setReloadVersion((value) => value + 1);
+      if (passwordVerified) setReloadVersion((value) => value + 1);
     }
   }
 
@@ -511,7 +543,10 @@ function BookingContent() {
         animationType="slide"
         onRequestClose={closeModal}
       >
-        <View className="flex-1 justify-end bg-[rgba(12,25,44,0.4)]">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className="flex-1 justify-end bg-[rgba(12,25,44,0.4)]"
+        >
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Đóng bảng chọn"
@@ -557,6 +592,29 @@ function BookingContent() {
                     {availability?.price.toLocaleString('vi-VN') ?? '…'} đ.
                   </Text>
                   {timesLoading && <ActivityIndicator color={NAVY} />}
+                  <Text className="mb-2 text-sm font-semibold text-[#30343a]">
+                    Mật khẩu tài khoản
+                  </Text>
+                  <TextInput
+                    accessibilityLabel="Mật khẩu xác nhận đặt lịch"
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="current-password"
+                    editable={!submitting}
+                    value={password}
+                    onChangeText={(value) => {
+                      setPassword(value);
+                      setPasswordError('');
+                    }}
+                    placeholder="Nhập mật khẩu tài khoản"
+                    className="mb-3 min-h-12 rounded-xl border border-[#e4e8ee] px-4 py-3 text-[#30343a]"
+                  />
+                  {!!passwordError && (
+                    <Text accessibilityRole="alert" className="mb-3 text-sm text-[#b42318]">
+                      {passwordError}
+                    </Text>
+                  )}
                   {!!timesError && (
                     <Pressable accessibilityRole="button" onPress={reloadServices}>
                       <Text className="py-3 text-sm text-[#b42318]">
@@ -574,10 +632,15 @@ function BookingContent() {
                     className="min-h-[50px] items-center justify-center rounded-[30px] bg-[#173c75] px-4"
                     onPress={submitBooking}
                     disabled={
-                      submitting || !bookingValues.time || timesLoading || loadedKey !== queryKey
+                      submitting ||
+                      !password ||
+                      !bookingValues.time ||
+                      timesLoading ||
+                      loadedKey !== queryKey
                     }
                     style={
                       (submitting ||
+                        !password ||
                         !bookingValues.time ||
                         timesLoading ||
                         loadedKey !== queryKey) &&
@@ -642,7 +705,7 @@ function BookingContent() {
               )}
             </ScrollView>
           </SafeAreaView>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

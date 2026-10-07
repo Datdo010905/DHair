@@ -1,16 +1,5 @@
 import axiosClient from './axiosClient';
 
-// export interface DichVu {
-//     madv: string;
-//     loaidv: string;
-//     tendv: string;
-//     mota: string;
-//     thoigian: number;
-//     giadv: number;
-//     trangthai: string;
-//     hinh: string;
-//     quytrinh: string;
-// };
 export interface DichVu {
   MADV: string;
   LOAI: string;
