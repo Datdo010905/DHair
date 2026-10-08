@@ -1,4 +1,5 @@
 import Banner from '@/features/home/components/Banner';
+import CustomerCommitments from '@/features/home/components/CustomerCommitments';
 import HomeHeader from '@/features/home/components/HomeHeader';
 import QuickActions from '@/features/home/components/QuickActions';
 import RatingCard from '@/features/home/components/RatingCard';
@@ -23,6 +24,9 @@ export default function HomeScreen() {
 
         {/* 4. Banner */}
         <Banner />
+
+        {/* Chính sách chăm sóc khách hàng và lối vào đặt lịch, tìm dịch vụ. */}
+        <CustomerCommitments />
 
         {/* 5. Dịch Vụ Tóc */}
         <ServiceSection

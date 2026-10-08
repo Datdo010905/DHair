@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import DataTable, { Column } from '../../components/ui/DataTable';
 import bookingApi, { Booking } from '../../api/bookingApi';
 import hoadonApi, { HoaDon, HoaDonDetails } from '../../api/hoadonApi';
+import axiosClient from '../../api/axiosClient';
 import customerApi, { Customer } from '../../api/customerApi';
 import dichVuApi, { DichVu } from '../../api/dichvuApi';
 import staffApi, { NhanVien } from '../../api/staffApi';
@@ -36,6 +37,8 @@ const HoaDonPage = () => {
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('');
+  const [branchFilter, setBranchFilter] = useState('');
+  const [branches, setBranches] = useState<{ MACHINHANH: string; TENCHINHANH: string | null }[]>([]);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -46,6 +49,19 @@ const HoaDonPage = () => {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const customers = new Map(customerList.map((item) => [item.MAKH?.trim(), item]));
   const staff = new Map(nhanVienList.map((item) => [item.MANV?.trim(), item]));
+  const bookings = new Map(bookingList.map((item) => [item.MALICH.trim(), item]));
+  const branchNames = new Map(branches.map((item) => [item.MACHINHANH.trim(), item.TENCHINHANH]));
+  // Doanh thu thuộc chi nhánh của lịch, không suy ra từ nơi làm việc hiện tại của thu ngân.
+  const invoiceBranch = (invoice: HoaDon) =>
+    bookings.get(invoice.MALICH?.trim())?.MACHINHANH?.trim() || '';
+  const branchLabel = (id: string) => branchNames.get(id) || id || 'Chưa xác định chi nhánh';
+  const branchIds = Array.from(new Set([
+    ...branches.map((item) => item.MACHINHANH.trim()),
+    ...hoadonList.map(invoiceBranch).filter(Boolean),
+  ])).sort();
+  const selectedBranchLabel = branchFilter === 'unknown'
+    ? 'Chưa xác định chi nhánh'
+    : branchFilter ? branchLabel(branchFilter) : 'Tất cả chi nhánh';
   const matchingInvoices = hoadonList
     .filter((hd) => {
       const customer = customers.get(hd.MAKH?.trim());
@@ -68,6 +84,7 @@ const HoaDonPage = () => {
           haystack.includes(term.trim().toLocaleLowerCase('vi')),
         ) &&
         (!paymentFilter || hd.HINHTHUCTHANHTOAN?.trim() === paymentFilter) &&
+        (!branchFilter || (branchFilter === 'unknown' ? !invoiceBranch(hd) : invoiceBranch(hd) === branchFilter)) &&
         (!dateRange.start || day >= dateRange.start) &&
         (!dateRange.end || (!!day && day <= dateRange.end))
       );
@@ -90,7 +107,7 @@ const HoaDonPage = () => {
   const unpaid = filteredHoadonList.filter((row) => row.TRANGTHAI?.trim() === 'Chưa thanh toán');
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, query, statusFilter, paymentFilter, dateRange, pageSize]);
+  }, [searchTerm, query, statusFilter, paymentFilter, branchFilter, dateRange, pageSize]);
   useEffect(() => {
     setPage(currentPage);
   }, [currentPage]);
@@ -107,10 +124,11 @@ const HoaDonPage = () => {
         bookingApi.getAll(),
         KhuyenMaiApi.getAll(),
         dichVuApi.getAllCSD(),
+        axiosClient.get('/api/lichhen/booking-options'),
       ]);
       if (version !== fetchVersion.current) return;
       if (responses.some((res) => !res.data.success)) throw new Error('Không thể tải dữ liệu');
-      const [invoices, employees, clients, hairServices, bookings, promotions, skinServices] =
+      const [invoices, employees, clients, hairServices, bookings, promotions, skinServices, options] =
         responses;
       setHoadonList(invoices.data.data || []);
       setNhanVienList(employees.data.data || []);
@@ -119,6 +137,7 @@ const HoaDonPage = () => {
       setDichVuList([...(hairServices.data.data || []), ...(skinServices.data.data || [])]);
       setBookingList(bookings.data.data || []);
       setKhuyenMaiList(promotions.data.data || []);
+      setBranches(options.data.data.branches || []);
     } catch {
       if (version === fetchVersion.current)
         setError('Không thể tải dữ liệu từ máy chủ. Vui lòng thử lại.');
@@ -596,6 +615,11 @@ const HoaDonPage = () => {
   const hoadonColumns: Column<HoaDon>[] = [
     { tieude: 'Mã hóa đơn', cotnhandulieu: 'MAHD' },
     {
+      tieude: 'Chi nhánh',
+      cotnhandulieu: 'MALICH',
+      render: (row) => branchLabel(invoiceBranch(row)),
+    },
+    {
       tieude: 'Ngày thanh toán',
       cotnhandulieu: 'NGAYTHANHTOAN',
       render(row) {
@@ -715,6 +739,7 @@ const HoaDonPage = () => {
     setQuery('');
     setStatusFilter('');
     setPaymentFilter('');
+    setBranchFilter('');
     setFormDataTK({ start: '', end: '' });
     setDateRange({ start: '', end: '' });
   };
@@ -740,7 +765,7 @@ const HoaDonPage = () => {
             <small>Theo bộ lọc đang áp dụng</small>
           </article>
           <article className="paid">
-            <span>Đã thanh toán</span>
+            <span>Đã thu · {selectedBranchLabel}</span>
             <strong>
               {isLoading || error
                 ? '—'
@@ -779,6 +804,14 @@ const HoaDonPage = () => {
               />
             </label>
             <label>
+              Chi nhánh
+              <select value={branchFilter} onChange={(event) => setBranchFilter(event.target.value)}>
+                <option value="">Tất cả chi nhánh</option>
+                {branchIds.map((id) => <option key={id} value={id}>{branchLabel(id)}</option>)}
+                <option value="unknown">Chưa xác định chi nhánh</option>
+              </select>
+            </label>
+            <label>
               Hình thức thanh toán
               <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)}>
                 <option value="">Tất cả hình thức</option>
@@ -812,8 +845,10 @@ const HoaDonPage = () => {
               </button>
             </div>
             <p className="invoice-filter-note">
+              Chi nhánh: {selectedBranchLabel}.{' '}
               Ngày thanh toán: {dateRange.start || 'Từ đầu'} → {dateRange.end || 'Đến nay'}. Thống
               kê tính trên tất cả kết quả phù hợp, bao gồm các trang khác.
+              {' '}Đã thu chỉ bao gồm hóa đơn đã thanh toán và chịu ảnh hưởng của các bộ lọc đang chọn.
               {searchTerm && ` Tìm kiếm chung: “${searchTerm}”.`}
             </p>
           </div>

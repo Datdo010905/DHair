@@ -3,6 +3,9 @@ const router = express.Router();
 const lichHenController = require('../controllers/lichHenController');
 const bookingController = require('../controllers/bookingController');
 const salon = require('../controllers/salonOperationsController');
+const reviews = require('../controllers/bookingReviewController');
+router.get('/reviews', bookingController.requireCustomerSession, reviews.list);
+router.post('/:id/review', bookingController.requireCustomerSession, reviews.create);
 const staffSession = [bookingController.requireCustomerSession, salon.requireStaff];
 // Danh mục tĩnh dùng chung; quyền hủy vẫn được kiểm tra ở endpoint ghi dữ liệu.
 router.get(

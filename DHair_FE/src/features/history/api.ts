@@ -12,6 +12,7 @@ export const appointmentStatuses = [
 export type AppointmentStatus = (typeof appointmentStatuses)[number];
 
 export interface Appointment {
+  review?: AppointmentReview | null;
   id: string;
   date: string;
   time: string;
@@ -30,6 +31,12 @@ export interface Appointment {
     price: number;
     note: string;
   }[];
+}
+
+export interface AppointmentReview {
+  rating: number;
+  comment: string;
+  createdAt: string;
 }
 
 interface HistoryResponse {
@@ -69,7 +76,7 @@ async function historyRequest<T>(
     if (controller.signal.aborted || error instanceof TypeError || error instanceof SyntaxError) {
       throw new Error(
         body
-          ? 'Chưa xác nhận được kết quả hủy. Vui lòng tải lại danh sách để kiểm tra.'
+          ? 'Chưa xác nhận được kết quả. Vui lòng tải lại danh sách để kiểm tra.'
           : 'Không thể tải lịch hẹn. Vui lòng kiểm tra kết nối và thử lại.',
       );
     }
@@ -82,6 +89,18 @@ async function historyRequest<T>(
 
 export function getHistory(token: string, signal?: AbortSignal) {
   return historyRequest<HistoryResponse>(endpoints.booking.history, token, signal);
+}
+
+export function reviewAppointment(token: string, id: string, rating: number, comment: string) {
+  return historyRequest<AppointmentReview>(
+    `/api/lichhen/${encodeURIComponent(id)}/review`,
+    token,
+    undefined,
+    {
+      rating,
+      comment,
+    },
+  );
 }
 
 export function cancelAppointment(token: string, id: string, reason: string, otherReason: string) {

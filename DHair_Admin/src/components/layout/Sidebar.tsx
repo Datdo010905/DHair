@@ -13,6 +13,7 @@ import {
   FiBriefcase,
   FiLogOut,
   FiX,
+  FiStar,
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 
@@ -39,6 +40,7 @@ const menus = [
     group: 'Điều hành',
   },
   { name: 'Báo cáo', url: '/admin/reports', icon: FiBarChart2, roles: [1, 2], group: 'Điều hành' },
+  { name: 'Phản hồi', url: '/admin/reviews', icon: FiStar, roles: [1, 2], group: 'Điều hành' },
   { name: 'Dịch vụ', url: '/admin/services', icon: FiScissors, roles: [1, 2], group: 'Quản lý' },
   { name: 'Khuyến mại', url: '/admin/promotions', icon: FiTag, roles: [1], group: 'Quản lý' },
   { name: 'Khách hàng', url: '/admin/customers', icon: FiUsers, roles: [1, 2], group: 'Quản lý' },

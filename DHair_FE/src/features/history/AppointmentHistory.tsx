@@ -14,9 +14,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/features/auth/AuthContext';
-import { appointmentStatuses, cancelAppointment, getHistory } from './api';
+import { appointmentStatuses, cancelAppointment, getHistory, reviewAppointment } from './api';
 import type { Appointment, AppointmentStatus } from './api';
 import CancelAppointmentModal from './CancelAppointmentModal';
+import ReviewAppointmentModal from './ReviewAppointmentModal';
 
 type HistoryFilter = 'all' | AppointmentStatus;
 const filters: { value: HistoryFilter; label: string }[] = [
@@ -38,9 +39,11 @@ const statusStyles: Record<
 function AppointmentCard({
   appointment,
   onCancel,
+  onReview,
 }: {
   appointment: Appointment;
   onCancel: () => void;
+  onReview: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const status = statusStyles[appointment.status as AppointmentStatus] || {
@@ -134,6 +137,28 @@ function AppointmentCard({
           <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={15} color="#6780a3" />
         </Pressable>
       </View>
+      {appointment.review ? (
+        <View className="border-t border-[#f0f3f8] bg-[#fffaf0] p-4">
+          <Text className="font-bold text-[#8a5700]">
+            Đánh giá của bạn: {appointment.review.rating}/5 ★
+          </Text>
+          {!!appointment.review.comment && (
+            <Text className="mt-2 text-sm leading-6 text-gray-700">
+              {appointment.review.comment}
+            </Text>
+          )}
+        </View>
+      ) : (
+        appointment.status === 'Hoàn thành' && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onReview}
+            className="min-h-12 items-center justify-center border-t border-[#f0f3f8] p-3"
+          >
+            <Text className="font-semibold text-[#1a3673]">Đánh giá dịch vụ</Text>
+          </Pressable>
+        )
+      )}
       {appointment.status === 'Đã đặt' && (
         <Pressable
           accessibilityRole="button"
@@ -155,6 +180,7 @@ export default function AppointmentHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [reviewing, setReviewing] = useState<Appointment | null>(null);
   const request = useRef<AbortController | null>(null);
   const token = user?.token || '';
 
@@ -168,6 +194,12 @@ export default function AppointmentHistory() {
       const result = await getHistory(token, controller.signal);
       if (controller.signal.aborted) return;
       setAppointments(result.appointments);
+      // Đóng form nếu lần gửi trước đã lưu nhưng phản hồi bị ngắt mạng.
+      setReviewing((previous) => {
+        if (!previous) return null;
+        const latest = result.appointments.find((item) => item.id === previous.id);
+        return latest && !latest.review && latest.status === 'Hoàn thành' ? latest : null;
+      });
       setReasons(result.cancellationReasons);
       setSelectedAppointment((previous) => {
         if (!previous) return null;
@@ -185,6 +217,7 @@ export default function AppointmentHistory() {
     useCallback(() => {
       setAppointments([]);
       setSelectedAppointment(null);
+      setReviewing(null);
       void loadHistory();
       return () => request.current?.abort();
     }, [loadHistory]),
@@ -208,6 +241,25 @@ export default function AppointmentHistory() {
       throw err;
     }
   }
+  async function confirmReview(rating: number, comment: string) {
+    if (!reviewing) return;
+    try {
+      const review = await reviewAppointment(token, reviewing.id, rating, comment);
+      // Chặn dữ liệu tải cũ ghi đè đánh giá vừa gửi thành công.
+      request.current?.abort();
+      setAppointments((previous) =>
+        previous.map((item) => (item.id === reviewing.id ? { ...item, review } : item)),
+      );
+      setReviewing(null);
+      Alert.alert('Cảm ơn bạn', 'Đánh giá đã được gửi đến quản lý salon.');
+      void loadHistory();
+    } catch (err) {
+      // Nếu mạng ngắt sau khi đã lưu, tải lại để khách nhìn thấy kết quả thực tế.
+      void loadHistory();
+      throw err;
+    }
+  }
+
   const [filter, setFilter] = useState<HistoryFilter>('all');
   const filteredAppointments = appointments.filter(
     (appointment) => filter === 'all' || appointment.status === filter,
@@ -262,7 +314,11 @@ export default function AppointmentHistory() {
           data={filteredAppointments}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <AppointmentCard appointment={item} onCancel={() => setSelectedAppointment(item)} />
+            <AppointmentCard
+              appointment={item}
+              onCancel={() => setSelectedAppointment(item)}
+              onReview={() => setReviewing(item)}
+            />
           )}
           refreshing={loading}
           onRefresh={() => void loadHistory()}
@@ -316,6 +372,14 @@ export default function AppointmentHistory() {
             </Pressable>
           }
         />
+        {reviewing && (
+          <ReviewAppointmentModal
+            key={reviewing.id}
+            appointment={reviewing}
+            onClose={() => setReviewing(null)}
+            onConfirm={confirmReview}
+          />
+        )}
         {selectedAppointment && (
           <CancelAppointmentModal
             key={selectedAppointment.id}

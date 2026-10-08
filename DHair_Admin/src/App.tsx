@@ -37,6 +37,7 @@ import StaffPage from './pages/admin/StaffPage';
 import BookingPage from './pages/admin/BookingPage';
 import HoaDonPage from './pages/admin/HoaDonPage';
 import ReportPage from './pages/admin/ReportPage';
+import ReviewsPage from './pages/admin/ReviewsPage';
 
 //check auth
 import PrivateRoute from './components/ui/PrivateRoute';
@@ -89,6 +90,7 @@ class App extends React.Component<any, any> {
               <Route path="customers" element={<CustomerPage />} />
               <Route path="staff" element={<StaffPage />} />
               <Route path="reports" element={<ReportPage />} />
+              <Route path="reviews" element={<ReviewsPage />} />
             </Route>
 
             <Route element={<PrivateRoute allowedRoles={[1, 2, 3, 5]} />}>
