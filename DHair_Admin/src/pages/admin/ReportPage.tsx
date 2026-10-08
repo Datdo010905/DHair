@@ -34,6 +34,10 @@ const ReportPage = () => {
   const [DichVuList, setDichVuList] = useState<DichVu[]>([]);
 
   const [TopNV, setTopNV] = useState<TopStaffData[]>([]);
+  const [staffBookings, setStaffBookings] = useState<Booking[]>([]);
+  const [staffDateForm, setStaffDateForm] = useState({ start: '', end: '' });
+  const [staffDateRange, setStaffDateRange] = useState({ start: '', end: '' });
+  const [staffDateError, setStaffDateError] = useState('');
   const [TopDV, setTopDV] = useState<TopDVData[]>([]);
 
   const [lichTC, setLTC] = useState(0);
@@ -52,6 +56,8 @@ const ReportPage = () => {
     if (resBooking.data.success) {
       //setTotalLichHen(resBooking.data.data.length);
       setbookingList(resBooking.data.data);
+      // Giữ nguồn lịch đầy đủ cho bộ lọc riêng của bảng nhân viên.
+      setStaffBookings(resBooking.data.data);
     }
     if (resHD.data.success) {
       //setTotalHoaDon(resHD.data.data.length);
@@ -87,25 +93,35 @@ const ReportPage = () => {
     //lấy nhân viên xuất hiện nhiều nhất trong các lịch hẹn
     const gettopNV = () => {
       //tạo mảng
-      const countNV: Record<string, number> = {};
+      const staffBookingIds: Record<string, Set<string>> = {};
       const completedBookings = new Set(
-        bookingList
-          .filter((row) => row.TRANGTHAI?.trim() === 'Hoàn thành')
+        staffBookings
+          .filter((row) => {
+            // NGAYHEN là ngày hẹn, giữ phần YYYY-MM-DD để không lệch múi giờ.
+            const date = row.NGAYHEN.slice(0, 10);
+            return (
+              row.TRANGTHAI?.trim() === 'Hoàn thành' &&
+              (!staffDateRange.start || date >= staffDateRange.start) &&
+              (!staffDateRange.end || date <= staffDateRange.end)
+            );
+          })
           .map((row) => row.MALICH.trim()),
       );
       bookingDetailsList
         .filter((row) => completedBookings.has(row.MALICH.trim()))
         .forEach((lh) => {
-          //check true tránh underfined
-          if (lh.MANV?.trim()) {
-            countNV[lh.MANV.trim()] = (countNV[lh.MANV.trim()] || 0) + 1; //tìm nv nếu chưa có thì = 0, có thì + 1
+          const staffId = lh.MANV?.trim();
+          if (staffId) {
+            // Một nhân viên làm nhiều dịch vụ trong cùng lịch chỉ được tính một lượt.
+            if (!staffBookingIds[staffId]) staffBookingIds[staffId] = new Set();
+            staffBookingIds[staffId].add(lh.MALICH.trim());
           }
         });
       //chuyển về ob cho dễ nhìn
-      const sortNhanVien = Object.entries(countNV)
-        .map(([manv, count]) => ({ manv, count }))
+      const sortNhanVien = Object.entries(staffBookingIds)
+        .map(([manv, bookings]) => ({ manv, count: bookings.size }))
         //Sắp xếp giảm dần
-        .sort((a, b) => b.count - a.count)
+        .sort((a, b) => b.count - a.count || a.manv.localeCompare(b.manv))
         //lấy Top 5 nhân viên xuất sắc nhất
         .slice(0, 5);
       //return sortNhanVien;
@@ -171,7 +187,7 @@ const ReportPage = () => {
     checkOK();
     gettopNV();
     gettopDV();
-  }, [bookingList, HoaDonList, bookingDetailsList, NhanVienList, DichVuList, hoadonDetailsList]);
+  }, [bookingList, HoaDonList, bookingDetailsList, NhanVienList, DichVuList, hoadonDetailsList, staffBookings, staffDateRange]);
 
   //CHẠY KHI ĐC MOUNT
   useEffect(() => {
@@ -328,10 +344,32 @@ const ReportPage = () => {
       STT: index + 1,
       'Tên Nhân Viên': item.hoten,
       'Số Lịch Hẹn': item.solich,
+      'Từ ngày': staffDateRange.start || 'Tất cả',
+      'Đến ngày': staffDateRange.end || 'Tất cả',
     }));
 
     exportToExcel(dataExport, 'Bao_Cao_Nhan_Vien_Xuat_Sac', 'NhanVien');
   };
+
+  function applyStaffDateRange(event: React.FormEvent) {
+    event.preventDefault();
+    if (!staffDateForm.start || !staffDateForm.end) {
+      setStaffDateError('Vui lòng chọn đủ ngày bắt đầu và ngày kết thúc.');
+      return;
+    }
+    if (staffDateForm.start > staffDateForm.end) {
+      setStaffDateError('Ngày bắt đầu không được sau ngày kết thúc.');
+      return;
+    }
+    setStaffDateError('');
+    setStaffDateRange({ ...staffDateForm });
+  }
+
+  function resetStaffDateRange() {
+    setStaffDateForm({ start: '', end: '' });
+    setStaffDateRange({ start: '', end: '' });
+    setStaffDateError('');
+  }
 
   const getChiNhanhName = (branchCode: string) => {
     switch (branchCode) {
@@ -652,8 +690,49 @@ const ReportPage = () => {
               <i className="fas fa-download"></i> Xuất Excel
             </button>
           </div>
+          <form className="reportDate-form" onSubmit={applyStaffDateRange}>
+            <div className="form-group reportDate">
+              <label htmlFor="staff-start">Từ ngày:</label>
+              <input
+                id="staff-start"
+                type="date"
+                value={staffDateForm.start}
+                onChange={(event) => setStaffDateForm({ ...staffDateForm, start: event.target.value })}
+              />
+            </div>
+            <div className="form-group reportDate">
+              <label htmlFor="staff-end">Đến ngày:</label>
+              <input
+                id="staff-end"
+                type="date"
+                value={staffDateForm.end}
+                onChange={(event) => setStaffDateForm({ ...staffDateForm, end: event.target.value })}
+              />
+            </div>
+            <button type="submit" className="ba-button ba-primary">Xem thống kê nhân viên</button>
+            <button type="button" className="ba-button" onClick={resetStaffDateRange}>Tất cả ngày</button>
+          </form>
+          {staffDateError && <p role="alert" style={{ color: '#b42318' }}>{staffDateError}</p>}
+          <div className="staff-ranking-summary" aria-live="polite">
+            <div className="staff-ranking-summary-heading">
+              <span className="staff-ranking-summary-label">Thống kê theo ngày hẹn</span>
+              <span className="staff-ranking-date">
+                <i className="fas fa-calendar-alt" aria-hidden="true" />
+                {staffDateRange.start ? (
+                  <span>
+                    {staffDateRange.start.split('-').reverse().join('/')}
+                    {staffDateRange.start !== staffDateRange.end &&
+                      ` – ${staffDateRange.end.split('-').reverse().join('/')}`}
+                  </span>
+                ) : 'Tất cả ngày'}
+              </span>
+            </div>
+            <p className="staff-ranking-summary-note">
+              Top 5 theo số lịch hoàn thành · Mỗi lịch chỉ tính một lần cho mỗi nhân viên.
+            </p>
+          </div>
           <AdminList<TopStaffData>
-            title="Nhân viên có nhiều lịch hẹn"
+            title="Nhân viên có nhiều lịch hoàn thành"
             columns={staffColumns}
             data={TopNV}
             rowKey="manv"

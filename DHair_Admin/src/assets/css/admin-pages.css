@@ -209,3 +209,44 @@
   background: var(--status-bg);
   border: 1px solid var(--status-border);
 }
+.admin-page .staff-ranking-summary {
+  margin: 16px 0;
+  padding: 14px 18px;
+  border: 1px solid #dce5f3;
+  border-left: 3px solid #173691;
+  border-radius: 12px;
+  background: #f5f8fd;
+}
+
+.admin-page .staff-ranking-summary-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.admin-page .staff-ranking-summary-label {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-page .staff-ranking-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #e8eefb;
+  color: #173691;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-page .staff-ranking-summary-note {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}

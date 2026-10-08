@@ -1,0 +1,122 @@
+.reviews-admin .reviews-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.reviews-admin .reviews-summary article {
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px;
+  border: 1px solid #dce4ef;
+  border-radius: 13px;
+  background: #fff;
+  color: #64748b;
+}
+
+.reviews-admin .reviews-summary article:first-child {
+  background: #173691;
+  border-color: #173691;
+  color: #dce6ff;
+  box-shadow: 0 5px 15px #17369120;
+}
+
+.reviews-admin .reviews-summary span {
+  font-size: 12px;
+  font-weight: 600;
+}
+.reviews-admin .reviews-summary i {
+  margin-right: 6px;
+}
+.reviews-admin .reviews-summary strong {
+  color: #233955;
+  font-size: 26px;
+}
+.reviews-admin .reviews-summary article:first-child strong {
+  color: #fff;
+}
+.reviews-admin .reviews-summary small {
+  font-size: 12px;
+}
+.reviews-admin .reviews-filter-note,
+.reviews-admin .reviews-filter-error {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.reviews-admin .reviews-filter-note {
+  color: #64748b;
+}
+.reviews-admin .reviews-filter-error {
+  color: #b42318;
+}
+.reviews-admin .reviews-table {
+  min-width: 960px;
+}
+.reviews-admin .reviews-comment-preview {
+  margin: 0;
+  max-width: 320px;
+  min-width: 160px;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.reviews-admin .reviews-date {
+  white-space: nowrap;
+}
+.reviews-admin .reviews-detail {
+  display: grid;
+  gap: 18px;
+  color: #475569;
+  font-size: 14px;
+}
+.reviews-admin .reviews-detail p {
+  margin: 0;
+  line-height: 1.7;
+}
+.reviews-admin .reviews-detail h4 {
+  margin: 0 0 6px;
+  color: #233955;
+}
+.reviews-admin .reviews-detail-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.reviews-admin .reviews-full-comment {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #f7f9fc;
+  border-radius: 10px;
+  padding: 16px;
+}
+.reviews-admin .reviews-booking {
+  border: 1px solid #dce4ef;
+  border-radius: 10px;
+  padding: 16px;
+}
+.reviews-admin .reviews-service {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #edf1f6;
+}
+.reviews-admin .reviews-service span {
+  color: #64748b;
+  font-size: 13px;
+}
+@media (max-width: 640px) {
+  .reviews-admin .reviews-summary {
+    grid-template-columns: 1fr;
+  }
+  .reviews-admin .reviews-detail-heading {
+    flex-wrap: wrap;
+  }
+}

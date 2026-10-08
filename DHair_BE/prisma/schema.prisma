@@ -121,12 +121,23 @@ model LICHHEN {
   LYDOHUY String? @db.VarChar(200)
   HANGDOI HANGDOI?
   LICHSU LICHSULICH[]
+  DANHGIA DANHGIALICH?
 
   CHITIETLICHHEN CHITIETLICHHEN[]
   HOADON         HOADON[]
 
   CHINHANH  CHINHANH?  @relation(fields: [MACHINHANH], references: [MACHINHANH], onDelete: NoAction, onUpdate: NoAction)
   KHACHHANG KHACHHANG? @relation(fields: [MAKH], references: [MAKH], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model DANHGIALICH {
+  MALICH String @id @db.Char(20)
+  SOSAO Int
+  NHANXET String @db.VarChar(500)
+  TAOLUC DateTime @default(now()) @db.DateTime(3)
+  LICHHEN LICHHEN @relation(fields: [MALICH], references: [MALICH], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([TAOLUC])
 }
 
 model NHANVIEN {

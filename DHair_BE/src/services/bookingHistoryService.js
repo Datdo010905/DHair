@@ -1,5 +1,6 @@
 // Lịch sử của đúng khách hàng và hủy lịch có lý do; danh sách lý do dùng chung các giao diện.
 const { bookingError } = require('./bookingAvailability');
+const { formatReview } = require('./bookingReviewService');
 
 const cancellationReasons = [
   'Bận việc đột xuất',
@@ -11,6 +12,7 @@ const cancellationReasons = [
 ];
 
 const historyInclude = {
+  DANHGIA: true,
   CHINHANH: { select: { TENCHINHANH: true, DIACHI: true } },
   CHITIETLICHHEN: {
     include: {
@@ -59,6 +61,7 @@ function formatAppointment(booking) {
     duration: details.reduce((sum, detail) => sum + detail.duration, 0),
     price: details.reduce((sum, detail) => sum + detail.price, 0),
     details,
+    review: booking.DANHGIA ? formatReview(booking.DANHGIA) : null,
   };
 }
 
