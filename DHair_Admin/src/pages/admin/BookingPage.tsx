@@ -15,6 +15,7 @@ import dichVuApi, { DichVu } from '../../api/dichvuApi';
 import '../../assets/css/booking-admin.css';
 
 const statuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ', 'Đã đến'];
+// Các bước chuyển trạng thái để hiển thị trên form; backend kiểm tra lại khi lưu.
 const transitions: Record<string, string[]> = {
   'Đã đặt': ['Đang chờ', 'Đã đến', 'Đã huỷ'],
   'Đang chờ': ['Đã đến', 'Đang thực hiện', 'Đã huỷ'],
@@ -225,15 +226,18 @@ export default function BookingPage() {
     return () => controller.abort();
   }, [action, form.branchId, form.staffId, form.serviceId, form.date, form.quantity]);
 
+  // Đổi bộ lọc luôn quay về trang đầu để tránh giữ trang không còn dữ liệu.
   function filter(values: Partial<AdminBookingQuery>) {
     setQuery((previous) => ({ ...previous, ...values, page: 1 }));
   }
+  // Chuyển giữa 5 ngày đặt lịch và tra cứu lịch sử, lấy ngày hiện tại từ server.
   function changeMode(mode: 'days' | 'archive') {
     setRangeError('');
     const today = result?.today || '';
     setRange({ start: today, end: today });
     filter({ mode, start: mode === 'days' ? '' : today, end: mode === 'days' ? '' : today });
   }
+  // Chỉ gửi bộ lọc khoảng ngày sau khi người dùng nhập đủ và đúng thứ tự.
   function applyRange(event: React.FormEvent) {
     event.preventDefault();
     if (!range.start || !range.end || range.start > range.end) {
@@ -243,10 +247,12 @@ export default function BookingPage() {
     setRangeError('');
     filter(range);
   }
+  // Xóa tìm kiếm và bộ lọc phụ, giữ nguyên chế độ xem cùng khoảng ngày.
   function clearFilters() {
     setSearchTerm('');
     filter({ status: '', branchId: '', staffId: '', search: '' });
   }
+  // Khởi tạo modal từ dòng được chọn; xóa dữ liệu cũ và gợi ý trạng thái kế tiếp.
   function openAction(next: Action, row: AdminBooking | null = null) {
     setSelectedReason('');
     setSelected(row);
@@ -266,9 +272,11 @@ export default function BookingPage() {
     });
     setAction(next);
   }
+  // Giữ modal mở khi đang gửi yêu cầu để người dùng theo dõi kết quả lưu.
   function closeModal() {
     if (!saveLock.current) setAction(null);
   }
+  // Khi đổi chi nhánh, bỏ stylist và giờ cũ vì chúng có thể không còn phù hợp.
   function changeForm(
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) {
@@ -279,6 +287,11 @@ export default function BookingPage() {
       ...(name === 'branchId' ? { staffId: '', time: '' } : {}),
     }));
   }
+  /**
+   * Xử lý tạo lịch kèm dịch vụ, thêm dịch vụ, đổi trạng thái hoặc xóa lịch.
+   * Kiểm tra form theo từng thao tác và khóa gửi lặp; thành công thì tải lại danh sách.
+   * Backend vẫn xác thực quyền, trạng thái và giờ trống tại thời điểm ghi dữ liệu.
+   */
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (saveLock.current) return;

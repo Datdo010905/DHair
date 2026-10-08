@@ -20,27 +20,32 @@ const include = {
   HANGDOI: true,
 };
 const id = (prefix) => prefix + randomUUID().replace(/-/g, '').slice(0, 18);
+// Chuẩn hóa chuỗi bắt buộc trước khi dùng làm mã hoặc nội dung ghi nhận.
 function required(value, label, max = 20) {
   if (typeof value !== 'string' || !value.trim() || value.trim().length > max)
     throw bookingError(`${label} không hợp lệ.`);
   return value.trim();
 }
+// Số lượng dịch vụ phải là số nguyên trong giới hạn 1–20.
 function quantity(value = 1) {
   const number = Number(value);
   if (!Number.isInteger(number) || number < 1 || number > 20)
     throw bookingError('Số lượng từ 1 đến 20.');
   return number;
 }
+// Ghi người thao tác và nội dung thay đổi trong cùng transaction với lịch hẹn.
 async function log(tx, bookingId, actor, content) {
   await tx.lICHSULICH.create({
     data: { ID: id('LS'), MALICH: bookingId, NGUOISUA: actor, NOIDUNG: content },
   });
 }
+// Khóa dòng chi nhánh đến hết transaction để tuần tự hóa các thao tác cùng dùng khóa này.
 async function lockBranch(tx, branchId) {
   const rows =
     await tx.$queryRaw`SELECT MACHINHANH FROM CHINHANH WHERE MACHINHANH = ${branchId} FOR UPDATE`;
   if (!rows.length) throw bookingError('Không tìm thấy chi nhánh.', 404);
 }
+// Chỉ chấp nhận nhân viên có chức vụ stylist thuộc chi nhánh đang điều phối.
 async function staff(tx, staffId, branchId) {
   const result = await tx.nHANVIEN.findUnique({ where: { MANV: required(staffId, 'Stylist') } });
   if (
@@ -52,6 +57,7 @@ async function staff(tx, staffId, branchId) {
   }
   return result;
 }
+// Dịch vụ được chọn phải còn cung cấp và có thời lượng, giá hợp lệ.
 async function service(tx, serviceId) {
   const result = await tx.dICHVU.findUnique({ where: { MADV: required(serviceId, 'Dịch vụ') } });
   if (
@@ -65,6 +71,11 @@ async function service(tx, serviceId) {
   return result;
 }
 
+/**
+ * Tìm lịch và khoảng nghỉ chiếm thời gian của các stylist trong [start, end).
+ * Bỏ lịch đang sửa, lịch đã kết thúc/hủy và khách còn trong hàng đợi.
+ * Khoảng nghỉ bao gồm 30 phút đệm; kết quả dùng để chặn thao tác hoặc trả cảnh báo.
+ */
 async function conflicts(tx, branchId, staffIds, start, end, excludeId, now) {
   const bookings = await tx.lICHHEN.findMany({
     where: {
@@ -90,6 +101,7 @@ async function conflicts(tx, branchId, staffIds, start, end, excludeId, now) {
     leaves.map((item) => ({ id: item.ID, type: 'leave', customer: 'Nhân viên nghỉ' })),
   );
 }
+// Trả lỗi 409 kèm danh sách xung đột để giao diện hướng dẫn đổi giờ hoặc stylist.
 function rejectConflicts(items) {
   if (items.length)
     throw Object.assign(
@@ -241,6 +253,11 @@ async function walkIn(db, input, actor, now = new Date()) {
   );
 }
 
+/**
+ * Điều khiển hàng đợi của khách đã đến: join (xếp hàng), call (gọi khách),
+ * assign (giao toàn bộ dịch vụ cho stylist và bắt đầu), leave (rời hàng và hủy lịch).
+ * Khi nhận phục vụ phải kiểm tra lại giờ mở cửa và xung đột trong transaction.
+ */
 async function queueAction(db, bookingId, input, actor, now = new Date()) {
   return mutate(db, bookingId, actor, async (tx, booking) => {
     if (booking.TRANGTHAI !== 'Đã đến')
@@ -295,6 +312,10 @@ async function queueAction(db, bookingId, input, actor, now = new Date()) {
   });
 }
 
+/**
+ * Thêm dịch vụ phát sinh, chốt giá/thời lượng và tính lại giờ kết thúc dự kiến.
+ * Khách còn trong hàng đợi chưa giữ khung giờ; các lịch khác phải kiểm tra trùng lịch.
+ */
 async function addService(db, bookingId, input, actor, now = new Date()) {
   return mutate(db, bookingId, actor, async (tx, booking) => {
     const selected = await service(tx, input.serviceId);
@@ -343,6 +364,7 @@ async function addService(db, bookingId, input, actor, now = new Date()) {
   });
 }
 
+// Cộng 1–240 phút từ mốc muộn hơn giữa giờ kết thúc dự kiến và hiện tại; trả lịch bị ảnh hưởng.
 async function extend(db, bookingId, input, actor, now = new Date()) {
   return mutate(db, bookingId, actor, async (tx, booking) => {
     if (booking.TRANGTHAI !== 'Đang thực hiện')
@@ -399,6 +421,10 @@ async function reschedule(db, bookingId, input, actor, now = new Date()) {
   });
 }
 
+/**
+ * Ghi khoảng nghỉ của stylist và tính thêm 30 phút đệm trước khi nhận khách lại.
+ * Chặn nghỉ trùng nghỉ; nếu ảnh hưởng lịch hẹn thì vẫn lưu, ghi nhật ký và trả cảnh báo.
+ */
 async function addLeave(db, input, actor, now = new Date()) {
   const branchId = required(input.branchId, 'Chi nhánh');
   // UI gửi ISO có offset; không diễn giải datetime-local theo múi giờ máy chủ.
@@ -446,6 +472,11 @@ async function addLeave(db, input, actor, now = new Date()) {
   );
 }
 
+/**
+ * Tổng hợp bảng điều phối theo chi nhánh: lịch chưa kết thúc, hàng đợi theo giờ vào,
+ * stylist có thể nhận từng khách, lịch nghỉ và cảnh báo quá giờ/trùng lịch.
+ * Danh sách stylist rảnh chỉ phản ánh lúc đọc; thao tác nhận khách sẽ kiểm tra lại.
+ */
 async function board(db, branchId, now = new Date()) {
   const branch = required(branchId, 'Chi nhánh');
   const bookings = await db.lICHHEN.findMany({
@@ -533,6 +564,10 @@ async function board(db, branchId, now = new Date()) {
   };
 }
 
+/**
+ * Lập hóa đơn chưa thanh toán từ giá đã chốt của các dịch vụ khi lịch hoàn thành.
+ * Khóa lịch và trả lại hóa đơn chưa hủy nếu đã có để tránh tạo trùng khi bấm nhiều lần.
+ */
 async function draftInvoice(db, bookingId, actor) {
   return db.$transaction(
     async (tx) => {
