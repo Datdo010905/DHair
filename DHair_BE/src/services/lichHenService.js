@@ -12,6 +12,7 @@ const getLichHenByIDKH = async (ma) =>
     orderBy: [{ NGAYHEN: 'desc' }, { GIOHEN: 'desc' }],
   });
 
+// Đầu vào là mã tài khoản: tìm MANV rồi lấy lịch và chỉ các chi tiết giao cho nhân viên đó.
 const getLichHenTheoNhanVien = async (matk) => {
   const cleanMatk = matk.trim();
 
@@ -50,6 +51,7 @@ const getLichHenTheoNhanVien = async (matk) => {
   });
 };
 
+// Tạo phần thông tin chung; chấp nhận tên trường hoa/thường và lưu giờ hẹn vào cột TIME.
 const createLichHen = async (model) => {
   const gioGoc = model.GIOHEN || model.giohen;
 
@@ -69,6 +71,7 @@ const createLichHen = async (model) => {
     },
   });
 };
+// Kiểm tra bước chuyển và cập nhật có điều kiện theo trạng thái đã đọc để phát hiện ghi đè.
 const updateTrangThai = async (ma, trangthai) => {
   const booking = await prisma.lICHHEN.findUnique({ where: { MALICH: ma } });
   if (!booking) throw Object.assign(new Error('Không tìm thấy lịch hẹn.'), { status: 404 });
@@ -97,6 +100,7 @@ const updateTrangThai = async (ma, trangthai) => {
 
 const deleteLichHen = async (ma) => await prisma.lICHHEN.delete({ where: { MALICH: ma } });
 
+// Lọc NGAYHEN trong khoảng ngày, bao gồm cả ngày kết thúc, sắp lịch mới nhất trước.
 const getLichHenTheoNgay = async (ngaybd, ngaykt) => {
   const start = new Date(ngaybd);
   const end = new Date(ngaykt);
@@ -125,6 +129,7 @@ const getCTByID = async (ma) => {
   return await prisma.cHITIETLICHHEN.findMany({ where: { MALICH: ma } });
 };
 
+// Lưu một dòng dịch vụ và stylist của lịch, chuyển số lượng/giá sang kiểu số.
 const createCT = async (model) => {
   return await prisma.cHITIETLICHHEN.create({
     data: {
@@ -137,6 +142,7 @@ const createCT = async (model) => {
     },
   });
 };
+// Mã truyền vào là MALICH nên ghi chú được cập nhật cho toàn bộ dịch vụ thuộc lịch.
 const updateCT = async (ma, ghichu) => {
   return await prisma.cHITIETLICHHEN.updateMany({
     where: { MALICH: ma },
@@ -153,6 +159,7 @@ const deleteCT = async (ma) => {
 const { getDateWindow, bookingError } = require('./bookingAvailability');
 const adminStatuses = ['Đã đặt', 'Đang chờ', 'Đang thực hiện', 'Hoàn thành', 'Đã huỷ', 'Đã đến'];
 
+// Chỉ nhận YYYY-MM-DD tồn tại thực tế, tránh Date tự chuyển ngày không hợp lệ sang tháng sau.
 function parseAdminDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value))
     throw bookingError('Ngày không hợp lệ.');
@@ -162,6 +169,11 @@ function parseAdminDate(value) {
   return date;
 }
 
+/**
+ * Truy vấn lịch cho trang quản trị theo quyền, ngày, trạng thái, chi nhánh và từ khóa.
+ * Stylist chỉ xem lịch có phần việc của mình; chế độ days giới hạn trong 5 ngày đặt lịch.
+ * Trả danh sách phân trang, bộ đếm và danh mục trong cùng transaction RepeatableRead.
+ */
 async function getAdminBookings(input, auth, db = prisma, now = new Date()) {
   if (!auth || ![1, 2, 3, 4, 5].includes(auth.role))
     throw bookingError('Không có quyền xem lịch hẹn.', 403);

@@ -113,6 +113,7 @@ const blank = {
   minutes: '15',
   queue: false,
 };
+// Điền sẵn mã lịch, ngày, giờ và stylist đầu tiên khi mở chức năng đổi lịch.
 function bookingForm(booking?: AdminBooking) {
   if (!booking) return { ...blank };
   return {
@@ -140,37 +141,37 @@ const operationButtons: {
   label: string;
   description: string;
 }[] = [
-  {
-    action: 'walk-in',
-    icon: 'plus',
-    label: 'Nhận khách trực tiếp',
-    description: 'Tiếp nhận khách chưa đặt lịch',
-  },
-  {
-    action: 'join',
-    icon: 'queue',
-    label: 'Đưa vào hàng đợi',
-    description: 'Xếp lượt cho khách đã đến',
-  },
-  {
-    action: 'reschedule',
-    icon: 'swap',
-    label: 'Đổi giờ / stylist',
-    description: 'Sắp xếp lại lịch phục vụ',
-  },
-  {
-    action: 'extend',
-    icon: 'clock',
-    label: 'Thêm thời gian',
-    description: 'Cập nhật lượt đang thực hiện',
-  },
-  {
-    action: 'leave',
-    icon: 'calendar',
-    label: 'Nhân viên nghỉ',
-    description: 'Ghi nhận khoảng nghỉ và đệm',
-  },
-];
+    {
+      action: 'walk-in',
+      icon: 'plus',
+      label: 'Nhận khách trực tiếp',
+      description: 'Tiếp nhận khách chưa đặt lịch',
+    },
+    {
+      action: 'join',
+      icon: 'queue',
+      label: 'Đưa vào hàng đợi',
+      description: 'Xếp lượt cho khách đã đến',
+    },
+    {
+      action: 'reschedule',
+      icon: 'swap',
+      label: 'Đổi giờ / stylist',
+      description: 'Sắp xếp lại lịch phục vụ',
+    },
+    {
+      action: 'extend',
+      icon: 'clock',
+      label: 'Thêm thời gian',
+      description: 'Cập nhật lượt đang thực hiện',
+    },
+    {
+      action: 'leave',
+      icon: 'calendar',
+      label: 'Nhân viên nghỉ',
+      description: 'Ghi nhận khoảng nghỉ và đệm',
+    },
+  ];
 
 export default function SalonOperationsPanel({
   branches,
@@ -205,10 +206,12 @@ export default function SalonOperationsPanel({
     if (!branchId && branches.length) setBranchId(branches[0].MACHINHANH.trim());
   }, [branches, branchId]);
   useEffect(() => {
+    // Làm mới bảng mỗi 30 giây để cập nhật hàng đợi và cảnh báo thời gian.
     const timer = setInterval(() => setTick((value) => value + 1), 30000);
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
+    // Hủy yêu cầu cũ khi đổi chi nhánh hoặc tải lại, tránh hiển thị kết quả lỗi thời.
     if (!branchId) return;
     const controller = new AbortController();
     axiosClient
@@ -240,6 +243,32 @@ export default function SalonOperationsPanel({
     };
   }, [action]);
 
+  useEffect(() => {
+    if (!board) return;
+
+    setQueueStaff((previous) => {
+      const next: Record<string, string> = {};
+
+      for (const item of board.queue) {
+        const savedId = item.CHITIETLICHHEN[0]?.MANV?.trim() || '';
+        const selectedId = previous[item.MALICH];
+
+        const isAvailable = (id?: string) =>
+          !!id && item.available.some((staff) => staff.MANV === id);
+
+        // Giữ lựa chọn hiện tại nếu còn rảnh.
+        // Nếu chưa chọn hoặc thợ đã bận, thử dùng stylist lưu trong lịch.
+        next[item.MALICH] = isAvailable(selectedId)
+          ? selectedId
+          : isAvailable(savedId)
+            ? savedId
+            : '';
+      }
+
+      return next;
+    });
+  }, [board]);
+  // Mở form theo thao tác; chỉ đổi lịch mới cần điền lại thông tin lịch hiện có.
   function open(next: Action, bookingId = '') {
     const selected = board?.bookings.find((item) => item.MALICH === bookingId);
     setForm(next === 'reschedule' ? bookingForm(selected) : { ...blank, bookingId });
@@ -248,6 +277,7 @@ export default function SalonOperationsPanel({
   }
   // Dùng cùng khóa cho nút gọi khách và nút lưu để chặn bấm lặp trên màn hình.
   // Backend vẫn kiểm tra lại trong transaction khi nhiều lễ tân thao tác.
+  // Gửi lệnh điều phối, hiển thị lịch bị ảnh hưởng và làm mới cả bảng lẫn trang lịch.
   async function execute(path: string, body: object, close = false) {
     if (lock.current) return;
     lock.current = true;
@@ -272,6 +302,7 @@ export default function SalonOperationsPanel({
       setSaving(false);
     }
   }
+  // Chọn API theo form; giờ nghỉ được gửi kèm +07:00 để server hiểu đúng giờ Việt Nam.
   function submit(event: React.FormEvent) {
     event.preventDefault();
     if (action === 'walk-in') return execute('/walk-in', { ...form, branchId }, true);
@@ -290,6 +321,7 @@ export default function SalonOperationsPanel({
     if (action === 'join') return execute(`/${form.bookingId}/queue`, { action: 'join' }, true);
     if (action) return execute(`/${form.bookingId}/${action}`, form, true);
   }
+  // Giới hạn lựa chọn: gia hạn lịch đang làm, xếp hàng khách đã đến, đổi lịch chưa làm.
   const bookings = (board?.bookings || []).filter((item) =>
     action === 'extend'
       ? item.TRANGTHAI === 'Đang thực hiện'
@@ -458,7 +490,7 @@ export default function SalonOperationsPanel({
                     0,
                     Math.floor(
                       (new Date(board.now).getTime() - new Date(item.HANGDOI.VAOLUC).getTime()) /
-                        60000,
+                      60000,
                     ),
                   )}{' '}
                   phút

@@ -32,6 +32,7 @@ async function requireStaff(req, res, next) {
   }
 }
 
+// Bọc các API điều phối bằng định dạng phản hồi chung; lỗi xung đột dữ liệu trả HTTP 409.
 function handle(fn) {
   return async (req, res) => {
     try {
