@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/img/logoDHair-mark.png",
-    "scheme": "dhair_fe",
+    "scheme": "dhair-fe",
     "userInterfaceStyle": "automatic",
     "ios": {},
     "android": {

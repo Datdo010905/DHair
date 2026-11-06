@@ -6,6 +6,7 @@ import RatingCard from '@/features/home/components/RatingCard';
 import ServiceSection from '@/features/home/components/ServiceSection';
 import { useServices } from '@/features/services/useServices';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
@@ -18,6 +19,27 @@ export default function HomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* 2. Quick Actions */}
         <QuickActions />
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Mở DHair AI tư vấn kiểu tóc"
+          onPress={() => router.push('/hair-advisor')}
+          className="mx-4 mt-6 flex-row items-center gap-4 rounded-2xl bg-[#1a3673] p-5"
+        >
+          <View className="h-12 w-12 items-center justify-center rounded-2xl bg-[#304c85]">
+            <Ionicons name="sparkles" size={25} color="#dce8ff" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-[10px] font-bold tracking-[2px] text-[#c1d2f2]">
+              DHAIR AI · XEM TRƯỚC
+            </Text>
+            <Text className="mt-1 text-lg font-bold text-white">Kiểu tóc nào dành cho bạn?</Text>
+            <Text className="mt-1 text-xs leading-5 text-[#dce8ff]">
+              Khám phá trợ lý tư vấn kiểu tóc của bạn.
+            </Text>
+          </View>
+          <Ionicons name="arrow-forward" size={22} color="white" />
+        </TouchableOpacity>
 
         {/* 3. Rating Card */}
         <RatingCard />
