@@ -1,13 +1,12 @@
 import { Platform } from 'react-native';
 
-// Khi dùng điện thoại thật, EXPO_PUBLIC_API_URL là địa chỉ LAN của máy chạy backend.
-export const API_BASE_URL = (
+export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ||
-  //(Platform.OS === 'android' ? 'http://192.168.90.101:5000' : 'http://localhost:5000')
-  (Platform.OS === 'android' ? 'http://10.237.75.204:5000' : 'http://localhost:5000')
-)
-  
-  .replace(/\/+$/, '');
+  (Platform.OS === 'android'
+    ? 'http://192.168.90.101:5000'
+    : Platform.OS === 'ios'
+      ? 'http://172.20.10.2:5000'
+      : 'http://localhost:5000');
 
 interface ApiResponse<T> {
   success: boolean;

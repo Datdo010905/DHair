@@ -1,6 +1,7 @@
 import Product from '../../components/ui/Product';
 import Datlich from '../../components/ui/DatLich';
 import Slideshow from '../../components/ui/Slideshow';
+import HairAdvisor from '../../components/ui/HairAdvisor';
 import '../../assets/css/home-content.css';
 
 const HomePage = () => {
@@ -11,6 +12,8 @@ const HomePage = () => {
 
       <Datlich />
       <div className="clear"></div>
+
+      <HairAdvisor />
 
       <Product />
     </div>

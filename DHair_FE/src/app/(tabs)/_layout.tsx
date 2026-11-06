@@ -3,12 +3,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { PlatformPressable } from 'expo-router/react-navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 
+function getIconColor(color: unknown) {
+  return typeof color === 'string' ? color : '#8e8e93';
+}
+
 export default function TabLayout() {
   const { user } = useAuth();
 
   return (
     <Tabs
-      initialRouteName="home"
       screenListeners={({ route }) => ({
         tabPress: (event) => {
           const requiresLogin = ['booking', 'history', 'profile'].includes(route.name);
@@ -40,7 +43,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={getIconColor(color)} />
           ),
         }}
       />
@@ -50,7 +53,7 @@ export default function TabLayout() {
         options={{
           title: 'Tìm kiếm',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'search' : 'search-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'search' : 'search-outline'} size={24} color={getIconColor(color)} />
           ),
         }}
       />
@@ -60,7 +63,7 @@ export default function TabLayout() {
         options={{
           title: 'Đặt lịch',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={24} color={getIconColor(color)} />
           ),
         }}
       />
@@ -70,7 +73,7 @@ export default function TabLayout() {
         options={{
           title: 'Lịch sử',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'time' : 'time-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'time' : 'time-outline'} size={24} color={getIconColor(color)} />
           ),
         }}
       />
@@ -83,7 +86,7 @@ export default function TabLayout() {
             <Ionicons
               name={focused ? 'information-circle' : 'information-circle-outline'}
               size={24}
-              color={color}
+              color={getIconColor(color)}
             />
           ),
         }}

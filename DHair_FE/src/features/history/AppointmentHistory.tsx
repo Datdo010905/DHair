@@ -348,7 +348,7 @@ export default function AppointmentHistory() {
               )}
             </View>
           }
-          ListEmptyComponent={
+          ListEmptyComponent={() => (
             !loading && !error ? (
               <View className="items-center px-4 py-12">
                 <View className="h-20 w-20 items-center justify-center rounded-full bg-[#e8eef9]">
@@ -360,7 +360,7 @@ export default function AppointmentHistory() {
                 </Text>
               </View>
             ) : null
-          }
+          )}
           ListFooterComponent={
             <Pressable
               accessibilityRole="button"
